@@ -1213,14 +1213,31 @@ function importBackup(ev){
   ev.target.value='';
 }
 function cloudUrl(){ return location.protocol==='file:'? null : ('data/elite-fleet-data.json'); }
+function mergeCloud(d){
+  // 云端为基底，合并保留本地独有的订单/司机/参考价，避免在线版锁死旧快照或丢本地数据
+  const key=o=>o.date+'|'+o.time+'|'+o.guest;
+  const local=S||{orders:[],drivers:[],prices:[],vehicles:[]};
+  const seen=new Set(), merged=[];
+  (d.orders||[]).forEach(o=>{ merged.push(o); seen.add(key(o)); });
+  (local.orders||[]).forEach(o=>{ if(!seen.has(key(o))) merged.push(o); });
+  merged.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const dedup=(arr,kk)=>{ const s=new Set(), out=[]; (arr||[]).forEach(x=>{ const k=kk(x); if(k&&!s.has(k)){ s.add(k); out.push(x); } }); return out; };
+  S=Object.assign({}, d, {
+    orders: merged,
+    drivers: dedup((d.drivers||[]).concat(local.drivers||[]), x=>x.plate||x.name),
+    prices: dedup((d.prices||[]).concat(local.prices||[]), x=>x.city+'|'+x.route+'|'+x.vehicle),
+    vehicles: dedup((d.vehicles||[]).concat(local.vehicles||[]), x=>x.plate)
+  });
+}
 function fetchCloudData(){
   const u=cloudUrl(); if(!u) return;
   fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
     .then(d=>{
-      if(!d || !d.orders) return;
-      if(localStorage.getItem(LS_KEY)){ /* 本地已有数据，不自动覆盖 */ }
-      else { S=d; saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis(); toast('已加载云端数据'); }
-    }).catch(()=>{});
+      if(!d || !d.orders) throw 0;
+      mergeCloud(d);
+      saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+      toast('已加载并合并云端数据（订单 '+(S.orders||[]).length+' 条）');
+    }).catch(()=>{ if(cloudUrl()) toast('云端数据拉取失败，显示本地数据'); });
 }
 function refreshFromCloud(){
   const u=cloudUrl();
