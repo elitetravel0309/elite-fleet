@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>车队日程调度台 · Elite Fleet</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;700;900&display=swap">
+<style>
+:root{
+  --ink:#14263F;
+  --ink-2:#1F3352;
+  --ink-3:#2E4570;
+  --bg:#F3F4F7;
+  --card:#FFFFFF;
+  --line:#E2E6EE;
+  --line-2:#D3DAE6;
+  --text:#273043;
+  --text-2:#5A6478;
+  --text-3:#8A93A6;
+  --accent:#E8833A;
+  --accent-dark:#D06B24;
+  --accent-soft:#FCEFE3;
+  --arrival:#3E6FB0;
+  --arrival-soft:#E7EFFB;
+  --departure:#2E8B8B;
+  --departure-soft:#E3F3F1;
+  --charter:#D9772B;
+  --charter-soft:#FBEFE2;
+  --transfer:#6B5BB5;
+  --transfer-soft:#EFECFA;
+  --pending:#C98A2D; --pending-soft:#FAF1DF;
+  --confirmed:#2E7D6B; --confirmed-soft:#E2F1ED;
+  --done:#41699E; --done-soft:#E8EFF8;
+  --cancel:#98A1AF; --cancel-soft:#EFF1F4;
+  --danger:#C0392B; --danger-soft:#FBE9E6;
+  --radius:14px;
+  --radius-s:9px;
+  --shadow:0 1px 2px rgba(20,38,63,.05),0 4px 14px rgba(20,38,63,.06);
+  --shadow-lg:0 10px 34px rgba(20,38,63,.16);
+  --serif:"Noto Serif SC",Georgia,"Songti SC","SimSun",serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
+::selection{background:var(--accent);color:#fff}
+/* ===== 顶栏 ===== */
+.app{display:flex;min-height:100vh;min-width:1120px}
+.side{
+  width:224px;flex:0 0 224px;background:var(--ink);color:#DCE4F0;
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand .logo{display:flex;align-items:center;gap:10px}
+.brand .logo svg{width:26px;height:26px;color:var(--accent)}
+.brand h1{font-family:var(--serif);font-size:17px;font-weight:900;color:#fff;margin:0;letter-spacing:.2px}
+.brand p{margin:4px 0 0;font-size:11px;color:#9FB0C8;letter-spacing:1px;text-transform:uppercase}
+.nav{flex:1;padding:14px 10px;overflow-y:auto}
+.nav-label{font-size:11px;color:#7E91AD;padding:10px 12px 6px;letter-spacing:1px}
+.nav button{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;
+  border-radius:9px;color:#C6D2E4;font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s,color .15s;
+}
+.nav button svg{width:18px;height:18px;flex:0 0 18px;opacity:.85}
+.nav button:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav button.active{background:var(--accent);color:#fff;font-weight:600}
+.nav button.active svg{opacity:1}
+.nav .count{margin-left:auto;background:rgba(255,255,255,.14);border-radius:20px;font-size:11px;padding:1px 8px;font-weight:600}
+.nav button.active .count{background:rgba(255,255,255,.25)}
+.side-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#7E91AD}
+/* ===== 主区 ===== */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  display:flex;align-items:center;gap:16px;padding:16px 28px;background:var(--card);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;
+}
+.topbar .crumb{font-size:13px;color:var(--text-2)}
+.topbar .crumb b{color:var(--ink);font-weight:600}
+.topbar .spacer{flex:1}
+.kpis{display:flex;gap:10px}
+.kpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:5px 13px;text-align:center;min-width:64px}
+.kpi b{display:block;font-family:var(--serif);font-size:17px;color:var(--ink);line-height:1.2}
+.kpi span{font-size:11px;color:var(--text-2)}
+.kpi.hl{border-color:var(--accent);background:var(--accent-soft)}
+.kpi.hl b{color:var(--accent-dark)}
+.content{padding:22px 28px 40px;flex:1}
+.view{display:none}
+.view.active{display:block}
+h2.section{font-family:var(--serif);font-size:22px;font-weight:900;color:var(--ink);margin:0 0 4px}
+.sub{color:var(--text-2);font-size:13px;margin:0 0 18px}
+/* ===== 通用控件 ===== */
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:#fff;border-radius:9px;
+  padding:9px 15px;font-size:13.5px;font-weight:600;transition:background .15s}
+.btn svg{width:15px;height:15px}
+.btn:hover{background:var(--ink-2)}
+.btn.primary{background:var(--accent)}
+.btn.primary:hover{background:var(--accent-dark)}
+.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--line-2)}
+.btn.ghost:hover{border-color:var(--text-3);background:var(--bg)}
+.btn.small{padding:5px 10px;font-size:12.5px;border-radius:7px}
+.btn.danger{background:var(--danger-soft);color:var(--danger)}
+.btn.danger:hover{background:var(--danger);color:#fff}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;color:var(--text-2);transition:background .15s,color .15s}
+.iconbtn svg{width:16px;height:16px}
+.iconbtn:hover{background:var(--bg);color:var(--ink)}
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.bar .spacer{flex:1}
+input,select,textarea{background:var(--card);border:1px solid var(--line-2);border-radius:9px;padding:8px 11px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;line-height:1.5}
+/* ===== 今日时间轴（签名元素） ===== */
+.today-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.date-nav{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line-2);border-radius:10px;padding:4px}
+.date-nav button{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text-2)}
+.date-nav button:hover{background:var(--bg);color:var(--ink)}
+.date-nav .date-txt{min-width:150px;text-align:center;font-weight:600;color:var(--ink)}
+.date-nav .date-txt small{display:block;font-weight:400;color:var(--text-2);font-size:11px}
+.timeline{position:relative}
+.tl-track{position:absolute;left:88px;right:0;top:0;bottom:0;border-left:2px solid var(--line-2)}
+.tl-hours{position:relative;margin:0}
+.tl-hour{position:relative;height:64px;border-top:1px dashed var(--line);color:var(--text-3);font-size:12px}
+.tl-hour span{position:absolute;top:-9px;left:0;width:72px;text-align:right;font-variant-numeric:tabular-nums}
+.tl-hour::after{content:"";position:absolute;left:-1px;top:0;width:9px;height:1px;background:var(--line-2)}
+.task-card{
+  position:absolute;left:100px;right:12px;background:var(--card);border:1px solid var(--line);
+  border-left:4px solid var(--ink);border-radius:11px;box-shadow:var(--shadow);padding:9px 13px;cursor:pointer;overflow:hidden;
+  transition:box-shadow .15s,transform .15s;
+}
+.task-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.task-card .row1{display:flex;align-items:center;gap:9px}
+.task-card .time{font-family:var(--serif);font-weight:700;color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums;min-width:52px}
+.task-card .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.3px}
+.task-card .route{font-weight:600;color:var(--text);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-card .meta{display:flex;gap:14px;margin-top:6px;color:var(--text-2);font-size:12px;flex-wrap:wrap}
+.task-card .meta svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px;color:var(--text-3)}
+.task-card .price{margin-left:auto;font-weight:700;color:var(--accent-dark);font-size:14px}
+.task-card .note{color:var(--text-3);font-size:11.5px;margin-top:4px}
+.type-arrival{border-left-color:var(--arrival)}
+.type-departure{border-left-color:var(--departure)}
+.type-charter{border-left-color:var(--charter)}
+.type-transfer{border-left-color:var(--transfer)}
+/* ===== 周历 ===== */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.week-col{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);min-height:520px;display:flex;flex-direction:column;overflow:hidden}
+.week-col.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.week-col .w-head{padding:11px 13px;border-bottom:1px solid var(--line);background:var(--bg)}
+.week-col.today .w-head{background:var(--accent-soft)}
+.week-col .w-head b{font-size:14px;color:var(--ink);font-family:var(--serif)}
+.week-col .w-head span{display:block;font-size:11px;color:var(--text-2)}
+.week-col .w-body{padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.mini-task{border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:8px;padding:7px 9px;font-size:12px;cursor:pointer;background:var(--card);transition:box-shadow .12s}
+.mini-task:hover{box-shadow:var(--shadow)}
+.mini-task b{color:var(--ink);font-variant-numeric:tabular-nums}
+.mini-task .r{font-weight:600;color:var(--text);margin-top:2px}
+.mini-task .m{color:var(--text-2);font-size:11px;margin-top:2px}
+/* ===== 订单列表 ===== */
+.order-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.order-table th{text-align:left;font-size:12px;color:var(--text-2);font-weight:600;padding:11px 13px;background:var(--bg);border-bottom:1px solid var(--line);white-space:nowrap}
+.order-table td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13px}
+.order-table tr:last-child td{border-bottom:none}
+.order-table tr:hover td{background:#FAFBFD}
+.order-table .st{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.order-table .rowbtn{opacity:0;transition:opacity .12s}
+.order-table tr:hover .rowbtn{opacity:1}
+.filters{display:flex;gap:10px;flex-wrap:wrap}
+.filters input,.filters select{min-width:120px}
+/* ===== 名册 ===== */
+.fleet-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fleet-col{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.fleet-col h3{font-family:var(--serif);font-size:16px;font-weight:800;color:var(--ink);margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.fleet-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}
+.fleet-row:last-child{border-bottom:none}
+.fleet-row .avatar{width:34px;height:34px;border-radius:9px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:0 0 34px}
+.fleet-row .info{flex:1;min-width:0}
+.fleet-row .info b{display:block;font-size:13.5px;color:var(--text)}
+.fleet-row .info span{font-size:12px;color:var(--text-2)}
+.fleet-row .type-pill{font-size:11px;background:var(--bg);border:1px solid var(--line-2);color:var(--text-2);padding:2px 8px;border-radius:20px}
+/* ===== 参考价 ===== */
+.price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.price-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.price-card .pc-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.price-card .pc-top b{font-size:14px;color:var(--ink)}
+.price-card .pc-route{font-size:12px;color:var(--text-2);margin-bottom:8px}
+.price-card .pc-price{font-family:var(--serif);font-size:20px;font-weight:900;color:var(--accent-dark)}
+.price-card .pc-price small{font-size:12px;color:var(--text-3);font-weight:500;margin-left:2px}
+.price-card .pc-note{font-size:11.5px;color:var(--text-3);margin-top:6px}
+.price-card .pc-del{position:absolute}
+/* ===== 弹窗 ===== */
+.overlay{position:fixed;inset:0;background:rgba(20,38,63,.45);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:6vh 20px}
+.overlay.open{display:flex}
+.modal{background:var(--card);border-radius:18px;width:620px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);padding:22px 24px}
+.modal h3{font-family:var(--serif);font-size:19px;font-weight:900;color:var(--ink);margin:0 0 4px}
+.modal .m-sub{color:var(--text-2);font-size:13px;margin-bottom:18px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fgrid .full{grid-column:1/-1}
+.fgroup label{display:block;font-size:12px;color:var(--text-2);font-weight:600;margin-bottom:5px}
+.fgroup label .req{color:var(--danger)}
+.fgroup input,.fgroup select,.fgroup textarea{width:100%}
+.fgroup textarea{min-height:56px}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:13.5px;box-shadow:var(--shadow-lg);transition:transform .25s;z-index:200;opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+/* ===== 数据区 ===== */
+.sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.panel h3{font-family:var(--serif);font-size:16px;font-weight:800;color:var(--ink);margin:0 0 8px}
+.panel p.desc{font-size:13px;color:var(--text-2);margin:0 0 14px}
+.panel .stack{display:flex;flex-direction:column;gap:10px}
+.mono{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12px}
+.textarea-mon{width:100%;min-height:150px;border:1px solid var(--line-2);border-radius:9px;padding:10px;font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#FBFCFE}
+.step{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:none}
+.step .num{width:22px;height:22px;border-radius:7px;background:var(--accent-soft);color:var(--accent-dark);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex:0 0 22px}
+.step div{font-size:13px;color:var(--text)}
+.step div small{display:block;color:var(--text-2);font-size:12px;margin-top:2px}
+/* ===== 打印 ===== */
+@media print{
+  .side,.topbar,.bar,.modal,.overlay,.toast,.print-hide{display:none!important}
+  body{background:#fff;min-width:0}
+  .app{min-width:0;display:block}
+  .content{padding:0}
+  .print-sheet{display:block!important}
+  .view{display:none!important}
+  .view.active{display:block!important}
+}
+.print-sheet{display:none}
+.print-sheet .ps-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:14px}
+.print-sheet h2{font-family:var(--serif);font-size:20px;color:var(--ink);margin:0}
+.print-sheet .ps-meta{font-size:12px;color:var(--text-2)}
+.ps-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ps-table th{background:var(--bg);text-align:left;padding:7px 9px;border:1px solid var(--line-2);font-size:11px;color:var(--text-2)}
+.ps-table td{padding:7px 9px;border:1px solid var(--line-2)}
+.ps-foot{margin-top:24px;font-size:11px;color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== 侧栏 ===== -->
+<aside class="side">
+  <div class="brand">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4-3 4 3 4-3 4 3"/><path d="M3 8v10a1 1 0 0 0 1 1h2V9"/><path d="M9 8v11"/><path d="M15 8v11"/><path d="M20 8v10a1 1 0 0 1-1 1h-2V9"/><circle cx="7" cy="6" r="1"/><circle cx="13" cy="6" r="1"/><circle cx="19" cy="6" r="1"/></svg>
+      <h1>Elite Fleet</h1>
+    </div>
+    <p>入境接送 · 包车调度</p>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="nav-label">排班</div>
+    <button data-route="today" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>今日排班</button>
+    <button data-route="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>周历排班</button>
+    <div class="nav-label">业务</div>
+    <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
+    <div class="nav-label">资源</div>
+    <button data-route="fleet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆与司机</button>
+    <button data-route="prices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M16 8.5c-.6-.9-2-1.5-4-1.5s-3.4.6-3.4 1.8c0 3 7 1.5 7 4.5 0 1.2-1.6 1.9-3.6 1.9s-3.4-.6-3.6-1.5"/></svg>参考价库</button>
+    <div class="nav-label">数据</div>
+    <button data-route="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>数据与同步</button>
+  </nav>
+  <div class="side-foot">Elite Travel · 本地车队调度台<br>数据存储于本机浏览器</div>
+</aside>
+
+<!-- ===== 主区 ===== -->
+<div class="main">
+  <div class="topbar">
+    <div class="crumb" id="crumb"></div>
+    <div class="spacer"></div>
+    <div class="kpis" id="topKpis"></div>
+  </div>
+  <div class="content">
+
+    <!-- 今日排班 -->
+    <section class="view active" data-route="today">
+      <div class="today-head">
+        <div>
+          <h2 class="section" id="todayTitle">今日排班</h2>
+          <p class="sub" id="todaySub"></p>
+        </div>
+        <div class="spacer" style="flex:1"></div>
+        <div class="date-nav">
+          <button class="iconbtn" onclick="shiftDate(-1)" title="前一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="date-txt" id="dateTxt"><b id="dateB"></b><small id="dateS"></small></div>
+          <button class="iconbtn" onclick="shiftDate(1)" title="后一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+          <button class="btn ghost small" onclick="goToday()">今天</button>
+        </div>
+        <button class="btn ghost" onclick="openPasteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>粘贴录入</button>
+        <button class="btn primary" onclick="openOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增任务</button>
+        <button class="btn ghost" onclick="printSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>出车单</button>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <!-- 周历 -->
+    <section class="view" data-route="week">
+      <div class="today-head">
+        <div><h2 class="section">周历排班</h2><p class="sub" id="weekSub"></p></div>
+        <div class="spacer" style="flex:1"></div>
+        <div class="date-nav">
+          <button class="iconbtn" onclick="shiftWeek(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="date-txt"><b id="weekRange"></b></div>
+          <button class="iconbtn" onclick="shiftWeek(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+          <button class="btn ghost small" onclick="goThisWeek()">本周</button>
+        </div>
+        <button class="btn primary" onclick="openOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增任务</button>
+      </div>
+      <div class="week-grid" id="weekGrid"></div>
+    </section>
+
+    <!-- 订单 -->
+    <section class="view" data-route="orders">
+      <div class="today-head">
+        <div><h2 class="section">订单管理</h2><p class="sub">全部接送 / 包车订单，可筛选、编辑、删除</p></div>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn ghost" onclick="openPasteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>粘贴录入</button>
+        <button class="btn primary" onclick="openOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增订单</button>
+      </div>
+      <div class="filters bar">
+        <input type="date" id="fFrom" onchange="renderOrders()">
+        <span style="color:var(--text-3)">至</span>
+        <input type="date" id="fTo" onchange="renderOrders()">
+        <select id="fType" onchange="renderOrders()">
+          <option value="">全部类型</option>
+          <option value="arrival">接机</option>
+          <option value="departure">送机</option>
+          <option value="charter">包车</option>
+          <option value="transfer">市内接送</option>
+        </select>
+        <select id="fStatus" onchange="renderOrders()">
+          <option value="">全部状态</option>
+          <option value="pending">待确认</option>
+          <option value="confirmed">已确认</option>
+          <option value="done">已完成</option>
+          <option value="cancelled">已取消</option>
+        </select>
+        <select id="fCity" onchange="renderOrders()">
+          <option value="">全部城市</option>
+          <option value="北京">北京</option>
+          <option value="上海">上海</option>
+          <option value="杭州">杭州</option>
+        </select>
+        <input type="text" id="fKw" placeholder="搜索客户 / 路线 / 司机" oninput="renderOrders()" style="min-width:180px">
+        <span class="spacer"></span>
+        <button class="btn ghost" onclick="clearFilters()">重置</button>
+      </div>
+      <div id="ordersWrap"></div>
+    </section>
+
+    <!-- 车辆与司机 -->
+    <section class="view" data-route="fleet">
+      <div class="today-head">
+        <div><h2 class="section">车辆与司机</h2><p class="sub">车队名册，用于排班指派</p></div>
+        <div class="spacer" style="flex:1"></div>
+      </div>
+      <div class="fleet-grid">
+        <div class="fleet-col">
+          <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆</h3>
+          <div id="vehicleList"></div>
+          <button class="btn ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="addVehicle()">+ 添加车辆</button>
+        </div>
+        <div class="fleet-col">
+          <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>司机</h3>
+          <div id="driverList"></div>
+          <button class="btn ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="addDriver()">+ 添加司机</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 参考价 -->
+    <section class="view" data-route="prices">
+      <div class="today-head">
+        <div><h2 class="section">参考价库</h2><p class="sub">每条线路一行：成本价（给司机）与对外报价（给客户）并列，订单成本/利润自动匹配</p></div>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn primary" onclick="addPrice()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增价格</button>
+      </div>
+      <!-- 智能计价器 -->
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)">
+        <div style="display:flex;align-items:baseline;gap:10px"><b style="font-size:15px">智能计价器</b><span style="font-size:12px;color:var(--text-3)">按参考价库自动算成本与对外报价，超时按小时加价，节假日可加成</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px">
+          <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">城市</label><select id="qcCity" onchange="rebuildCalcRoutes()"></select></div>
+          <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">线路</label><select id="qcRoute" onchange="rebuildCalcVehicles()"></select></div>
+          <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">车型</label><select id="qcVehicle" onchange="runCalc()"></select></div>
+          <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">超时（小时）</label><input type="number" id="qcOver" value="0" min="0" style="width:70px" oninput="runCalc()"></div>
+          <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">成本超时费 ¥/h</label><input type="number" id="qcCostRate" value="50" min="0" style="width:76px" oninput="runCalc()"></div>
+          <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">报价超时费 ¥/h</label><input type="number" id="qcQuoteRate" value="50" min="0" style="width:76px" oninput="runCalc()"></div>
+          <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">节假日系数</label><input type="number" id="qcHoliday" value="1" step="0.05" min="1" style="width:76px" oninput="runCalc()"></div>
+        </div>
+        <div id="qcRes"></div>
+      </div>
+      <div class="price-grid" id="priceGrid"></div>
+    </section>
+
+    <!-- 数据与同步 -->
+    <section class="view" data-route="data">
+      <div class="today-head">
+        <div><h2 class="section">数据与同步</h2><p class="sub">数据备份、travel-kb 双向打通</p></div>
+        <div class="spacer" style="flex:1"></div>
+      </div>
+      <div class="sync-grid">
+        <div class="panel">
+          <h3>备份与恢复</h3>
+          <p class="desc">全部数据保存在本机浏览器。建议定期导出备份，或换设备时导入迁移。</p>
+          <div class="stack">
+            <button class="btn" onclick="exportData()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出全部数据（JSON 备份）</button>
+            <label class="btn ghost" style="justify-content:center">导入备份文件<input type="file" accept=".json" style="display:none" onchange="importBackup(event)"></label>
+            <button class="btn ghost" onclick="refreshFromCloud()">从云端刷新（拉取线上最新数据）</button>
+            <button class="btn danger" onclick="resetData()">清空全部数据（含订单与名册）</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>当日出车单</h3>
+          <p class="desc">为司机生成当日任务清单，可打印或存为 PDF。</p>
+          <div class="stack">
+            <button class="btn" onclick="printSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>打印当前查看日期的出车单</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>从 travel-kb 导入参考价</h3>
+          <p class="desc">把 travel-kb 里的用车价 / 供应商价格合并进本工具的参考价库。先在本机运行配套脚本导出 JSON，再粘贴到下方导入。</p>
+          <textarea class="textarea-mon" id="tkImport" placeholder='粘贴 travel-kb 导出的 JSON，格式：{"prices":[{"city":"北京","route":"慕田峪 · 机场接送","vehicle":"五座","duration":"10小时","distance":"150","cost":650,"quote":850,"note":""}]}（兼容旧格式 price+type）'></textarea>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn primary" onclick="importTkData()">导入参考价</button>
+            <button class="btn ghost" onclick="loadTkExample()">填入示例</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>导出订单为 travel-kb 条目</h3>
+          <p class="desc">把选中日期范围的订单导出为 travel-kb 可识别的 Markdown 条目（itinerary_ref），下载后放入 travel-kb 的 wiki 目录即可沉淀归档。</p>
+          <div class="stack">
+            <div class="filters">
+              <input type="date" id="exFrom">
+              <span style="color:var(--text-3)">至</span>
+              <input type="date" id="exTo">
+            </div>
+            <button class="btn" onclick="exportOrdersMd()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出 Markdown 条目</button>
+          </div>
+        </div>
+        <div class="panel" style="grid-column:1/-1">
+          <h3>与 travel-kb 双向打通 · 工作流</h3>
+          <div style="margin-top:6px">
+            <div class="step"><div class="num">1</div><div>本工具是日常调度台：录订单、排班、出车单。数据存本机。<small>订单数据（客户、日期、路线、价格）由你录入或从 Excel 导入。</small></div></div>
+            <div class="step"><div class="num">2</div><div>在本机跑配套脚本 <b class="mono">export_travelkb_data.py</b>，从 travel-kb 导出用车价 / 供应商到 JSON。<small>脚本在工具同目录，输出 travelkb_prices.json。</small></div></div>
+            <div class="step"><div class="num">3</div><div>把 JSON 内容粘贴到上方「从 travel-kb 导入参考价」，一键合并进参考价库。<small>这样报价时可直接参考 travel-kb 沉淀的权威价格。</small></div></div>
+            <div class="step"><div class="num">4</div><div>周期性地把订单导出为 Markdown，放回 travel-kb 的 wiki 归档。<small>让订单沉淀为知识资产，AI 报价 / 行程时也能引用。</small></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 打印出车单 -->
+    <div class="print-sheet" id="printSheet"></div>
+  </div>
+</div>
+</div>
+
+<!-- ===== 订单弹窗 ===== -->
+<div class="overlay" id="orderOverlay">
+  <div class="modal">
+    <h3 id="omTitle">新增任务</h3>
+    <div class="m-sub" id="omSub"></div>
+    <div class="fgrid">
+      <div class="fgroup"><label>日期 <span class="req">*</span></label><input type="date" id="oDate"></div>
+      <div class="fgroup"><label>时间 <span class="req">*</span></label><input type="time" id="oTime"></div>
+      <div class="fgroup"><label>类型</label>
+        <select id="oType">
+          <option value="arrival">接机</option>
+          <option value="departure">送机</option>
+          <option value="charter">包车</option>
+          <option value="transfer">市内接送</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>机场 / 站点</label>
+        <select id="oAirport">
+          <option value="">—</option>
+          <option value="PEK">首都机场 PEK</option>
+          <option value="PKX">大兴机场 PKX</option>
+          <option value="PVG">上海浦东 PVG</option>
+          <option value="SHA">上海虹桥 SHA</option>
+          <option value="南站">北京南站</option>
+          <option value="西站">北京西站</option>
+          <option value="朝阳站">北京朝阳站</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>航班 / 车次</label><input type="text" id="oFlight" placeholder="如 CA1831"></div>
+      <div class="fgroup"><label>路线 <span class="req">*</span></label><input type="text" id="oRoute" list="routeList" placeholder="如 慕田峪 / 市内 / 颐和园">
+        <datalist id="routeList"></datalist>
+      </div>
+      <div class="fgroup"><label>车型</label>
+        <select id="oVehicle">
+          <option value="五座">五座</option>
+          <option value="七座">七座</option>
+          <option value="九座">九座</option>
+          <option value="考斯特">考斯特</option>
+          <option value="大巴">大巴</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>人数</label><input type="number" id="oPax" min="0" value="1"></div>
+      <div class="fgroup"><label>客户 / 团名</label><input type="text" id="oGuest" placeholder="如 德国团 3 人"></div>
+      <div class="fgroup"><label>联系人</label><input type="text" id="oContact"></div>
+      <div class="fgroup"><label>司机</label><select id="oDriver"><option value="">— 未指派</option></select></div>
+      <div class="fgroup"><label>车牌</label><input type="text" id="oPlate" list="plateList" placeholder="如 京A12345"><datalist id="plateList"></datalist></div>
+      <div class="fgroup"><label>对外报价（元）</label><input type="number" id="oQuote" min="0" placeholder="0"></div>
+      <div class="fgroup"><label>成本价（元）</label><input type="number" id="oCost" min="0" placeholder="0"></div>
+      <div class="fgroup" style="align-self:flex-end"><button class="btn ghost small" type="button" onclick="autoPrice()" title="按线路/车型从参考价库自动带出报价与成本">自动计价</button></div>
+      <div class="fgroup"><label>状态</label>
+        <select id="oStatus">
+          <option value="pending">待确认</option>
+          <option value="confirmed">已确认</option>
+          <option value="done">已完成</option>
+          <option value="cancelled">已取消</option>
+        </select>
+      </div>
+      <div class="fgroup full"><label>备注</label><textarea id="oNote" placeholder="如 航班延误、举牌接机、儿童座椅等"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeOrder()">取消</button>
+      <button class="btn danger" id="omDelete" style="margin-right:auto" onclick="deleteOrder()">删除</button>
+      <button class="btn primary" onclick="saveOrder()">保存任务</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== 粘贴快速录入弹窗 ===== -->
+<div class="overlay" id="pasteOverlay">
+  <div class="modal">
+    <h3>粘贴快速录入订单</h3>
+    <div class="m-sub">粘贴 JSON，支持单条或批量（<span class="mono">{ "orders": [...] }</span> / 数组 / 单个对象）。字段：date、time、route（必填）；type（arrival/departure/charter/transfer）、airport、flight、vehicle、pax、guest、contact、driver、plate、quote（对外报价）、cost（成本价）、price（兼容=报价）、status（pending/confirmed/done/cancelled）、note</div>
+    <textarea class="textarea-mon" id="pasteInput" style="min-height:230px" placeholder='粘贴订单 JSON…'></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+      <button class="btn ghost small" onclick="loadExampleOrder()">填入示例</button>
+      <span style="color:var(--text-3);font-size:12px">示例为上海浦东→常州万豪订单，可改为你要录的</span>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closePasteModal()">取消</button>
+      <button class="btn primary" onclick="runPasteImport()">导入订单</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   车队日程调度台 — 数据层
+   ========================================================= */
+const LS_KEY = 'elite-fleet-v1';
+const TYPE_META = {
+  arrival:{label:'接机', cls:'type-arrival', color:'var(--arrival)', soft:'var(--arrival-soft)'},
+  departure:{label:'送机', cls:'type-departure', color:'var(--departure)', soft:'var(--departure-soft)'},
+  charter:{label:'包车', cls:'type-charter', color:'var(--charter)', soft:'var(--charter-soft)'},
+  transfer:{label:'市内接送', cls:'type-transfer', color:'var(--transfer)', soft:'var(--transfer-soft)'}
+};
+const STATUS_META = {
+  pending:{label:'待确认', color:'var(--pending)', soft:'var(--pending-soft)'},
+  confirmed:{label:'已确认', color:'var(--confirmed)', soft:'var(--confirmed-soft)'},
+  done:{label:'已完成', color:'var(--done)', soft:'var(--done-soft)'},
+  cancelled:{label:'已取消', color:'var(--cancel)', soft:'var(--cancel-soft)'}
+};
+function airportName(a){
+  if(!a) return '';
+  return ({PEK:'首都机场', PKX:'大兴机场', PVG:'上海浦东', SHA:'上海虹桥'}[a]) || a;
+}
+const AIRPORT_CITY = {PEK:'北京', PKX:'北京', PVG:'上海', SHA:'上海', HGH:'杭州'};
+const CITY_LIST = ['北京','上海','杭州'];
+function cityOf(o){ return (o && (o.city || AIRPORT_CITY[((o.airport||'').trim()).toUpperCase()])) || ''; }
+
+// 预置参考价：北京用车（2026-08 录入）。结构：城市/线路/车型/时长/距离/成本价(cost)/对外报价(quote)
+const SEED_PRICES = [
+  {city:'北京', route:'慕田峪 · 机场接送', vehicle:'五座', duration:'10小时', distance:'', cost:650, quote:0, note:'首都机场接 → 慕田峪 → 送市区酒店'},
+  {city:'北京', route:'慕田峪 · 机场接送', vehicle:'五座', duration:'10小时', distance:'', cost:700, quote:0, note:'大兴机场接 → 慕田峪 → 送市区酒店'},
+  {city:'北京', route:'慕田峪 · 机场接送', vehicle:'七座', duration:'10小时', distance:'', cost:750, quote:0, note:'首都机场接 → 慕田峪 → 送市区酒店'},
+  {city:'北京', route:'慕田峪 · 机场接送', vehicle:'七座', duration:'10小时', distance:'', cost:800, quote:0, note:'大兴机场接 → 慕田峪 → 送市区酒店'},
+  {city:'北京', route:'包车 · 市内', vehicle:'五座', duration:'', distance:'', cost:550, quote:0, note:''},
+  {city:'北京', route:'包车 · 长城', vehicle:'五座', duration:'', distance:'', cost:650, quote:0, note:''},
+  {city:'北京', route:'包车 · 市内', vehicle:'七座', duration:'', distance:'', cost:600, quote:0, note:''},
+  {city:'北京', route:'包车 · 长城', vehicle:'七座', duration:'', distance:'', cost:700, quote:0, note:''}
+];
+const SEED_VEHICLES = [
+  {id:'v1', plate:'京A·88001', type:'五座', seats:4, note:'轿车'},
+  {id:'v2', plate:'京A·88002', type:'七座', seats:6, note:'商务车'}
+];
+const SEED_DRIVERS = [
+  {id:'d1', name:'张师傅', phone:'13800000001', vehicle:'京A·88001'},
+  {id:'d2', name:'李师傅', phone:'13800000002', vehicle:'京A·88002'}
+];
+function seedState(){
+  return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES))};
+}
+function loadState(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders) return s; } }catch(e){}
+  const s = seedState(); saveState(s); return s;
+}
+function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} }
+let S = loadState();
+
+/* =========================================================
+   工具函数
+   ========================================================= */
+const $ = (id)=>document.getElementById(id);
+function uid(){ return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function pad(n){ return n<10?'0'+n:''+n; }
+function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parseDate(s){ const p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function todayStr(){ return fmtDate(new Date()); }
+const WEEK_CN = ['日','一','二','三','四','五','六'];
+function weekdayCN(d){ return '周'+WEEK_CN[d.getDay()]; }
+function minutes(t){ const p=(t||'00:00').split(':'); return (+p[0])*60+(+p[1]||0); }
+function timeOfDay(h, m){ return pad(h)+':'+pad(m||0); }
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'), 2400); }
+function sortOrders(a,b){ return (a.date===b.date)? (minutes(a.time)-minutes(b.time)) : (a.date<b.date?-1:1); }
+function getOrders(){ return [...S.orders].sort(sortOrders); }
+function ordersOn(date){ return S.orders.filter(o=>o.date===date).sort((a,b)=>minutes(a.time)-minutes(b.time)); }
+function calcPx(order){ const q=calcQuote(order); return q? q : calcCost(order); }
+function guessPrice(o){
+  if(!o.route) return null;
+  for(const p of S.prices){
+    if(o.vehicle===p.vehicle && (o.route.includes(p.route.split('·')[0].trim()) || p.route.includes(o.route))){
+      return p.quote || p.cost || null;
+    }
+  }
+  return null;
+}
+function guessQuote(o){
+  if(!o.route) return null;
+  for(const p of S.prices){
+    if(o.vehicle===p.vehicle && (o.route.includes(p.route.split('·')[0].trim()) || p.route.includes(o.route)) && p.quote){
+      return p.quote;
+    }
+  }
+  return null;
+}
+function guessCost(o){
+  if(!o.route) return null;
+  for(const p of S.prices){
+    if(o.vehicle===p.vehicle && (o.route.includes(p.route.split('·')[0].trim()) || p.route.includes(o.route)) && p.cost){
+      return p.cost;
+    }
+  }
+  return null;
+}
+function calcQuote(o){ return (o && (o.quote || o.price))? (o.quote || o.price) : guessQuote(o); }
+function calcCost(o){ return (o && o.cost)? o.cost : guessCost(o); }
+function profitOf(o){ const q=calcQuote(o), c=calcCost(o); return (q!=null && c!=null)? q-c : null; }
+function marginOf(o){ const q=calcQuote(o), c=calcCost(o); return (q!=null && c!=null && q!==0)? (q-c)/q*100 : null; }
+function routeList(){ const set=new Set(); S.orders.forEach(o=>o.route&&set.add(o.route)); return [...set]; }
+
+/* =========================================================
+   视图路由
+   ========================================================= */
+const CRUMB = {today:'排班 · 今日', week:'排班 · 周历', orders:'业务 · 订单管理', fleet:'资源 · 车辆与司机', prices:'资源 · 参考价库', data:'数据 · 备份与同步'};
+let curRoute = 'today';
+let viewDate = todayStr();
+let weekOffset = 0;
+function showView(r){
+  curRoute = r;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active', b.dataset.route===r));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.dataset.route===r));
+  $('crumb').innerHTML = '车队调度台 <b>· '+CRUMB[r]+'</b>';
+  if(r==='today') renderToday();
+  if(r==='week') renderWeek();
+  if(r==='orders') renderOrders();
+  if(r==='fleet') renderFleet();
+  if(r==='prices') renderPrices();
+  if(r==='data') renderData();
+  renderKpis();
+}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click', ()=>showView(b.dataset.route)));
+
+/* =========================================================
+   顶部 KPI
+   ========================================================= */
+function renderKpis(){
+  const t = todayStr();
+  const list = ordersOn(t);
+  $('orderCount').textContent = S.orders.filter(o=>o.status!=='cancelled').length;
+  const k = $('topKpis');
+  k.innerHTML = '';
+  const items = [
+    {v:list.length, l:'今日任务', hl:true},
+    {v:list.filter(o=>o.type==='arrival').length, l:'接机'},
+    {v:list.filter(o=>o.type==='departure').length, l:'送机'},
+    {v:list.filter(o=>o.type==='charter'||o.type==='transfer').length, l:'包车'},
+    {v:list.filter(o=>o.status==='pending').length, l:'待确认'},
+    {v:list.filter(o=>cityOf(o)==='北京').length, l:'今日·北京'},
+    {v:list.filter(o=>cityOf(o)==='上海').length, l:'今日·上海'},
+    {v:list.filter(o=>cityOf(o)==='杭州').length, l:'今日·杭州'}
+  ];
+  items.forEach(it=>{ const d=document.createElement('div'); d.className='kpi'+(it.hl?' hl':''); d.innerHTML='<b>'+it.v+'</b><span>'+it.l+'</span>'; k.appendChild(d); });
+}
+
+/* =========================================================
+   今日排班（时间轴）
+   ========================================================= */
+function renderToday(){
+  const d = parseDate(viewDate);
+  $('dateB').textContent = viewDate;
+  $('dateS').textContent = weekdayCN(d);
+  $('todayTitle').textContent = (viewDate===todayStr()?'今日排班':'排班 · '+viewDate);
+  const list = ordersOn(viewDate);
+  $('todaySub').textContent = '共 '+list.length+' 个任务 · 拖入时间轴按出发时间排布 · 点击卡片编辑';
+  // 时间轴：从最早任务的前一小时到最晚任务的后一小时，至少 6:00-23:00
+  let h0=6, h1=23;
+  if(list.length){
+    const minH=Math.floor(Math.min(...list.map(o=>minutes(o.time)))/60);
+    const maxH=Math.ceil(Math.max(...list.map(o=>minutes(o.time)+90))/60);
+    h0=Math.max(0, Math.min(6, minH)); h1=Math.min(24, Math.max(23, maxH));
+  }
+  let html='<div class="tl-hours" style="height:'+((h1-h0)*64)+'px">';
+  for(let h=h0; h<h1; h++){ html+='<div class="tl-hour"><span>'+pad(h)+':00</span></div>'; }
+  html+='</div>';
+  html+='<div class="tl-track" style="top:0;bottom:0"></div>';
+  // 任务卡片绝对定位
+  list.forEach(o=>{
+    const top=(minutes(o.time)-h0*60)/60*64;
+    const dur = o.type==='arrival'||o.type==='departure'? 90 : 480;
+    const hgt = Math.max(56, dur/60*64);
+    const tm=TYPE_META[o.type]||TYPE_META.transfer;
+    const st=STATUS_META[o.status]||STATUS_META.pending;
+    const px = calcPx(o);
+    html+='<div class="task-card '+tm.cls+'" style="top:'+top+'px;height:'+hgt+'px" onclick="openOrder(\''+o.id+'\')">'
+      +'<div class="row1"><span class="time">'+o.time+'</span>'
+      +'<span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span>'
+      +(o.airport?'<span class="tag" style="background:var(--bg);color:var(--text-2);border:1px solid var(--line-2)">'+airportName(o.airport)+'</span>':'')
+      +'<span class="route">'+escapeHtml(o.route||'')+'</span>'
+      +'<span class="price">'+(px!==null?('¥'+px):'')+'</span></div>'
+      +'<div class="meta">'
+      +'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>'+escapeHtml(o.guest||'未填客户')+'</span>'
+      +(o.flight?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.5c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'+o.flight+'</span>':'')
+      +(o.vehicle?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/></svg>'+o.vehicle+(o.pax?' · '+o.pax+'人':'')+'</span>':'')
+      +(o.driver?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'+o.driver+'</span>':'')
+      +(o.plate?'<span>'+o.plate+'</span>':'')
+      +'<span class="tag" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span>'
+      +'</div>'
+      +(o.note?'<div class="note">'+escapeHtml(o.note)+'</div>':'')
+      +'</div>';
+  });
+  $('timeline').innerHTML = '<div class="timeline" style="position:relative;margin-left:4px">'+html+'</div>';
+  // 冲突检测
+  checkConflicts(list);
+}
+function checkConflicts(list){
+  const byDriver={};
+  list.forEach(o=>{ if(o.driver){ (byDriver[o.driver]=byDriver[o.driver]||[]).push(o); } });
+  Object.values(byDriver).forEach(arr=>{
+    arr.sort((a,b)=>minutes(a.time)-minutes(b.time));
+    for(let i=1;i<arr.length;i++){
+      const prev=arr[i-1], cur=arr[i];
+      if(minutes(cur.time) < minutes(prev.time)+60){
+        toast('提醒：'+cur.driver+' 在 '+cur.date+' '+prev.time+' 与 '+cur.time+' 时间重叠');
+        break;
+      }
+    }
+  });
+}
+function shiftDate(d){ viewDate = fmtDate(new Date(parseDate(viewDate).getTime()+d*86400000)); renderToday(); renderKpis(); }
+function goToday(){ viewDate=todayStr(); renderToday(); renderKpis(); }
+
+/* =========================================================
+   周历
+   ========================================================= */
+function weekDays(offset){
+  const now = new Date();
+  const day = now.getDay();
+  const start = new Date(now.getTime() + offset*7*86400000 - (day===0?6:day-1)*86400000);
+  return [...Array(7)].map((_,i)=> new Date(start.getTime()+i*86400000));
+}
+function renderWeek(){
+  const days = weekDays(weekOffset);
+  $('weekRange').textContent = fmtDate(days[0])+' ~ '+fmtDate(days[6]);
+  $('weekSub').textContent = '本周'+weekOffset===0?'（本周）':weekOffset>0?'（后'+weekOffset+'周）':'（前'+(-weekOffset)+'周）';
+  let html='';
+  days.forEach((d,i)=>{
+    const ds=fmtDate(d);
+    const list=ordersOn(ds);
+    const isToday=ds===todayStr();
+    html+='<div class="week-col'+(isToday?' today':'')+'"><div class="w-head"><b>'+pad(d.getMonth()+1)+'/'+pad(d.getDate())+'</b><span>周'+WEEK_CN[d.getDay()]+' · '+list.length+' 任务</span></div><div class="w-body">';
+    if(!list.length){ html+='<div style="color:var(--text-3);font-size:12px;text-align:center;padding:18px 0">无任务</div>'; }
+    list.forEach(o=>{
+      const tm=TYPE_META[o.type]; const st=STATUS_META[o.status];
+      html+='<div class="mini-task '+tm.cls+'" onclick="openOrder(\''+o.id+'\')">'
+        +'<b>'+o.time+'</b> <span class="tag" style="background:'+tm.soft+';color:'+tm.color+';font-size:10.5px">'+tm.label+'</span>'
+        +'<div class="r">'+escapeHtml(o.route||'')+'</div>'
+        +'<div class="m">'+escapeHtml(o.guest||'')+(o.pax?' · '+o.pax+'人':'')+'</div>'
+        +'<div class="m">'+escapeHtml(o.driver||'未指派')+(o.status===o.status?'':'')+'</div></div>';
+    });
+    html+='</div></div>';
+  });
+  $('weekGrid').innerHTML=html;
+}
+function shiftWeek(d){ weekOffset+=d; renderWeek(); }
+function goThisWeek(){ weekOffset=0; renderWeek(); }
+
+/* =========================================================
+   订单管理
+   ========================================================= */
+function renderOrders(){
+  const fFrom=$('fFrom').value, fTo=$('fTo').value, fType=$('fType').value, fStatus=$('fStatus').value, fCity=$('fCity').value, fKw=($('fKw').value||'').trim().toLowerCase();
+  let list=getOrders().filter(o=>{
+    if(fFrom && o.date<fFrom) return false;
+    if(fTo && o.date>fTo) return false;
+    if(fType && o.type!==fType) return false;
+    if(fStatus && o.status!==fStatus) return false;
+    if(fCity && cityOf(o)!==fCity) return false;
+    if(fKw){ const h=[o.guest,o.route,o.driver,o.contact,o.flight,o.plate].join(' ').toLowerCase(); if(!h.includes(fKw)) return false; }
+    return true;
+  });
+  if(!list.length){
+    $('ordersWrap').innerHTML='<div style="text-align:center;color:var(--text-3);padding:50px 0">没有符合条件的订单，点击右上角「新增订单」开始。</div>';
+    return;
+  }
+  let html='<table class="order-table"><thead><tr>'
+    +'<th>日期</th><th>时间</th><th>类型</th><th>路线</th><th>客户</th><th>车型/人数</th><th>司机/车牌</th><th>报价 / 成本 / 利润</th><th>状态</th><th></th>'
+    +'</tr></thead><tbody>';
+  list.forEach(o=>{
+    const tm=TYPE_META[o.type]; const st=STATUS_META[o.status]; const px=calcPx(o);
+    const q=calcQuote(o), c=calcCost(o), pr=profitOf(o), m=marginOf(o);
+    let pxCell='';
+    if(q!=null) pxCell+='<div>报 <b>¥'+q+'</b></div>';
+    if(c!=null) pxCell+='<div style="color:var(--text-2)">成 ¥'+c+'</div>';
+    if(pr!=null) pxCell+='<div style="color:'+(pr>=0?'var(--done)':'var(--cancel)')+';font-weight:600">利 ¥'+pr+(m!=null?' ('+m.toFixed(1)+'%)':'')+'</div>';
+    if(!pxCell && px!=null) pxCell='¥'+px;
+    html+='<tr onclick="openOrder(\''+o.id+'\')" style="cursor:pointer">'
+      +'<td>'+o.date+'</td><td><b>'+o.time+'</b></td>'
+      +'<td><span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span>'+(cityOf(o)?' <span style="font-size:11px;color:var(--text-3)">'+cityOf(o)+'</span>':'')+'</td>'
+      +'<td>'+escapeHtml(o.route||'')+(o.airport?' <span style="color:var(--text-3)">· '+airportName(o.airport)+'</span>':'')+'</td>'
+      +'<td>'+escapeHtml(o.guest||'')+'</td>'
+      +'<td>'+escapeHtml(o.vehicle||'')+(o.pax?' · '+o.pax+'人':'')+'</td>'
+      +'<td>'+escapeHtml(o.driver||'')+(o.plate?' / '+o.plate:'')+'</td>'
+      +'<td>'+pxCell+'</td>'
+      +'<td><span class="st" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span></td>'
+      +'<td><button class="iconbtn rowbtn" onclick="event.stopPropagation();delOrder(\''+o.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
+  $('ordersWrap').innerHTML=html;
+}
+function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach(id=>{ if($(id)) $(id).value=''; }); renderOrders(); }
+function delOrder(id){
+  if(!confirm('确定删除该订单？')) return;
+  S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderKpis();
+}
+
+/* =========================================================
+   车辆与司机
+   ========================================================= */
+function renderFleet(){
+  $('vehicleList').innerHTML = S.vehicles.length? S.vehicles.map(v=>{
+    const cnt = S.orders.filter(o=>o.plate===v.plate && o.status!=='cancelled').length;
+    return '<div class="fleet-row"><div class="avatar" style="background:var(--charter);color:#fff">车</div>'
+      +'<div class="info"><b>'+escapeHtml(v.plate)+'</b><span>'+escapeHtml(v.type||'')+' · '+(v.seats||'')+'座'+(v.note?' · '+escapeHtml(v.note):'')+'</span></div>'
+      +'<span class="type-pill">'+cnt+' 个任务</span>'
+      +'<button class="iconbtn" onclick="editVehicle(\''+v.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
+      +'<button class="iconbtn" onclick="removeVehicle(\''+v.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+  }).join('') : '<div style="color:var(--text-3);text-align:center;padding:18px 0">暂无车辆</div>';
+  $('driverList').innerHTML = S.drivers.length? S.drivers.map(d=>{
+    const cnt = S.orders.filter(o=>o.driver===d.name && o.status!=='cancelled').length;
+    return '<div class="fleet-row"><div class="avatar">'+escapeHtml((d.name||'?').slice(0,1))+'</div>'
+      +'<div class="info"><b>'+escapeHtml(d.name)+'</b><span>'+escapeHtml(d.phone||'')+(d.vehicle?' · '+escapeHtml(d.vehicle):'')+'</span></div>'
+      +'<span class="type-pill">'+cnt+' 个任务</span>'
+      +'<button class="iconbtn" onclick="editDriver(\''+d.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
+      +'<button class="iconbtn" onclick="removeDriver(\''+d.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+  }).join('') : '<div style="color:var(--text-3);text-align:center;padding:18px 0">暂无司机</div>';
+  // 同步司机下拉
+  const sel=$('oDriver'); sel.innerHTML='<option value="">— 未指派</option>'+S.drivers.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+'</option>').join('');
+}
+function addVehicle(){ editVehicle(); }
+function editVehicle(id){
+  const v = id? S.vehicles.find(x=>x.id===id) : {plate:'',type:'五座',seats:4,note:''};
+  if(!v) return;
+  const plate=prompt('车牌号', v.plate); if(plate===null) return;
+  const type=prompt('车型（五座/七座/考斯特等）', v.type); if(type===null) return;
+  const seats=prompt('座位数', String(v.seats||4)); if(seats===null) return;
+  const note=prompt('备注', v.note||''); if(note===null) return;
+  if(id){ const x=S.vehicles.find(x=>x.id===id); Object.assign(x,{plate,type,seats:+seats,note}); }
+  else S.vehicles.push({id:uid(),plate,type,seats:+seats,note});
+  saveState(S); renderFleet();
+}
+function removeVehicle(id){ if(!confirm('删除该车辆？')) return; S.vehicles=S.vehicles.filter(v=>v.id!==id); saveState(S); renderFleet(); }
+function addDriver(){ editDriver(); }
+function editDriver(id){
+  const d = id? S.drivers.find(x=>x.id===id) : {name:'',phone:'',vehicle:''};
+  if(!d) return;
+  const name=prompt('司机姓名', d.name); if(name===null) return;
+  const phone=prompt('电话', d.phone||''); if(phone===null) return;
+  const vehicle=prompt('常用车牌', d.vehicle||''); if(vehicle===null) return;
+  if(id){ const x=S.drivers.find(x=>x.id===id); Object.assign(x,{name,phone,vehicle}); }
+  else S.drivers.push({id:uid(),name,phone,vehicle});
+  saveState(S); renderFleet();
+}
+function removeDriver(id){ if(!confirm('删除该司机？')) return; S.drivers=S.drivers.filter(d=>d.id!==id); saveState(S); renderFleet(); }
+
+/* =========================================================
+   参考价库
+   ========================================================= */
+function normPrices(){ let ch=false; (S.prices||[]).forEach(p=>{
+    if(p.price!==undefined){ if(p.type==='cost') p.cost=+p.price||0; else p.quote=+p.price||0; delete p.price; delete p.type; ch=true; }
+    if(p.cost===undefined){ p.cost=0; ch=true; }
+    if(p.quote===undefined){ p.quote=0; ch=true; }
+    if(p.duration===undefined){ p.duration=''; ch=true; }
+    if(p.distance===undefined){ p.distance=''; ch=true; }
+  }); if(ch) saveState(S); }
+function renderPrices(){
+  normPrices();
+  initCalc();
+  const rows=[...S.prices];
+  rows.sort((a,b)=>(a.city||'').localeCompare(b.city||'','zh') || (a.route||'').localeCompare(b.route||'','zh') || (a.vehicle||'').localeCompare(b.vehicle||'','zh'));
+  if(!rows.length){
+    $('priceGrid').innerHTML='<div style="color:var(--text-3);text-align:center;padding:40px 0">暂无参考价，点击右上角新增</div>';
+    return;
+  }
+  let html='<table class="order-table"><thead><tr>'
+    +'<th>城市</th><th>线路</th><th>车型</th><th>时长</th><th>距离</th><th>成本价</th><th>对外报价</th><th>备注</th><th></th>'
+    +'</tr></thead><tbody>';
+  rows.forEach(p=>{
+    const orig=S.prices.indexOf(p);
+    html+='<tr>'
+      +'<td><span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(p.city||'')+'</span></td>'
+      +'<td>'+escapeHtml(p.route||'')+'</td>'
+      +'<td>'+escapeHtml(p.vehicle||'')+'</td>'
+      +'<td>'+(p.duration||'—')+'</td>'
+      +'<td>'+(p.distance||'—')+'</td>'
+      +'<td style="color:var(--confirmed);font-weight:700">'+(p.cost?('¥'+p.cost):'—')+'</td>'
+      +'<td style="color:var(--accent-dark);font-weight:700">'+(p.quote?('¥'+p.quote):'—')+'</td>'
+      +'<td style="font-size:12px;color:var(--text-3)">'+escapeHtml(p.note||'')+'</td>'
+      +'<td><button class="btn ghost small" onclick="editPrice('+orig+')">编辑</button> <button class="btn danger small" onclick="removePrice('+orig+')">删</button></td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
+  $('priceGrid').innerHTML=html;
+}
+function calcCityRoutes(city){ return [...new Set((S.prices||[]).filter(p=>p.city===city).map(p=>p.route))]; }
+function calcRouteVehicles(city, route){ return [...new Set((S.prices||[]).filter(p=>p.city===city && p.route===route).map(p=>p.vehicle))]; }
+function calcMatch(city, route, vehicle){ return (S.prices||[]).find(p=>p.city===city && p.route===route && p.vehicle===vehicle) || null; }
+function initCalc(){
+  if($('qcCity').options.length) { runCalc(); return; }
+  const cities=[...new Set((S.prices||[]).map(p=>p.city).filter(Boolean))];
+  $('qcCity').innerHTML=(cities.length?cities:['北京']).map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join('');
+  rebuildCalcRoutes();
+}
+function rebuildCalcRoutes(){
+  const city=$('qcCity').value, cur=$('qcRoute').value;
+  const routes=calcCityRoutes(city);
+  $('qcRoute').innerHTML=routes.map(r=>'<option value="'+escapeHtml(r)+'">'+escapeHtml(r)+'</option>').join('');
+  if(cur && routes.includes(cur)) $('qcRoute').value=cur;
+  rebuildCalcVehicles();
+}
+function rebuildCalcVehicles(){
+  const city=$('qcCity').value, route=$('qcRoute').value, cur=$('qcVehicle').value;
+  const vehicles=calcRouteVehicles(city, route);
+  $('qcVehicle').innerHTML=vehicles.map(v=>'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>').join('');
+  if(cur && vehicles.includes(cur)) $('qcVehicle').value=cur;
+  runCalc();
+}
+function runCalc(){
+  const city=$('qcCity').value, route=$('qcRoute').value, vehicle=$('qcVehicle').value;
+  const p=calcMatch(city, route, vehicle);
+  const over=+$('qcOver').value||0, cr=+$('qcCostRate').value||0, qr=+$('qcQuoteRate').value||0, h=+$('qcHoliday').value||1;
+  const baseC=p? (p.cost||0) : 0, baseQ=p? (p.quote||0) : 0;
+  const tC=Math.round(baseC*h)+over*cr;
+  const hasQ=baseQ>0;
+  const tQ=hasQ? Math.round(baseQ*h)+over*qr : null;
+  const prof=(hasQ && tQ!=null)? tQ-tC : null;
+  const mar=(prof!=null && tQ>0)? prof/tQ*100 : null;
+  const line=(l,v)=>'<div style="flex:1 1 120px;min-width:0;padding:10px 12px;background:var(--bg);border:1px solid var(--line-2);border-radius:8px"><div style="font-size:11px;color:var(--text-3)">'+l+'</div><div style="font-size:17px;font-weight:700;color:var(--ink);margin-top:2px">'+v+'</div></div>';
+  let html='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">'
+    +line('基础成本', baseC? ('¥'+baseC+(h!==1?' <small style="font-size:11px;color:var(--text-3)">×'+h+'</small>':'')) : '—')
+    +line('超时成本', over? ('¥'+(over*cr)) : '—')
+    +line('成本合计', '<span style="color:var(--confirmed)">¥'+tC+'</span>')
+    +line('对外报价', hasQ? '<span style="color:var(--accent-dark)">¥'+tQ+'</span>' : '<span style="font-size:12px;color:var(--text-3)">未录报价</span>')
+    +line('利润', prof!=null? '<span style="color:'+(prof>=0?'var(--done)':'var(--cancel)')+'">¥'+prof+'</span>' : '—')
+    +line('利润率', mar!=null? '<span style="color:'+(mar>=0?'var(--done)':'var(--cancel)')+'">'+mar.toFixed(1)+'%</span>' : '—')
+    +'</div>'
+    +'<div style="font-size:11.5px;color:var(--text-3);margin-top:6px">合计 = 基础价 × '+h+' + 超时 × 费率；'+(p&&p.duration?'该线路标准时长 '+p.duration+'，':'')+(p&&p.distance?'距离约 '+p.distance+' 公里，':'')+(hasQ?'':'录好对外报价后即可自动算利润。')+'</div>';
+  $('qcRes').innerHTML=html;
+}
+function addPrice(){ editPrice(); }
+function editPrice(i){
+  const p = i!==undefined? S.prices[i] : {city:'北京',route:'',vehicle:'五座',duration:'',distance:'',cost:0,quote:0,note:''};
+  if(!p) return;
+  const city=prompt('城市', p.city); if(city===null) return;
+  const route=prompt('线路（如 慕田峪 · 机场接送）', p.route); if(route===null) return;
+  const vehicle=prompt('车型', p.vehicle); if(vehicle===null) return;
+  const duration=prompt('时长（如 10小时，可空）', p.duration||''); if(duration===null) return;
+  const distance=prompt('距离（公里，可空）', p.distance||''); if(distance===null) return;
+  const cost=prompt('成本价（元）', p.cost?String(p.cost):''); if(cost===null) return;
+  const quote=prompt('对外报价（元，可空）', p.quote?String(p.quote):''); if(quote===null) return;
+  const note=prompt('备注', p.note||''); if(note===null) return;
+  const obj={city,route,vehicle,duration,distance,cost:+cost||0,quote:+quote||0,note};
+  if(i!==undefined) S.prices[i]=obj; else S.prices.push(obj);
+  saveState(S); renderPrices();
+}
+function removePrice(i){ if(!confirm('删除该参考价？')) return; S.prices.splice(i,1); saveState(S); renderPrices(); }
+function importTkData(){
+  const txt=$('tkImport').value.trim();
+  if(!txt){ toast('请先粘贴 travel-kb 导出的 JSON'); return; }
+  try{
+    const data=JSON.parse(txt);
+    let arr = Array.isArray(data)? data : (data.prices||[]);
+    if(!arr.length){ toast('未识别到价格数据'); return; }
+    let n=0;
+    arr.forEach(x=>{
+      if(!x || !x.route) return;
+      if(x.cost!==undefined || x.quote!==undefined){
+        S.prices.push({city:x.city||'北京', route:x.route, vehicle:x.vehicle||'五座', duration:x.duration||'', distance:x.distance||'', cost:+x.cost||0, quote:+x.quote||0, note:x.note||''});
+      }else if(x.price!==undefined){
+        // 旧格式 {price,type}，交给 normPrices 迁移
+        S.prices.push({city:x.city||'北京', route:x.route, vehicle:x.vehicle||'五座', duration:x.duration||'', distance:x.distance||'', price:+x.price, type:(x.type==='cost'?'cost':'quote'), note:x.note||''});
+      }else{ return; }
+      n++;
+    });
+    saveState(S); renderPrices();
+    toast('已导入 '+n+' 条参考价');
+  }catch(e){ toast('JSON 解析失败：'+e.message); }
+}
+function loadTkExample(){
+  $('tkImport').value = JSON.stringify({
+    prices:[
+      {city:'北京', route:'大兴机场 · 接送机', vehicle:'五座', price:400, note:'单司机'},
+      {city:'北京', route:'大兴机场 · 接送机', vehicle:'七座', price:550, note:'单司机'},
+      {city:'成都', route:'天府机场 · 接送机', vehicle:'五座', price:480, note:'单司机'},
+      {city:'成都', route:'天府机场 · 接送机', vehicle:'七座', price:580, note:'单司机'}
+    ]
+  }, null, 2);
+}
+
+/* =========================================================
+   订单编辑弹窗
+   ========================================================= */
+let editingId=null;
+function openOrder(id){
+  editingId=id||null;
+  const o = id? S.orders.find(x=>x.id===id) : null;
+  $('omTitle').textContent = o? '编辑任务' : '新增任务';
+  $('omSub').textContent = o? '订单 '+o.id : '录入新的接送 / 包车任务';
+  $('omDelete').style.display = o? 'inline-flex':'none';
+  $('oDate').value = o? o.date : viewDate;
+  $('oTime').value = o? o.time : '09:00';
+  $('oType').value = o? o.type : 'arrival';
+  $('oAirport').value = o? (o.airport||'') : '';
+  $('oFlight').value = o? (o.flight||'') : '';
+  $('oRoute').value = o? (o.route||'') : '';
+  $('oVehicle').value = o? (o.vehicle||'五座') : '五座';
+  $('oPax').value = o? (o.pax||1) : 1;
+  $('oGuest').value = o? (o.guest||'') : '';
+  $('oContact').value = o? (o.contact||'') : '';
+  // 司机下拉
+  const ds=$('oDriver'); ds.innerHTML='<option value="">— 未指派</option>'+S.drivers.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+'</option>').join('');
+  ds.value = o? (o.driver||'') : '';
+  $('oPlate').value = o? (o.plate||'') : '';
+  $('oQuote').value = o? (o.quote || o.price || '') : '';
+  $('oCost').value = o? (o.cost||'') : '';
+  $('oStatus').value = o? o.status : 'confirmed';
+  $('oNote').value = o? (o.note||'') : '';
+  // 路线 datalist
+  $('routeList').innerHTML = routeList().map(r=>'<option value="'+escapeHtml(r)+'">').join('');
+  $('plateList').innerHTML = S.vehicles.map(v=>'<option value="'+escapeHtml(v.plate)+'">').join('');
+  $('orderOverlay').classList.add('open');
+}
+function closeOrder(){ $('orderOverlay').classList.remove('open'); editingId=null; }
+function autoPrice(){
+  const route=$('oRoute').value.trim(), vehicle=$('oVehicle').value;
+  if(!route){ toast('请先填线路'); return; }
+  const o={route, vehicle, airport:$('oAirport').value, city:''};
+  for(const c of CITY_LIST){ if(route.includes(c)){ o.city=c; break; } }
+  const q=guessQuote(o), c=guessCost(o);
+  if(q==null && c==null){ toast('参考价库没有匹配「'+route+' / '+(vehicle||'车型')+'」，请手工填写'); return; }
+  if(q!=null) $('oQuote').value=q;
+  if(c!=null) $('oCost').value=c;
+  const p=(S.prices||[]).find(x=>x.vehicle===vehicle && (route.includes(x.route.split('·')[0].trim())||x.route.includes(route)));
+  toast('已按参考价回填'+(q!=null?' 报价¥'+q:'')+(c!=null?' 成本¥'+c:'')+((p&&p.duration)?'（标准时长 '+p.duration+'）':''));
+}
+function saveOrder(){
+  const date=$('oDate').value, time=$('oTime').value, route=$('oRoute').value.trim();
+  if(!date||!time||!route){ toast('日期、时间、路线为必填'); return; }
+  const obj={
+    id: editingId||uid(),
+    date, time,
+    type:$('oType').value,
+    airport:$('oAirport').value,
+    flight:$('oFlight').value.trim(),
+    route,
+    vehicle:$('oVehicle').value,
+    pax:+$('oPax').value||0,
+    guest:$('oGuest').value.trim(),
+    contact:$('oContact').value.trim(),
+    driver:$('oDriver').value,
+    plate:$('oPlate').value.trim(),
+    price:+$('oQuote').value||0,
+    quote:+$('oQuote').value||0,
+    cost:+$('oCost').value||0,
+    status:$('oStatus').value,
+    note:$('oNote').value.trim()
+  };
+  if(editingId){ const i=S.orders.findIndex(x=>x.id===editingId); if(i>=0) S.orders[i]=obj; }
+  else S.orders.push(obj);
+  saveState(S);
+  closeOrder();
+  viewDate=date;
+  renderToday(); renderOrders(); renderKpis();
+  toast('任务已保存');
+}
+function deleteOrder(){
+  if(!editingId) return;
+  if(!confirm('确定删除该订单？')) return;
+  S.orders=S.orders.filter(o=>o.id!==editingId);
+  saveState(S); closeOrder(); renderToday(); renderOrders(); renderKpis();
+  toast('已删除');
+}
+document.getElementById('orderOverlay').addEventListener('click', e=>{ if(e.target.id==='orderOverlay') closeOrder(); });
+
+/* =========================================================
+   打印出车单
+   ========================================================= */
+function printSheet(){
+  const list=ordersOn(viewDate);
+  const d=parseDate(viewDate);
+  const tmName=TYPE_META, stName=STATUS_META;
+  let html='<div class="ps-head"><div><h2>出车单 · '+viewDate+'</h2><div class="ps-meta">'+weekdayCN(d)+' · 共 '+list.length+' 个任务</div></div><div class="ps-meta">Elite Travel 车队 · 打印时间 '+new Date().toLocaleString('zh-CN')+'</div></div>';
+  html+='<table class="ps-table"><thead><tr><th>时间</th><th>类型</th><th>机场/航班</th><th>路线</th><th>客户</th><th>车型/人数</th><th>司机</th><th>车牌</th><th>电话</th><th>价格</th><th>备注</th></tr></thead><tbody>';
+  list.forEach(o=>{
+    html+='<tr><td>'+o.time+'</td><td>'+(tmName[o.type]?tmName[o.type].label:o.type)+'</td>'
+      +'<td>'+(o.airport?airportName(o.airport)+(o.flight?' / '+o.flight:''):'')+'</td>'
+      +'<td>'+escapeHtml(o.route)+'</td><td>'+escapeHtml(o.guest||'')+'</td>'
+      +'<td>'+(o.vehicle||'')+(o.pax?' / '+o.pax+'人':'')+'</td>'
+      +'<td>'+escapeHtml(o.driver||'')+'</td><td>'+escapeHtml(o.plate||'')+'</td>'
+      +'<td>'+escapeHtml((S.drivers.find(d=>d.name===o.driver)||{}).phone||'')+'</td>'
+      +'<td>'+(calcPx(o)!==null?'¥'+calcPx(o):'')+'</td><td>'+escapeHtml(o.note||'')+'</td></tr>';
+  });
+  html+='</tbody></table><div class="ps-foot">本出车单由车队调度台自动生成 · 数据来源：本地订单库</div>';
+  $('printSheet').innerHTML=html;
+  window.print();
+}
+
+/* =========================================================
+   数据管理
+   ========================================================= */
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='车队数据备份_'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(a.href);
+  toast('已导出备份');
+}
+function importBackup(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      if(!d||!d.orders) throw new Error('格式不对');
+      if(!confirm('导入将覆盖当前全部数据，确认继续？')) return;
+      S=d; saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+      toast('备份已导入');
+    }catch(e){ toast('导入失败：'+e.message); }
+  };
+  rd.readAsText(f);
+  ev.target.value='';
+}
+function cloudUrl(){ return location.protocol==='file:'? null : ('data/elite-fleet-data.json'); }
+function fetchCloudData(){
+  const u=cloudUrl(); if(!u) return;
+  fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(d=>{
+      if(!d || !d.orders) return;
+      if(localStorage.getItem(LS_KEY)){ /* 本地已有数据，不自动覆盖 */ }
+      else { S=d; saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis(); toast('已加载云端数据'); }
+    }).catch(()=>{});
+}
+function refreshFromCloud(){
+  const u=cloudUrl();
+  if(!u){ toast('本地文件模式无云端数据，请先部署到 GitHub Pages'); return; }
+  fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw new Error('线上没有数据文件'); return r.json(); })
+    .then(d=>{
+      if(!d || !d.orders) throw new Error('数据格式不对');
+      S=d; saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+      toast('已从云端刷新');
+    }).catch(e=>toast('云端刷新失败：'+e.message));
+}
+function resetData(){  if(!confirm('确定清空全部订单、车辆、司机、参考价？此操作不可恢复！')) return;
+  if(!confirm('再次确认：将删除所有本地数据。')) return;
+  S=seedState(); saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+  toast('数据已重置');
+}
+function exportOrdersMd(){
+  const f=$('exFrom').value, t=$('exTo').value;
+  let list=getOrders();
+  if(f) list=list.filter(o=>o.date>=f);
+  if(t) list=list.filter(o=>o.date<=t);
+  if(!list.length){ toast('所选范围没有订单'); return; }
+  const first=list[0].date, last=list[list.length-1].date;
+  const lines=[];
+  lines.push('---');
+  lines.push('title: '+first+' ~ '+last+' 接送包车订单记录');
+  lines.push('type: ai_itinerary');
+  lines.push('category: itinerary_ref');
+  lines.push('language: zh');
+  lines.push('country: 中国');
+  lines.push('cities: ["北京"]');
+  lines.push('created: '+todayStr());
+  lines.push('source: fleet-scheduler-export');
+  lines.push('tags: ["接送", "包车", "车队"]');
+  lines.push('---');
+  lines.push('');
+  lines.push('# '+first+' ~ '+last+' 接送包车订单记录');
+  lines.push('');
+  lines.push('> 由车队调度台导出，沉淀到 travel-kb 作报价参考与行程归档。');
+  lines.push('');
+  lines.push('| 日期 | 时间 | 类型 | 机场/航班 | 路线 | 客户 | 车型/人数 | 司机 | 报价 | 成本 | 利润 | 状态 |');
+  lines.push('|------|------|------|-----------|------|------|-----------|------|------|------|------|------|');
+  list.forEach(o=>{
+    const tm=TYPE_META[o.type]?TYPE_META[o.type].label:o.type;
+    const q=calcQuote(o), c=calcCost(o), pr=profitOf(o);
+    lines.push('| '+o.date+' | '+o.time+' | '+tm+' | '+((o.airport?o.airport:'')+(o.flight?'/'+o.flight:''))+' | '+(o.route||'').replace(/\|/g,'\\|')+' | '+(o.guest||'').replace(/\|/g,'\\|')+' | '+o.vehicle+(o.pax?'/'+o.pax+'人':'')+' | '+(o.driver||'')+' | '+(q!=null?q:'')+' | '+(c!=null?c:'')+' | '+(pr!=null?pr:'')+' | '+STATUS_META[o.status].label+' |');
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/markdown'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='travelkb_接送订单_'+first+'_'+last+'.md'; a.click(); URL.revokeObjectURL(a.href);
+  toast('已导出 '+list.length+' 条为 Markdown');
+}
+function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=todayStr(); if(!$('exFrom').value){ const d=new Date(); d.setDate(d.getDate()-6); $('exFrom').value=fmtDate(d);} }
+
+/* =========================================================
+   粘贴快速录入
+   ========================================================= */
+function openPasteModal(){ $('pasteInput').value=''; $('pasteOverlay').classList.add('open'); }
+function closePasteModal(){ $('pasteOverlay').classList.remove('open'); }
+function loadExampleOrder(){
+  $('pasteInput').value = JSON.stringify({orders:[
+    {date:'2026-09-13',time:'07:15',type:'arrival',airport:'PVG',flight:'TK280',route:'上海浦东 → 常州万豪酒店',vehicle:'五座',pax:2,guest:'Mr. Leszek Lenczyk',price:0,status:'pending',note:'航班TK280 约06:25抵达，约07:15可出关；举牌 Mr. Leszek Lenczyk；送达常州万豪酒店（新北区龙锦路1590号）；五座或七座均可'}
+  ]},null,2);
+}
+function runPasteImport(){
+  const txt=$('pasteInput').value.trim();
+  if(!txt){ toast('请粘贴订单 JSON'); return; }
+  let data;
+  try{ data=JSON.parse(txt); }catch(e){ toast('JSON 解析失败：'+e.message); return; }
+  let arr = Array.isArray(data)? data : (data.orders || (data.date? [data] : []));
+  if(!arr.length){ toast('未识别到订单'); return; }
+  const types=['arrival','departure','charter','transfer'];
+  const sts=['pending','confirmed','done','cancelled'];
+  let n=0, skip=0;
+  arr.forEach(o=>{
+    if(!o || !o.date || !o.time || !o.route){ skip++; return; }
+    S.orders.push({
+      id: uid(),
+      date:o.date, time:o.time,
+      type: types.includes(o.type)? o.type : 'arrival',
+      airport: o.airport||'', flight: o.flight||'',
+      route: String(o.route),
+      vehicle: o.vehicle||'',
+      pax: +o.pax||0,
+      guest: o.guest||'', contact: o.contact||'',
+      driver: o.driver||'', plate: o.plate||'',
+      price: +o.price||0,
+      quote: (+o.quote)|| (+o.price)||0,
+      cost: (+o.cost)||0,
+      status: sts.includes(o.status)? o.status : 'pending',
+      note: o.note||''
+    });
+    n++;
+  });
+  saveState(S);
+  closePasteModal();
+  if(n && arr[0] && arr[0].date) viewDate = arr[0].date;
+  renderToday(); renderOrders(); renderKpis();
+  toast('已导入 '+n+' 条订单'+(skip? '，跳过 '+skip+' 条缺必填':''));
+}
+document.getElementById('pasteOverlay').addEventListener('click', e=>{ if(e.target.id==='pasteOverlay') closePasteModal(); });
+
+/* =========================================================
+   初始化
+   ========================================================= */
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOrder(); closePasteModal(); } });
+renderToday();
+renderKpis();
+fetchCloudData();
+</script>
+</body>
+</html>
