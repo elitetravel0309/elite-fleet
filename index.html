@@ -740,7 +740,7 @@ function renderToday(){
       +'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>'+escapeHtml(o.guest||'未填客户')+'</span>'
       +(o.flight?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.5c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'+o.flight+'</span>':'')
       +(o.vehicle?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/></svg>'+o.vehicle+(o.pax?' · '+o.pax+'人':'')+'</span>':'')
-      +(o.driver?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'+o.driver+'</span>':'')
+      +(o.driver?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'+o.driver+'</span>':'<span style="color:var(--text-3)">未指派</span>')
       +(o.plate?'<span>'+o.plate+'</span>':'')
       +'<span class="tag" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span>'
       +'</div>'
@@ -838,7 +838,12 @@ function renderOrders(){
       +'<td>'+escapeHtml(o.route||'')+(o.airport?' <span style="color:var(--text-3)">· '+airportName(o.airport)+'</span>':'')+'</td>'
       +'<td>'+escapeHtml(o.guest||'')+'</td>'
       +'<td>'+escapeHtml(o.vehicle||'')+(o.pax?' · '+o.pax+'人':'')+'</td>'
-      +'<td>'+escapeHtml(o.driver||'')+(o.plate?' / '+o.plate:'')+'</td>'
+      +(function(){
+        const drv=o.driver? S.drivers.find(x=>x.name===o.driver) : null;
+        if(drv) return '<td title="电话 '+escapeHtml(drv.phone||'')+'"><b>'+escapeHtml(drv.name)+'</b><div style="font-size:11px;color:var(--text-3)">'+escapeHtml(drv.carType||drv.seatType||'')+(drv.plate?' · '+escapeHtml(drv.plate):'')+'</div></td>';
+        if(o.driver) return '<td>'+escapeHtml(o.driver)+(o.plate?' / '+o.plate:'')+'</td>';
+        return '<td><span style="color:var(--text-3);font-size:12px">未指派</span> <button class="iconbtn rowbtn" style="vertical-align:middle" onclick="event.stopPropagation();quickAssign(\''+o.id+'\')" title="指派司机"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg></button></td>';
+      })()
       +'<td>'+pxCell+'</td>'
       +'<td><span class="st" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span></td>'
       +'<td><button class="iconbtn rowbtn" onclick="event.stopPropagation();delOrder(\''+o.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>'
@@ -851,6 +856,18 @@ function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach
 function delOrder(id){
   if(!confirm('确定删除该订单？')) return;
   S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderKpis();
+}
+function quickAssign(id){
+  const o=S.orders.find(x=>x.id===id); if(!o) return;
+  if(!S.drivers.length){ toast('请先在「司机与车辆」添加司机'); return; }
+  const pick=prompt('指派司机（输入序号）：\n'+S.drivers.map((d,i)=>(i+1)+'. '+d.name+'（'+(d.carType||d.seatType||'')+' · '+(d.plate||'无牌')+' · '+(d.phone||'')+'）').join('\n'), '1');
+  if(pick===null) return;
+  const i=parseInt(pick,10)-1;
+  if(isNaN(i)||i<0||i>=S.drivers.length){ toast('序号无效'); return; }
+  const d=S.drivers[i];
+  o.driver=d.name; o.plate=d.plate||'';
+  saveState(S); renderOrders(); renderKpis();
+  toast('已指派 '+d.name+(d.carType?' · '+d.carType:'')+(d.plate?' · '+d.plate:''));
 }
 
 /* =========================================================
