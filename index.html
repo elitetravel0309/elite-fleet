@@ -385,6 +385,11 @@ textarea{resize:vertical;line-height:1.5}
         </div>
         <div id="qcRes"></div>
       </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <label style="font-size:12px;color:var(--text-3)">按城市筛选</label>
+        <select id="priceCityFilter" onchange="setPriceFilter(this.value)"></select>
+        <span id="priceCount" style="font-size:12px;color:var(--text-3)"></span>
+      </div>
       <div class="price-grid" id="priceGrid"></div>
     </section>
 
@@ -600,11 +605,13 @@ function airportName(a){
   return ({PEK:'首都机场', PKX:'大兴机场', PVG:'上海浦东', SHA:'上海虹桥'}[a]) || a;
 }
 const AIRPORT_CITY = {PEK:'北京', PKX:'北京', PVG:'上海', SHA:'上海', HGH:'杭州'};
-const CITY_LIST = ['北京','上海','杭州'];
+const CITY_LIST = ['北京','上海','杭州','西安','深圳','悉尼'];
 function cityOf(o){ return (o && (o.city || AIRPORT_CITY[((o.airport||'').trim()).toUpperCase()])) || ''; }
 
-// 预置参考价：北京用车（2026-08 录入）。结构：城市/线路/车型/时长/距离/成本价(cost)/对外报价(quote)
+// 预置参考价（2026-09 整理自 Travel KB 与桌面价目表）。结构：城市/线路/车型/时长/距离/成本价(cost)/对外报价(quote)
+// 北京＝成本价（车队价）；上海/西安＝对外报价（Elite Travel 价目表）；深圳＝成本价（深圳埃尔法车队报价单）；悉尼＝对外报价（澳币）
 const SEED_PRICES = [
+  // ---- 北京（成本价，2026-08 锁定）----
   {city:'北京', route:'慕田峪 · 机场接送', vehicle:'五座', duration:'10小时', distance:'', cost:650, quote:0, note:'首都机场接 → 慕田峪 → 送市区酒店'},
   {city:'北京', route:'慕田峪 · 机场接送', vehicle:'五座', duration:'10小时', distance:'', cost:700, quote:0, note:'大兴机场接 → 慕田峪 → 送市区酒店'},
   {city:'北京', route:'慕田峪 · 机场接送', vehicle:'七座', duration:'10小时', distance:'', cost:750, quote:0, note:'首都机场接 → 慕田峪 → 送市区酒店'},
@@ -612,7 +619,105 @@ const SEED_PRICES = [
   {city:'北京', route:'包车 · 市内', vehicle:'五座', duration:'', distance:'', cost:550, quote:0, note:''},
   {city:'北京', route:'包车 · 长城', vehicle:'五座', duration:'', distance:'', cost:650, quote:0, note:''},
   {city:'北京', route:'包车 · 市内', vehicle:'七座', duration:'', distance:'', cost:600, quote:0, note:''},
-  {city:'北京', route:'包车 · 长城', vehicle:'七座', duration:'', distance:'', cost:700, quote:0, note:''}
+  {city:'北京', route:'包车 · 长城', vehicle:'七座', duration:'', distance:'', cost:700, quote:0, note:''},
+  // ---- 上海（对外报价，Shanngghai Car Rental 价目表；超时+100/h）----
+  {city:'上海', route:'机场接送 · 浦东 → 市区酒店', vehicle:'五座', duration:'', distance:'', cost:0, quote:500, note:'单程，超时100/h'},
+  {city:'上海', route:'机场接送 · 虹桥 → 市区酒店', vehicle:'五座', duration:'', distance:'', cost:0, quote:400, note:'单程，超时100/h'},
+  {city:'上海', route:'包车 · 市内（8小时）', vehicle:'五座', duration:'8小时', distance:'', cost:0, quote:700, note:'超时100/h'},
+  {city:'上海', route:'包车 · 夜游（4小时）', vehicle:'五座', duration:'4小时', distance:'', cost:0, quote:600, note:'超时100/h'},
+  {city:'上海', route:'包车 · 迪士尼', vehicle:'五座', duration:'', distance:'', cost:0, quote:700, note:'超时100/h'},
+  {city:'上海', route:'包车 · 动物园', vehicle:'五座', duration:'', distance:'', cost:0, quote:800, note:'超时100/h'},
+  {city:'上海', route:'包车 · 朱家角', vehicle:'五座', duration:'', distance:'', cost:0, quote:800, note:'超时100/h'},
+  {city:'上海', route:'包车 · 游杭州', vehicle:'五座', duration:'', distance:'', cost:0, quote:1550, note:'跨城，超时100/h'},
+  {city:'上海', route:'机场接送 · 浦东 → 市区酒店', vehicle:'七座', duration:'', distance:'', cost:0, quote:600, note:'单程，超时100/h'},
+  {city:'上海', route:'机场接送 · 虹桥 → 市区酒店', vehicle:'七座', duration:'', distance:'', cost:0, quote:500, note:'单程，超时100/h'},
+  {city:'上海', route:'包车 · 市内（8小时）', vehicle:'七座', duration:'8小时', distance:'', cost:0, quote:900, note:'超时100/h'},
+  {city:'上海', route:'包车 · 夜游（4小时）', vehicle:'七座', duration:'4小时', distance:'', cost:0, quote:800, note:'超时100/h'},
+  {city:'上海', route:'包车 · 迪士尼', vehicle:'七座', duration:'', distance:'', cost:0, quote:900, note:'超时100/h'},
+  {city:'上海', route:'包车 · 动物园', vehicle:'七座', duration:'', distance:'', cost:0, quote:1000, note:'超时100/h'},
+  {city:'上海', route:'包车 · 朱家角', vehicle:'七座', duration:'', distance:'', cost:0, quote:1000, note:'超时100/h'},
+  {city:'上海', route:'包车 · 游杭州', vehicle:'七座', duration:'', distance:'', cost:0, quote:1750, note:'跨城，超时100/h'},
+  {city:'上海', route:'机场接送 · 浦东 → 市区酒店', vehicle:'九座', duration:'', distance:'', cost:0, quote:800, note:'单程，超时100/h'},
+  {city:'上海', route:'机场接送 · 虹桥 → 市区酒店', vehicle:'九座', duration:'', distance:'', cost:0, quote:700, note:'单程，超时100/h'},
+  {city:'上海', route:'包车 · 市内（8小时）', vehicle:'九座', duration:'8小时', distance:'', cost:0, quote:1400, note:'超时100/h'},
+  {city:'上海', route:'包车 · 夜游（4小时）', vehicle:'九座', duration:'4小时', distance:'', cost:0, quote:1300, note:'超时100/h'},
+  {city:'上海', route:'包车 · 迪士尼', vehicle:'九座', duration:'', distance:'', cost:0, quote:1400, note:'超时100/h'},
+  {city:'上海', route:'包车 · 动物园', vehicle:'九座', duration:'', distance:'', cost:0, quote:1500, note:'超时100/h'},
+  {city:'上海', route:'包车 · 朱家角', vehicle:'九座', duration:'', distance:'', cost:0, quote:1500, note:'超时100/h'},
+  {city:'上海', route:'包车 · 游杭州', vehicle:'九座', duration:'', distance:'', cost:0, quote:2350, note:'跨城，超时100/h'},
+  {city:'上海', route:'机场接送 · 浦东 → 市区酒店', vehicle:'14-17座', duration:'', distance:'', cost:0, quote:700, note:'单程，超时100/h'},
+  {city:'上海', route:'包车 · 市内（8小时）', vehicle:'14-17座', duration:'8小时', distance:'', cost:0, quote:1100, note:'超时100/h'},
+  {city:'上海', route:'机场接送 · 浦东 → 市区酒店', vehicle:'19-23座', duration:'', distance:'', cost:0, quote:900, note:'单程，超时100/h'},
+  {city:'上海', route:'包车 · 市内（8小时）', vehicle:'19-23座', duration:'8小时', distance:'', cost:0, quote:1500, note:'超时100/h'},
+  {city:'上海', route:'机场接送 · 浦东 → 市区酒店', vehicle:'35-39座', duration:'', distance:'', cost:0, quote:1100, note:'单程，超时100/h'},
+  {city:'上海', route:'包车 · 市内（8小时）', vehicle:'35-39座', duration:'8小时', distance:'', cost:0, quote:2000, note:'超时100/h'},
+  {city:'上海', route:'机场接送 · 浦东 → 市区酒店', vehicle:'53座', duration:'', distance:'', cost:0, quote:1400, note:'单程，超时100/h'},
+  {city:'上海', route:'包车 · 市内（8小时）', vehicle:'53座', duration:'8小时', distance:'', cost:0, quote:2100, note:'超时100/h'},
+  // ---- 西安（对外报价，Xian Car Rental 价目表；8小时内，超时100/h）----
+  {city:'西安', route:'机场接送 · 咸阳机场 ↔ 酒店', vehicle:'五座·经济轿车', duration:'', distance:'', cost:0, quote:450, note:'单程，超时100/h'},
+  {city:'西安', route:'火车站接送 · 西安站 ↔ 酒店', vehicle:'五座·经济轿车', duration:'', distance:'', cost:0, quote:400, note:'单程，超时100/h'},
+  {city:'西安', route:'包车 · 市内（8小时）', vehicle:'五座·经济轿车', duration:'8小时', distance:'', cost:0, quote:700, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 兵马俑', vehicle:'五座·经济轿车', duration:'', distance:'', cost:0, quote:800, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 华山', vehicle:'五座·经济轿车', duration:'', distance:'', cost:0, quote:1000, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 法门寺 + 乾陵', vehicle:'五座·经济轿车', duration:'', distance:'', cost:0, quote:1000, note:'超时100/h'},
+  {city:'西安', route:'包车 · 机场 + 兵马俑 + 市内', vehicle:'五座·经济轿车', duration:'', distance:'', cost:0, quote:1000, note:'超时100/h'},
+  {city:'西安', route:'包车 · 机场 + 市内', vehicle:'五座·经济轿车', duration:'', distance:'', cost:0, quote:900, note:'超时100/h'},
+  {city:'西安', route:'机场接送 · 咸阳机场 ↔ 酒店', vehicle:'五座·舒适', duration:'', distance:'', cost:0, quote:500, note:'单程，超时100/h'},
+  {city:'西安', route:'火车站接送 · 西安站 ↔ 酒店', vehicle:'五座·舒适', duration:'', distance:'', cost:0, quote:450, note:'单程，超时100/h'},
+  {city:'西安', route:'包车 · 市内（8小时）', vehicle:'五座·舒适', duration:'8小时', distance:'', cost:0, quote:800, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 兵马俑', vehicle:'五座·舒适', duration:'', distance:'', cost:0, quote:900, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 华山', vehicle:'五座·舒适', duration:'', distance:'', cost:0, quote:1100, note:'超时100/h'},
+  {city:'西安', route:'包车 · 机场 + 兵马俑 + 市内', vehicle:'五座·舒适', duration:'', distance:'', cost:0, quote:1200, note:'超时100/h'},
+  {city:'西安', route:'包车 · 火车站 + 兵马俑 + 市内', vehicle:'五座·舒适', duration:'', distance:'', cost:0, quote:1100, note:'超时100/h'},
+  {city:'西安', route:'机场接送 · 咸阳机场 ↔ 酒店', vehicle:'七座·商务MPV', duration:'', distance:'', cost:0, quote:600, note:'单程，超时100/h'},
+  {city:'西安', route:'火车站接送 · 西安站 ↔ 酒店', vehicle:'七座·商务MPV', duration:'', distance:'', cost:0, quote:550, note:'单程，超时100/h'},
+  {city:'西安', route:'包车 · 市内（8小时）', vehicle:'七座·商务MPV', duration:'8小时', distance:'', cost:0, quote:900, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 兵马俑', vehicle:'七座·商务MPV', duration:'', distance:'', cost:0, quote:1000, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 华山', vehicle:'七座·商务MPV', duration:'', distance:'', cost:0, quote:1200, note:'超时100/h'},
+  {city:'西安', route:'包车 · 机场 + 兵马俑 + 市内 + 机场', vehicle:'七座·商务MPV', duration:'', distance:'', cost:0, quote:1400, note:'超时100/h'},
+  {city:'西安', route:'机场接送 · 咸阳机场 ↔ 酒店', vehicle:'七座·豪华商务', duration:'', distance:'', cost:0, quote:700, note:'单程，超时100/h'},
+  {city:'西安', route:'包车 · 市内（8小时）', vehicle:'七座·豪华商务', duration:'8小时', distance:'', cost:0, quote:1200, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 兵马俑', vehicle:'七座·豪华商务', duration:'', distance:'', cost:0, quote:1400, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 华山', vehicle:'七座·豪华商务', duration:'', distance:'', cost:0, quote:1800, note:'超时100/h'},
+  {city:'西安', route:'包车 · 机场 + 兵马俑 + 市内', vehicle:'七座·豪华商务', duration:'', distance:'', cost:0, quote:1600, note:'超时100/h'},
+  {city:'西安', route:'机场接送 · 咸阳机场 ↔ 酒店', vehicle:'旗舰大型车', duration:'', distance:'', cost:0, quote:800, note:'单程，超时100/h'},
+  {city:'西安', route:'包车 · 市内（8小时）', vehicle:'旗舰大型车', duration:'8小时', distance:'', cost:0, quote:1300, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 兵马俑', vehicle:'旗舰大型车', duration:'', distance:'', cost:0, quote:1500, note:'超时100/h'},
+  {city:'西安', route:'包车 · 市内 + 华山', vehicle:'旗舰大型车', duration:'', distance:'', cost:0, quote:2000, note:'超时100/h'},
+  {city:'西安', route:'包车 · 机场 + 兵马俑 + 市内 + 机场', vehicle:'旗舰大型车', duration:'', distance:'', cost:0, quote:2000, note:'超时100/h'},
+  {city:'西安', route:'包车 · 火车站 + 兵马俑 + 市内', vehicle:'旗舰大型车', duration:'', distance:'', cost:0, quote:1600, note:'超时100/h'},
+  // ---- 深圳（成本价，深圳埃尔法租车报价单；包天=100公里8小时；超时50-150/h、超公里3-5/km）----
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'五座 · 凯美瑞/雅阁/帕萨特', duration:'', distance:'', cost:280, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'五座 · 凯美瑞/雅阁/帕萨特', duration:'8小时', distance:'100公里', cost:600, quote:0, note:'超时50/h，超公里3/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'五座 · 奥迪A6L/奔驰E', duration:'', distance:'', cost:450, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'五座 · 奥迪A6L/奔驰E', duration:'8小时', distance:'100公里', cost:850, quote:0, note:'超时100/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'五座 · 奔驰S400', duration:'', distance:'', cost:600, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'五座 · 奔驰S400', duration:'8小时', distance:'100公里', cost:1400, quote:0, note:'超时150/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'七座 · 别克商务', duration:'', distance:'', cost:300, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'七座 · 别克商务', duration:'8小时', distance:'100公里', cost:700, quote:0, note:'超时50/h，超公里3/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'七座 · 腾势D9/岚图', duration:'', distance:'', cost:400, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'七座 · 腾势D9/岚图', duration:'8小时', distance:'100公里', cost:800, quote:0, note:'超时50/h，超公里3/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'七座 · 奔驰V级', duration:'', distance:'', cost:450, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'七座 · 奔驰V级', duration:'8小时', distance:'100公里', cost:1000, quote:0, note:'超时100/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'七座 · 埃尔法40系', duration:'', distance:'', cost:700, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'七座 · 埃尔法40系', duration:'8小时', distance:'100公里', cost:1600, quote:0, note:'超时150/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'九座 · 丰田海狮豪华', duration:'', distance:'', cost:600, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'九座 · 丰田海狮豪华', duration:'8小时', distance:'100公里', cost:1200, quote:0, note:'超时100/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'15座 · 考斯特豪华', duration:'', distance:'', cost:800, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'15座 · 考斯特豪华', duration:'8小时', distance:'100公里', cost:1500, quote:0, note:'超时150/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'20-26座 · 中巴', duration:'', distance:'', cost:550, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'20-26座 · 中巴', duration:'8小时', distance:'100公里', cost:1200, quote:0, note:'超时100/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'33-37座 · 豪华巴士', duration:'', distance:'', cost:600, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'33-37座 · 豪华巴士', duration:'8小时', distance:'100公里', cost:1300, quote:0, note:'超时100/h，超公里5/km'},
+  {city:'深圳', route:'单程 · 市区/机场接送', vehicle:'50-53座 · 豪华巴士', duration:'', distance:'', cost:700, quote:0, note:'全包价含油路桥'},
+  {city:'深圳', route:'包天 · 100公里8小时', vehicle:'50-53座 · 豪华巴士', duration:'8小时', distance:'100公里', cost:1500, quote:0, note:'超时100/h，超公里5/km'},
+  // ---- 悉尼（对外报价，澳币AUD）----
+  {city:'悉尼', route:'全程包车 · 悉尼+黄金海岸（8天）', vehicle:'22/25座中巴', duration:'8天', distance:'', cost:0, quote:8058, note:'澳币AUD/团；司兼导；2.18接机+2.19-20各10h+2.21半天送机+2.24单接+2.25-26各10h+2.27单送；超时150AUD/h；春节前后7天+20%'}
+];
+const SEED_FLEETS = [
+  {id:'f1', name:'深圳埃尔法租车', contact:'祝经理', phone:'15099918888', note:'深圳本地车队 5-53座；座机0755-88866576；邮箱1033660661@qq.com；单程全包，包天100公里8h不含高速路桥停车费'},
+  {id:'f2', name:'AULeisureTravel', contact:'', phone:'', note:'悉尼/黄金海岸车队，22/25座中巴司兼导；Glen Waverley VIC 3150；超时150AUD/h'},
+  {id:'f3', name:'北京首汽旅游车队', contact:'', phone:'', note:'北京车队，日租区间800-2500（Travel KB 参考）'}
 ];
 const SEED_VEHICLES = [
   {id:'v1', plate:'京A·88001', type:'五座', seats:4, note:'轿车'},
@@ -625,7 +730,7 @@ const SEED_DRIVERS = [
   {id:'d3', name:'李师傅', phone:'13800000002', plate:'京A·88002', carType:'', seatType:'七座', note:'商务车', fleet:''}
 ];
 function seedState(){
-  return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:[]};
+  return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:JSON.parse(JSON.stringify(SEED_FLEETS))};
 }
 function loadState(){
   try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders) return s; } }catch(e){}
@@ -999,11 +1104,21 @@ function normPrices(){ let ch=false; (S.prices||[]).forEach(p=>{
     if(p.duration===undefined){ p.duration=''; ch=true; }
     if(p.distance===undefined){ p.distance=''; ch=true; }
   }); if(ch) saveState(S); }
+var pCityFilter='';
+function setPriceFilter(v){ pCityFilter=v; renderPrices(); }
 function renderPrices(){
   normPrices();
   initCalc();
-  const rows=[...S.prices];
+  const allCities=[...new Set((S.prices||[]).map(p=>p.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh'));
+  const fSel=$('priceCityFilter');
+  if(fSel && (fSel.options.length!==allCities.length+1 || fSel.value!==pCityFilter)){
+    const cur=pCityFilter;
+    fSel.innerHTML='<option value="">全部城市</option>'+allCities.map(c=>'<option value="'+escapeHtml(c)+'"'+(c===cur?' selected':'')+'>'+escapeHtml(c)+'</option>').join('');
+  }
+  let rows=[...S.prices];
+  if(pCityFilter) rows=rows.filter(p=>p.city===pCityFilter);
   rows.sort((a,b)=>(a.city||'').localeCompare(b.city||'','zh') || (a.route||'').localeCompare(b.route||'','zh') || (a.vehicle||'').localeCompare(b.vehicle||'','zh'));
+  const cnt=$('priceCount'); if(cnt) cnt.textContent='共 '+rows.length+' 条';
   if(!rows.length){
     $('priceGrid').innerHTML='<div style="color:var(--text-3);text-align:center;padding:40px 0">暂无参考价，点击右上角新增</div>';
     return;

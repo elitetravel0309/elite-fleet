@@ -249,7 +249,29 @@
    "fleet": ""
   }
  ],
- "fleets": [],
+ "fleets": [
+  {
+   "id": "f1",
+   "name": "深圳埃尔法租车",
+   "contact": "祝经理",
+   "phone": "15099918888",
+   "note": "深圳本地车队 5-53座；座机0755-88866576；邮箱1033660661@qq.com；单程全包，包天100公里8h不含高速路桥停车费"
+  },
+  {
+   "id": "f2",
+   "name": "AULeisureTravel",
+   "contact": "",
+   "phone": "",
+   "note": "悉尼/黄金海岸车队，22/25座中巴司兼导；Glen Waverley VIC 3150；超时150AUD/h"
+  },
+  {
+   "id": "f3",
+   "name": "北京首汽旅游车队",
+   "contact": "",
+   "phone": "",
+   "note": "北京车队，日租区间800-2500（Travel KB 参考）"
+  }
+ ],
  "prices": [
   {
    "city": "北京",
@@ -330,6 +352,896 @@
    "cost": 700,
    "quote": 0,
    "note": ""
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 浦东 → 市区酒店",
+   "vehicle": "五座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 500,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 虹桥 → 市区酒店",
+   "vehicle": "五座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 400,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "五座",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 700,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 夜游（4小时）",
+   "vehicle": "五座",
+   "duration": "4小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 600,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 迪士尼",
+   "vehicle": "五座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 700,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 动物园",
+   "vehicle": "五座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 800,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 朱家角",
+   "vehicle": "五座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 800,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 游杭州",
+   "vehicle": "五座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1550,
+   "note": "跨城，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 浦东 → 市区酒店",
+   "vehicle": "七座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 600,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 虹桥 → 市区酒店",
+   "vehicle": "七座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 500,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "七座",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 900,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 夜游（4小时）",
+   "vehicle": "七座",
+   "duration": "4小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 800,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 迪士尼",
+   "vehicle": "七座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 900,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 动物园",
+   "vehicle": "七座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 朱家角",
+   "vehicle": "七座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 游杭州",
+   "vehicle": "七座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1750,
+   "note": "跨城，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 浦东 → 市区酒店",
+   "vehicle": "九座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 800,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 虹桥 → 市区酒店",
+   "vehicle": "九座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 700,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "九座",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 1400,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 夜游（4小时）",
+   "vehicle": "九座",
+   "duration": "4小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 1300,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 迪士尼",
+   "vehicle": "九座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1400,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 动物园",
+   "vehicle": "九座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1500,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 朱家角",
+   "vehicle": "九座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1500,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 游杭州",
+   "vehicle": "九座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 2350,
+   "note": "跨城，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 浦东 → 市区酒店",
+   "vehicle": "14-17座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 700,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "14-17座",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 1100,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 浦东 → 市区酒店",
+   "vehicle": "19-23座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 900,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "19-23座",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 1500,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 浦东 → 市区酒店",
+   "vehicle": "35-39座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1100,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "35-39座",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 2000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "机场接送 · 浦东 → 市区酒店",
+   "vehicle": "53座",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1400,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "上海",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "53座",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 2100,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "机场接送 · 咸阳机场 ↔ 酒店",
+   "vehicle": "五座·经济轿车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 450,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "火车站接送 · 西安站 ↔ 酒店",
+   "vehicle": "五座·经济轿车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 400,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "五座·经济轿车",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 700,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 兵马俑",
+   "vehicle": "五座·经济轿车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 800,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 华山",
+   "vehicle": "五座·经济轿车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 法门寺 + 乾陵",
+   "vehicle": "五座·经济轿车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 机场 + 兵马俑 + 市内",
+   "vehicle": "五座·经济轿车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 机场 + 市内",
+   "vehicle": "五座·经济轿车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 900,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "机场接送 · 咸阳机场 ↔ 酒店",
+   "vehicle": "五座·舒适",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 500,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "火车站接送 · 西安站 ↔ 酒店",
+   "vehicle": "五座·舒适",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 450,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "五座·舒适",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 800,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 兵马俑",
+   "vehicle": "五座·舒适",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 900,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 华山",
+   "vehicle": "五座·舒适",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1100,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 机场 + 兵马俑 + 市内",
+   "vehicle": "五座·舒适",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1200,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 火车站 + 兵马俑 + 市内",
+   "vehicle": "五座·舒适",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1100,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "机场接送 · 咸阳机场 ↔ 酒店",
+   "vehicle": "七座·商务MPV",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 600,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "火车站接送 · 西安站 ↔ 酒店",
+   "vehicle": "七座·商务MPV",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 550,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "七座·商务MPV",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 900,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 兵马俑",
+   "vehicle": "七座·商务MPV",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 华山",
+   "vehicle": "七座·商务MPV",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1200,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 机场 + 兵马俑 + 市内 + 机场",
+   "vehicle": "七座·商务MPV",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1400,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "机场接送 · 咸阳机场 ↔ 酒店",
+   "vehicle": "七座·豪华商务",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 700,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "七座·豪华商务",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 1200,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 兵马俑",
+   "vehicle": "七座·豪华商务",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1400,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 华山",
+   "vehicle": "七座·豪华商务",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1800,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 机场 + 兵马俑 + 市内",
+   "vehicle": "七座·豪华商务",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1600,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "机场接送 · 咸阳机场 ↔ 酒店",
+   "vehicle": "旗舰大型车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 800,
+   "note": "单程，超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内（8小时）",
+   "vehicle": "旗舰大型车",
+   "duration": "8小时",
+   "distance": "",
+   "cost": 0,
+   "quote": 1300,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 兵马俑",
+   "vehicle": "旗舰大型车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1500,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 市内 + 华山",
+   "vehicle": "旗舰大型车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 2000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 机场 + 兵马俑 + 市内 + 机场",
+   "vehicle": "旗舰大型车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 2000,
+   "note": "超时100/h"
+  },
+  {
+   "city": "西安",
+   "route": "包车 · 火车站 + 兵马俑 + 市内",
+   "vehicle": "旗舰大型车",
+   "duration": "",
+   "distance": "",
+   "cost": 0,
+   "quote": 1600,
+   "note": "超时100/h"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "五座 · 凯美瑞/雅阁/帕萨特",
+   "duration": "",
+   "distance": "",
+   "cost": 280,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "五座 · 凯美瑞/雅阁/帕萨特",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 600,
+   "quote": 0,
+   "note": "超时50/h，超公里3/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "五座 · 奥迪A6L/奔驰E",
+   "duration": "",
+   "distance": "",
+   "cost": 450,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "五座 · 奥迪A6L/奔驰E",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 850,
+   "quote": 0,
+   "note": "超时100/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "五座 · 奔驰S400",
+   "duration": "",
+   "distance": "",
+   "cost": 600,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "五座 · 奔驰S400",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1400,
+   "quote": 0,
+   "note": "超时150/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "七座 · 别克商务",
+   "duration": "",
+   "distance": "",
+   "cost": 300,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "七座 · 别克商务",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 700,
+   "quote": 0,
+   "note": "超时50/h，超公里3/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "七座 · 腾势D9/岚图",
+   "duration": "",
+   "distance": "",
+   "cost": 400,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "七座 · 腾势D9/岚图",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 800,
+   "quote": 0,
+   "note": "超时50/h，超公里3/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "七座 · 奔驰V级",
+   "duration": "",
+   "distance": "",
+   "cost": 450,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "七座 · 奔驰V级",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1000,
+   "quote": 0,
+   "note": "超时100/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "七座 · 埃尔法40系",
+   "duration": "",
+   "distance": "",
+   "cost": 700,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "七座 · 埃尔法40系",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1600,
+   "quote": 0,
+   "note": "超时150/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "九座 · 丰田海狮豪华",
+   "duration": "",
+   "distance": "",
+   "cost": 600,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "九座 · 丰田海狮豪华",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1200,
+   "quote": 0,
+   "note": "超时100/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "15座 · 考斯特豪华",
+   "duration": "",
+   "distance": "",
+   "cost": 800,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "15座 · 考斯特豪华",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1500,
+   "quote": 0,
+   "note": "超时150/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "20-26座 · 中巴",
+   "duration": "",
+   "distance": "",
+   "cost": 550,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "20-26座 · 中巴",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1200,
+   "quote": 0,
+   "note": "超时100/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "33-37座 · 豪华巴士",
+   "duration": "",
+   "distance": "",
+   "cost": 600,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "33-37座 · 豪华巴士",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1300,
+   "quote": 0,
+   "note": "超时100/h，超公里5/km"
+  },
+  {
+   "city": "深圳",
+   "route": "单程 · 市区/机场接送",
+   "vehicle": "50-53座 · 豪华巴士",
+   "duration": "",
+   "distance": "",
+   "cost": 700,
+   "quote": 0,
+   "note": "全包价含油路桥"
+  },
+  {
+   "city": "深圳",
+   "route": "包天 · 100公里8小时",
+   "vehicle": "50-53座 · 豪华巴士",
+   "duration": "8小时",
+   "distance": "100公里",
+   "cost": 1500,
+   "quote": 0,
+   "note": "超时100/h，超公里5/km"
+  },
+  {
+   "city": "悉尼",
+   "route": "全程包车 · 悉尼+黄金海岸（8天）",
+   "vehicle": "22/25座中巴",
+   "duration": "8天",
+   "distance": "",
+   "cost": 0,
+   "quote": 8058,
+   "note": "澳币AUD/团；司兼导；2.18接机+2.19-20各10h+2.21半天送机+2.24单接+2.25-26各10h+2.27单送；超时150AUD/h；春节前后7天+20%"
   },
   {
    "city": "北京",
