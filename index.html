@@ -347,24 +347,14 @@ textarea{resize:vertical;line-height:1.5}
       <div id="ordersWrap"></div>
     </section>
 
-    <!-- 车辆与司机 -->
+    <!-- 司机与车辆（配对管理） -->
     <section class="view" data-route="fleet">
       <div class="today-head">
-        <div><h2 class="section">车辆与司机</h2><p class="sub">车队名册，用于排班指派</p></div>
+        <div><h2 class="section">司机与车辆</h2><p class="sub">司机与车辆配对：每名司机绑定车型、车号、电话；订单指派司机即自动带出车辆</p></div>
         <div class="spacer" style="flex:1"></div>
+        <button class="btn primary" onclick="addDriver()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加司机（带车）</button>
       </div>
-      <div class="fleet-grid">
-        <div class="fleet-col">
-          <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆</h3>
-          <div id="vehicleList"></div>
-          <button class="btn ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="addVehicle()">+ 添加车辆</button>
-        </div>
-        <div class="fleet-col">
-          <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>司机</h3>
-          <div id="driverList"></div>
-          <button class="btn ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="addDriver()">+ 添加司机</button>
-        </div>
-      </div>
+      <div id="driverList"></div>
     </section>
 
     <!-- 参考价 -->
@@ -499,8 +489,8 @@ textarea{resize:vertical;line-height:1.5}
       <div class="fgroup"><label>人数</label><input type="number" id="oPax" min="0" value="1"></div>
       <div class="fgroup"><label>客户 / 团名</label><input type="text" id="oGuest" placeholder="如 德国团 3 人"></div>
       <div class="fgroup"><label>联系人</label><input type="text" id="oContact"></div>
-      <div class="fgroup"><label>司机</label><select id="oDriver"><option value="">— 未指派</option></select></div>
-      <div class="fgroup"><label>车牌</label><input type="text" id="oPlate" list="plateList" placeholder="如 京A12345"><datalist id="plateList"></datalist></div>
+      <div class="fgroup"><label>司机</label><select id="oDriver" onchange="onDriverPick()"><option value="">— 未指派</option></select></div>
+      <div class="fgroup"><label>车牌</label><input type="text" id="oPlate" list="plateList" placeholder="选司机自动带出"><datalist id="plateList"></datalist><div id="oDriverHint" style="font-size:11px;color:var(--text-3);min-height:14px;margin-top:2px"></div></div>
       <div class="fgroup"><label>对外报价（元）</label><input type="number" id="oQuote" min="0" placeholder="0"></div>
       <div class="fgroup"><label>成本价（元）</label><input type="number" id="oCost" min="0" placeholder="0"></div>
       <div class="fgroup" style="align-self:flex-end"><button class="btn ghost small" type="button" onclick="autoPrice()" title="按线路/车型从参考价库自动带出报价与成本">自动计价</button></div>
@@ -528,11 +518,29 @@ textarea{resize:vertical;line-height:1.5}
 <div class="overlay" id="pasteOverlay">
   <div class="modal">
     <h3>粘贴快速录入订单</h3>
-    <div class="m-sub">粘贴 JSON，支持单条或批量（<span class="mono">{ "orders": [...] }</span> / 数组 / 单个对象）。字段：date、time、route（必填）；type（arrival/departure/charter/transfer）、airport、flight、vehicle、pax、guest、contact、driver、plate、quote（对外报价）、cost（成本价）、price（兼容=报价）、status（pending/confirmed/done/cancelled）、note</div>
-    <textarea class="textarea-mon" id="pasteInput" style="min-height:230px" placeholder='粘贴订单 JSON…'></textarea>
-    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-      <button class="btn ghost small" onclick="loadExampleOrder()">填入示例</button>
-      <span style="color:var(--text-3);font-size:12px">示例为上海浦东→常州万豪订单，可改为你要录的</span>
+    <div style="display:flex;gap:8px;margin:4px 0 10px">
+      <button class="btn small" id="pasteTabSmart" onclick="switchPasteMode('smart')">智能识别（推荐）</button>
+      <button class="btn small" id="pasteTabJson" onclick="switchPasteMode('json')">JSON 格式</button>
+    </div>
+    <!-- 智能识别模式 -->
+    <div id="pasteSmart" style="display:block">
+      <div class="m-sub">把客户订单原文（微信/邮件/文件里复制的一段话，可多条）直接粘贴进来，自动识别日期、时间、客人、车型、人数、机场航班、价格等，先预览再确认导入。未识别的信息会归入备注，导入后可在订单里再改。</div>
+      <textarea class="textarea-mon" id="smartInput" style="min-height:200px" placeholder='示例：日期：9月8号&#10;人数：2&#10;车辆：5座车&#10;客人姓名: Charmaine&#10;早上 06:30 酒店接，慕田峪长城，下午2点前送到北京南站&#10;司机代收850'></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+        <button class="btn primary" onclick="runSmartParse()">开始识别</button>
+        <button class="btn ghost small" onclick="loadSmartExample()">填入示例</button>
+        <span style="color:var(--text-3);font-size:12px" id="smartCount"></span>
+      </div>
+      <div id="smartPreview" style="margin-top:12px"></div>
+    </div>
+    <!-- JSON 模式 -->
+    <div id="pasteJson" style="display:none">
+      <div class="m-sub">粘贴 JSON，支持单条或批量（<span class="mono">{ "orders": [...] }</span> / 数组 / 单个对象）。字段：date、time、route（必填）；type（arrival/departure/charter/transfer）、airport、flight、vehicle、pax、guest、contact、driver、plate、quote（对外报价）、cost（成本价）、price（兼容=报价）、status（pending/confirmed/done/cancelled）、note</div>
+      <textarea class="textarea-mon" id="pasteInput" style="min-height:230px" placeholder='粘贴订单 JSON…'></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+        <button class="btn ghost small" onclick="loadExampleOrder()">填入示例</button>
+        <span style="color:var(--text-3);font-size:12px">示例为上海浦东→常州万豪订单，可改为你要录的</span>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn ghost" onclick="closePasteModal()">取消</button>
@@ -581,9 +589,11 @@ const SEED_VEHICLES = [
   {id:'v1', plate:'京A·88001', type:'五座', seats:4, note:'轿车'},
   {id:'v2', plate:'京A·88002', type:'七座', seats:6, note:'商务车'}
 ];
+// 司机与车辆配对：每名司机绑定 车型(carType)/车号(plate)/电话(phone)/座位档(seatType)
 const SEED_DRIVERS = [
-  {id:'d1', name:'张师傅', phone:'13800000001', vehicle:'京A·88001'},
-  {id:'d2', name:'李师傅', phone:'13800000002', vehicle:'京A·88002'}
+  {id:'d1', name:'刘洋', phone:'15120033382', plate:'京ACN2007', carType:'极狐525黑色', seatType:'五座', note:''},
+  {id:'d2', name:'张师傅', phone:'13800000001', plate:'京A·88001', carType:'', seatType:'五座', note:'轿车'},
+  {id:'d3', name:'李师傅', phone:'13800000002', plate:'京A·88002', carType:'', seatType:'七座', note:'商务车'}
 ];
 function seedState(){
   return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES))};
@@ -844,25 +854,38 @@ function delOrder(id){
 }
 
 /* =========================================================
-   车辆与司机
+   司机与车辆（配对）
    ========================================================= */
+function normDrivers(){
+  let ch=false;
+  const seatOf = p => { if(/七座|7座/.test(p)) return '七座'; if(/九座|9座/.test(p)) return '九座'; if(/考斯特/.test(p)) return '考斯特'; if(/大巴/.test(p)) return '大巴'; return '五座'; };
+  (S.drivers||[]).forEach(d=>{
+    if(d.vehicle && !d.plate){ d.plate=d.vehicle; delete d.vehicle; ch=true; }
+    if(d.carType===undefined){ d.carType=''; ch=true; }
+    if(d.seatType===undefined){ d.seatType=d.plate? seatOf('') : '五座'; ch=true; }
+    if(d.note===undefined){ d.note=''; ch=true; }
+  });
+  // 旧车辆库合并进司机名册（同一车号不重复）
+  (S.vehicles||[]).forEach(v=>{
+    if(!(S.drivers||[]).some(d=>d.plate===v.plate)){
+      S.drivers.push({id:uid(), name:'司机·'+v.plate, phone:'', plate:v.plate, carType:v.note||'', seatType:seatOf(v.type||''), note:''});
+      ch=true;
+    }
+  });
+  if(ch) saveState(S);
+}
 function renderFleet(){
-  $('vehicleList').innerHTML = S.vehicles.length? S.vehicles.map(v=>{
-    const cnt = S.orders.filter(o=>o.plate===v.plate && o.status!=='cancelled').length;
-    return '<div class="fleet-row"><div class="avatar" style="background:var(--charter);color:#fff">车</div>'
-      +'<div class="info"><b>'+escapeHtml(v.plate)+'</b><span>'+escapeHtml(v.type||'')+' · '+(v.seats||'')+'座'+(v.note?' · '+escapeHtml(v.note):'')+'</span></div>'
-      +'<span class="type-pill">'+cnt+' 个任务</span>'
-      +'<button class="iconbtn" onclick="editVehicle(\''+v.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
-      +'<button class="iconbtn" onclick="removeVehicle(\''+v.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
-  }).join('') : '<div style="color:var(--text-3);text-align:center;padding:18px 0">暂无车辆</div>';
+  normDrivers();
   $('driverList').innerHTML = S.drivers.length? S.drivers.map(d=>{
     const cnt = S.orders.filter(o=>o.driver===d.name && o.status!=='cancelled').length;
     return '<div class="fleet-row"><div class="avatar">'+escapeHtml((d.name||'?').slice(0,1))+'</div>'
-      +'<div class="info"><b>'+escapeHtml(d.name)+'</b><span>'+escapeHtml(d.phone||'')+(d.vehicle?' · '+escapeHtml(d.vehicle):'')+'</span></div>'
+      +'<div class="info"><b>'+escapeHtml(d.name)+'</b>'
+      +'<span>'+(d.carType?('车型 '+escapeHtml(d.carType)+' · '):'')+(d.seatType?'<span class="tag" style="background:var(--charter-soft);color:var(--charter);font-size:11px">'+escapeHtml(d.seatType)+'</span> · ':'')+'车号 '+escapeHtml(d.plate||'—')+'</span>'
+      +'<span style="color:var(--text-3);font-size:11.5px">'+(d.phone?'电话 '+escapeHtml(d.phone):'')+(d.note?' · '+escapeHtml(d.note):'')+'</span></div>'
       +'<span class="type-pill">'+cnt+' 个任务</span>'
       +'<button class="iconbtn" onclick="editDriver(\''+d.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
       +'<button class="iconbtn" onclick="removeDriver(\''+d.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
-  }).join('') : '<div style="color:var(--text-3);text-align:center;padding:18px 0">暂无司机</div>';
+  }).join('') : '<div style="color:var(--text-3);text-align:center;padding:18px 0">暂无司机，点击右上角「添加司机（带车）」</div>';
   // 同步司机下拉
   const sel=$('oDriver'); sel.innerHTML='<option value="">— 未指派</option>'+S.drivers.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+'</option>').join('');
 }
@@ -881,13 +904,17 @@ function editVehicle(id){
 function removeVehicle(id){ if(!confirm('删除该车辆？')) return; S.vehicles=S.vehicles.filter(v=>v.id!==id); saveState(S); renderFleet(); }
 function addDriver(){ editDriver(); }
 function editDriver(id){
-  const d = id? S.drivers.find(x=>x.id===id) : {name:'',phone:'',vehicle:''};
+  const d = id? S.drivers.find(x=>x.id===id) : {name:'',phone:'',plate:'',carType:'',seatType:'五座',note:''};
   if(!d) return;
   const name=prompt('司机姓名', d.name); if(name===null) return;
+  const carType=prompt('车型（如 极狐525黑色）', d.carType||''); if(carType===null) return;
+  const plate=prompt('车号', d.plate||''); if(plate===null) return;
   const phone=prompt('电话', d.phone||''); if(phone===null) return;
-  const vehicle=prompt('常用车牌', d.vehicle||''); if(vehicle===null) return;
-  if(id){ const x=S.drivers.find(x=>x.id===id); Object.assign(x,{name,phone,vehicle}); }
-  else S.drivers.push({id:uid(),name,phone,vehicle});
+  const seatType=prompt('座位档（五座/七座/九座/考斯特/大巴）', d.seatType||'五座'); if(seatType===null) return;
+  const note=prompt('备注', d.note||''); if(note===null) return;
+  const obj={name,carType,plate,phone,seatType,note};
+  if(id){ const x=S.drivers.find(x=>x.id===id); Object.assign(x,obj); }
+  else S.drivers.push(Object.assign({id:uid()},obj));
   saveState(S); renderFleet();
 }
 function removeDriver(id){ if(!confirm('删除该司机？')) return; S.drivers=S.drivers.filter(d=>d.id!==id); saveState(S); renderFleet(); }
@@ -1056,8 +1083,17 @@ function openOrder(id){
   $('oNote').value = o? (o.note||'') : '';
   // 路线 datalist
   $('routeList').innerHTML = routeList().map(r=>'<option value="'+escapeHtml(r)+'">').join('');
-  $('plateList').innerHTML = S.vehicles.map(v=>'<option value="'+escapeHtml(v.plate)+'">').join('');
+  const plates=[]; (S.drivers||[]).forEach(d=>{ if(d.plate) plates.push(d.plate); }); (S.vehicles||[]).forEach(v=>plates.push(v.plate));
+  $('plateList').innerHTML = plates.filter((p,i,a)=>p&&a.indexOf(p)===i).map(p=>'<option value="'+escapeHtml(p)+'">').join('');
+  onDriverPick();
   $('orderOverlay').classList.add('open');
+}
+function onDriverPick(){
+  const name=$('oDriver').value;
+  const d=S.drivers.find(x=>x.name===name);
+  $('oPlate').value = d? (d.plate||'') : '';
+  const h=$('oDriverHint');
+  if(h) h.textContent = d? [d.carType, d.seatType, d.phone].filter(Boolean).join(' · ') : '';
 }
 function closeOrder(){ $('orderOverlay').classList.remove('open'); editingId=null; }
 function autoPrice(){
@@ -1121,12 +1157,13 @@ function printSheet(){
   let html='<div class="ps-head"><div><h2>出车单 · '+viewDate+'</h2><div class="ps-meta">'+weekdayCN(d)+' · 共 '+list.length+' 个任务</div></div><div class="ps-meta">Elite Travel 车队 · 打印时间 '+new Date().toLocaleString('zh-CN')+'</div></div>';
   html+='<table class="ps-table"><thead><tr><th>时间</th><th>类型</th><th>机场/航班</th><th>路线</th><th>客户</th><th>车型/人数</th><th>司机</th><th>车牌</th><th>电话</th><th>价格</th><th>备注</th></tr></thead><tbody>';
   list.forEach(o=>{
+    const drv=S.drivers.find(d=>d.name===o.driver);
     html+='<tr><td>'+o.time+'</td><td>'+(tmName[o.type]?tmName[o.type].label:o.type)+'</td>'
       +'<td>'+(o.airport?airportName(o.airport)+(o.flight?' / '+o.flight:''):'')+'</td>'
       +'<td>'+escapeHtml(o.route)+'</td><td>'+escapeHtml(o.guest||'')+'</td>'
       +'<td>'+(o.vehicle||'')+(o.pax?' / '+o.pax+'人':'')+'</td>'
-      +'<td>'+escapeHtml(o.driver||'')+'</td><td>'+escapeHtml(o.plate||'')+'</td>'
-      +'<td>'+escapeHtml((S.drivers.find(d=>d.name===o.driver)||{}).phone||'')+'</td>'
+      +'<td>'+escapeHtml(o.driver||'')+(drv&&drv.carType?('<div style="font-size:11px;color:#555">'+escapeHtml(drv.carType)+'</div>'):'')+'</td><td>'+escapeHtml(o.plate||'')+'</td>'
+      +'<td>'+escapeHtml((drv||{}).phone||'')+'</td>'
       +'<td>'+(calcPx(o)!==null?'¥'+calcPx(o):'')+'</td><td>'+escapeHtml(o.note||'')+'</td></tr>';
   });
   html+='</tbody></table><div class="ps-foot">本出车单由车队调度台自动生成 · 数据来源：本地订单库</div>';
@@ -1226,12 +1263,154 @@ function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=toda
    ========================================================= */
 function openPasteModal(){ $('pasteInput').value=''; $('pasteOverlay').classList.add('open'); }
 function closePasteModal(){ $('pasteOverlay').classList.remove('open'); }
+function switchPasteMode(m){
+  $('pasteSmart').style.display = m==='smart'?'block':'none';
+  $('pasteJson').style.display = m==='json'?'block':'none';
+  $('pasteTabSmart').style.background = m==='smart'?'var(--accent)':'var(--card)';
+  $('pasteTabSmart').style.color = m==='smart'?'#fff':'var(--text)';
+  $('pasteTabJson').style.background = m==='json'?'var(--accent)':'var(--card)';
+  $('pasteTabJson').style.color = m==='json'?'#fff':'var(--text)';
+}
+let smartOrders = [];
+function loadSmartExample(){
+  $('smartInput').value='新单\n日期：9月8号\n人数：2\n车辆：5座车\n客人姓名: Charmaine\nWhats App: +61 406 304 639\n线路：早上 06:30 酒店接，慕田峪长城，下午2点之前送到北京南站（客人是下午3点的火车）\n客人酒店：北京明豪华美达酒店(首都机场新国展店)\n司机代收850';
+}
+function parseOrdersFromText(txt){
+  if(!txt || !txt.trim()) return [];
+  const segs = txt.split(/\n\s*(?=日期\s*[:：]|\d{1,2}\s*月\s*\d{1,2}\s*[号日]|20\d{2}[-/年]\d{1,2}[-/月]\d{1,2})/i);
+  const out=[];
+  segs.forEach(raw=>{
+    const seg=raw.replace(/^-{3,}/,'').trim();
+    if(!seg) return;
+    const o=parseOneOrder(seg);
+    if(o) out.push(o);
+  });
+  return out;
+}
+function parseOneOrder(seg){
+  const y=(seg.match(/20\d{2}/)||['2026'])[0];
+  let m=seg.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*[号日]/);
+  let date=null;
+  if(m) date=y+'-'+pad(+m[1])+'-'+pad(+m[2]);
+  else { m=seg.match(/(20\d{2})[-/年](\d{1,2})[-/月](\d{1,2})/); if(m) date=m[1]+'-'+pad(+m[2])+'-'+pad(+m[3]); }
+  if(!date){ m=seg.match(/日期\s*[:：]?\s*(\d{1,2})[月\/-](\d{1,2})/); if(m) date=y+'-'+pad(+m[1])+'-'+pad(+m[2]); }
+  if(!date) return null;
+  let time='';
+  let tm=seg.match(/接机时间\s*[:：]?\s*(\d{1,2}):(\d{2})/);
+  if(tm) time=pad(+tm[1])+':'+tm[2];
+  else {
+    tm=seg.match(/(\d{1,2})[:：点](\d{1,2})/);
+    if(tm){ let h=+tm[1], mm=+tm[2]; if(/下午|晚上|夜/.test(seg)&&h<12) h+=12; if(/早上|上午|清晨/.test(seg)&&h>12) h-=12; time=pad(h)+':'+pad(mm); }
+    else { tm=seg.match(/(?:约|预计)?\s*(\d{1,2})\s*(?:点|时)/); if(tm){ let h=+tm[1]; if(/下午|晚上/.test(seg)&&h<12) h+=12; time=pad(h)+':00'; } }
+  }
+  let type='charter';
+  if(/接机|机场接/.test(seg)) type='arrival';
+  else if(/送机|送到机场|送往机场/.test(seg)) type='departure';
+  const apSeq=[['首都机场','PEK'],['大兴机场','PKX'],['浦东','PVG'],['虹桥','SHA'],['杭州','HGH']];
+  let airport='';
+  const am=seg.match(/([^，。\n]{0,14}(?:机场接|接机|抵达|到达)[^，。\n]{0,14})/);
+  if(am){ for(const k of apSeq){ if(am[1].includes(k[0])){ airport=k[1]; break; } } }
+  if(!airport){ for(const k of apSeq){ if(seg.includes(k[0])){ airport=k[1]; break; } } }
+  const fl=seg.match(/\b[A-Z]{2}\s?\d{3,4}\b/);
+  const flight=fl? fl[0].replace(/\s/g,'') : '';
+  let vehicle='';
+  if(/九座|9座/.test(seg)) vehicle='九座';
+  else if(/七座|7座/.test(seg)) vehicle='七座';
+  else if(/五座|5座/.test(seg)) vehicle='五座';
+  else if(/考斯特/.test(seg)) vehicle='考斯特';
+  else if(/大巴/.test(seg)) vehicle='大巴';
+  let pax=0;
+  let pm=seg.match(/(\d+)\s*个?\s*(?:大人|成人)/), pk=seg.match(/(\d+)\s*个?\s*(?:小孩|儿童)/);
+  if(pm||pk) pax=(pm?+pm[1]:0)+(pk?+pk[1]:0);
+  else { pm=seg.match(/人数\s*[:：]?\s*(\d+)/); if(pm) pax=+pm[1]; else { pm=seg.match(/(\d+)\s*[位个]?\s*人/); if(pm) pax=+pm[1]; } }
+  let guest='';
+  let gm=seg.match(/客人(?:姓名|名字)?\s*[:：]\s*([A-Za-z\u4e00-\u9fa5][A-Za-z\u4e00-\u9fa5 .'\-]{0,40})/);
+  if(gm) guest=gm[1].trim();
+  else { gm=seg.match(/(?:Mr\.?|Ms\.?|Mrs\.?|Dr\.?)\s*[A-Za-z][A-Za-z.'\- ]{1,30}/); if(gm) guest=gm[0].trim(); }
+  if(!guest){
+    gm=seg.match(/^[~·\-—\s]*([A-Za-z][A-Za-z.'\- ]{1,40})$/m);
+    if(gm) guest=gm[1].trim();
+  }
+  let contact='';
+  let cm=seg.match(/(?:Whats\s*App|whatsapp|微信|电话|Phone|联系)[^0-9]{0,6}?([+\d][\d\s\-()]{5,20})/i);
+  if(cm) contact=cm[1].replace(/[\s\-()]/g,'').trim();
+  if(!contact){ cm=seg.match(/^\+?[\d][\d\s\-()]{6,22}$/m); if(cm) contact=cm[0].replace(/[\s\-()]/g,'').trim(); }
+  let quote=0;
+  let qm=seg.match(/(?:司机代收|代收|报价|价格|收费)\s*[:：]?\s*(\d+)/);
+  if(qm) quote=+qm[1];
+  let cost=0;
+  let cm2=seg.match(/(?:成本价?)\s*[:：]?\s*(\d+)/);
+  if(cm2) cost=+cm2[1];
+  let route='';
+  let rm=seg.match(/线路\s*[:：]?\s*([^\n]+)/);
+  if(rm) route=rm[1].trim();
+  if(!route){
+    const lines=seg.split('\n').map(s=>s.trim()).filter(Boolean);
+    const bad=/^(日期|人数|车辆|客人|联系|司机|航班|机场|价格|线路|备注|新单|酒店[:：]|客人酒店|接机牌|ORDER|订单|出发时间|送回时间|接机时间|返回时间)/;
+    const place=/慕田峪|长城|金山岭|八达岭|西湖|迪士尼|故宫|天坛|鸟巢|景点|景区|古镇|水乡|灵隐|飞来峰/;
+    for(const ln of lines){ if(place.test(ln) && !bad.test(ln)){ route=ln.replace(/^[·\-—]\s*/,'').slice(0,120); break; } }
+    if(!route){ for(const ln of lines){
+      if(/(接机|接送|酒店接|送机|包车|游|去|到|夜景|市区|逛|转|参观|游览|出发|返回|日落)/.test(ln) && !bad.test(ln)){
+        route=ln.replace(/^[·\-—]\s*/,'').slice(0,120); break;
+      }
+    } }
+  }
+  if(!route) route=(airport? airportName(airport) : '')+' 用车';
+  const note=[];
+  const nm=seg.match(/接机牌\s*[:：]?\s*([^\n]+)/);
+  if(nm) note.push('接机牌：'+nm[1].trim());
+  if(/儿童座椅|儿童坐椅|宝宝椅/.test(seg)) note.push('需儿童座椅');
+  const hm=seg.match(/酒店\s*[:：]?\s*([^\n]+)/);
+  if(hm && !/酒店接|送酒店/.test(hm[1])) note.push('酒店：'+hm[1].trim());
+  const lineSet=seg.split('\n').map(s=>s.trim()).filter(Boolean);
+  const skipRe=/^(新单|日期|人数|车辆|客人|联系|Whats|微信|司机|航班|机场|价格|线路|备注|酒店|接机牌|详情|——|-{2,}|新订单)/;
+  const kept=[];
+  lineSet.forEach(ln=>{ if(!skipRe.test(ln) && !/^[+\d\s\-()]{7,}$/.test(ln) && !/^(接机|送机|包车)/.test(ln)) kept.push(ln); });
+  if(!note.length && kept.length) note=kept.slice(0,3);
+  let driver='', plate='';
+  const dm3=seg.match(/司机\s*[:：]\s*([^\n]+)/); if(dm3) driver=dm3[1].trim();
+  const pm3=seg.match(/车号\s*[:：]?\s*([^\n]+)/); if(pm3) plate=pm3[1].trim();
+  return {date:date, time:time||'00:00', type:type, airport:airport, flight:flight, vehicle:vehicle,
+    pax:pax, guest:guest, contact:contact, quote:quote, cost:cost, route:route, note:note.join('；'), driver:driver, plate:plate, status:'pending'};
+}
+function runSmartParse(){
+  smartOrders=parseOrdersFromText($('smartInput').value);
+  const box=$('smartPreview');
+  if(!smartOrders.length){ box.innerHTML='<div style="color:var(--cancel)">未识别到订单：请确认文本包含「日期」（如 9月8号 / 2026-09-08），每条订单以日期开头或换行分隔。</div>'; $('smartCount').textContent=''; return; }
+  let html='<table class="order-table"><thead><tr><th>日期</th><th>时间</th><th>类型</th><th>客人</th><th>车型/人数</th><th>线路（摘要）</th><th>报价</th><th></th></tr></thead><tbody>';
+  smartOrders.forEach((o,i)=>{
+    const tm=TYPE_META[o.type]?TYPE_META[o.type]:{label:o.type,color:'#999',soft:'rgba(150,150,150,.15)'};
+    html+='<tr><td>'+o.date+'</td><td><b>'+o.time+'</b></td>'
+      +'<td><span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span></td>'
+      +'<td>'+escapeHtml(o.guest||'待识别')+'</td>'
+      +'<td>'+escapeHtml(o.vehicle||'?')+(o.pax?' · '+o.pax+'人':'')+'</td>'
+      +'<td style="max-width:240px;font-size:12px">'+escapeHtml(o.route)+'</td>'
+      +'<td>'+(o.quote?('¥'+o.quote):'')+(o.cost?('<div style="font-size:11px;color:var(--text-3)">成本¥'+o.cost+'</div>'):'')+'</td>'
+      +'<td><button class="btn danger small" onclick="smartOrders.splice('+i+',1);runSmartParse()">删</button></td></tr>';
+  });
+  html+='</tbody></table><div style="margin-top:8px;font-size:12px;color:var(--text-3)">共识别 '+smartOrders.length+' 条。线路/客人/价格为自动识别摘要，导入后可点订单行修改。</div>';
+  box.innerHTML=html;
+  $('smartCount').textContent='共识别 '+smartOrders.length+' 条';
+}
+function confirmSmartImport(){
+  if(!smartOrders.length){ toast('没有可导入的订单'); return; }
+  const firstDate=smartOrders[0].date;
+  smartOrders.forEach(o=>{
+    S.orders.push({id:uid(), date:o.date, time:o.time, type:o.type, airport:o.airport||'', flight:o.flight||'', route:o.route, vehicle:o.vehicle||'', pax:o.pax||0, guest:o.guest||'', contact:o.contact||'', driver:o.driver||'', plate:o.plate||'', price:o.quote||0, quote:o.quote||0, cost:o.cost||0, status:o.status||'pending', note:o.note||''});
+  });
+  const n=smartOrders.length;
+  saveState(S); closePasteModal(); smartOrders=[];
+  if(n) viewDate=firstDate;
+  renderToday(); renderOrders(); renderKpis();
+  toast('已导入 '+n+' 条订单（识别结果可进订单修改）');
+}
 function loadExampleOrder(){
   $('pasteInput').value = JSON.stringify({orders:[
     {date:'2026-09-13',time:'07:15',type:'arrival',airport:'PVG',flight:'TK280',route:'上海浦东 → 常州万豪酒店',vehicle:'五座',pax:2,guest:'Mr. Leszek Lenczyk',price:0,status:'pending',note:'航班TK280 约06:25抵达，约07:15可出关；举牌 Mr. Leszek Lenczyk；送达常州万豪酒店（新北区龙锦路1590号）；五座或七座均可'}
   ]},null,2);
 }
 function runPasteImport(){
+  if($('pasteSmart') && $('pasteSmart').style.display!=='none'){ confirmSmartImport(); return; }
   const txt=$('pasteInput').value.trim();
   if(!txt){ toast('请粘贴订单 JSON'); return; }
   let data;
