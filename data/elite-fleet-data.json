@@ -225,7 +225,8 @@
    "plate": "京ACN2007",
    "carType": "极狐525黑色",
    "seatType": "五座",
-   "note": ""
+   "note": "",
+   "fleet": ""
   },
   {
    "id": "d2",
@@ -234,7 +235,8 @@
    "plate": "京A·88001",
    "carType": "",
    "seatType": "五座",
-   "note": "轿车"
+   "note": "轿车",
+   "fleet": ""
   },
   {
    "id": "d3",
@@ -243,9 +245,11 @@
    "plate": "京A·88002",
    "carType": "",
    "seatType": "七座",
-   "note": "商务车"
+   "note": "商务车",
+   "fleet": ""
   }
  ],
+ "fleets": [],
  "prices": [
   {
    "city": "北京",
