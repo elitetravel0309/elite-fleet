@@ -253,6 +253,7 @@ textarea{resize:vertical;line-height:1.5}
     <button data-route="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>周历排班</button>
     <div class="nav-label">业务</div>
     <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
+    <button data-route="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>报表中心</button>
     <div class="nav-label">资源</div>
     <button data-route="fleet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆与司机</button>
     <button data-route="prices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M16 8.5c-.6-.9-2-1.5-4-1.5s-3.4.6-3.4 1.8c0 3 7 1.5 7 4.5 0 1.2-1.6 1.9-3.6 1.9s-3.4-.6-3.6-1.5"/></svg>参考价库</button>
@@ -393,6 +394,17 @@ textarea{resize:vertical;line-height:1.5}
       <div class="price-grid" id="priceGrid"></div>
     </section>
 
+    <!-- 报表中心 -->
+    <section class="view" data-route="report">
+      <div class="today-head">
+        <div><h2 class="section">报表中心</h2><p class="sub">按月份汇总订单数、营业额（对外报价）、成本（车队报价）、利润与利润率</p></div>
+        <div class="spacer" style="flex:1"></div>
+        <label style="font-size:12px;color:var(--text-3)">月份</label>
+        <select id="rpMonth" onchange="renderReport()"></select>
+      </div>
+      <div id="rpBody"></div>
+    </section>
+
     <!-- 数据与同步 -->
     <section class="view" data-route="data">
       <div class="today-head">
@@ -524,6 +536,7 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn ghost" onclick="closeOrder()">取消</button>
       <button class="btn danger" id="omDelete" style="margin-right:auto" onclick="deleteOrder()">删除</button>
       <button class="btn ghost" onclick="fleetMsg(editingId)" title="生成给车队的派单消息，可复制发微信/WhatsApp">派单给车队</button>
+      <button class="btn ghost" onclick="quoteMsg(editingId)" title="生成给客人的中英文报价单，可复制发微信/WhatsApp">生成报价单</button>
       <button class="btn primary" onclick="saveOrder()">保存任务</button>
     </div>
   </div>
@@ -541,6 +554,18 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn ghost" onclick="closeFleetMsg()">关闭</button>
       <button class="btn ghost" onclick="copyFleetMsg()">复制消息</button>
       <button class="btn primary" onclick="markFleetSent()">标记为已派车队</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="quoteOverlay">
+  <div class="modal">
+    <h3>给客人的报价单</h3>
+    <div class="m-sub">中英双语报价，复制后发给客人（微信 / WhatsApp / 邮件）。价格取订单「对外报价」。</div>
+    <textarea class="textarea-mon" id="quoteMsgBox" readonly style="min-height:300px;white-space:pre-wrap"></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeQuoteMsg()">关闭</button>
+      <button class="btn primary" onclick="copyQuoteMsg()">复制报价单</button>
     </div>
   </div>
 </div>
@@ -794,7 +819,7 @@ function routeList(){ const set=new Set(); S.orders.forEach(o=>o.route&&set.add(
 /* =========================================================
    视图路由
    ========================================================= */
-const CRUMB = {today:'排班 · 今日', week:'排班 · 周历', orders:'业务 · 订单管理', fleet:'资源 · 车辆与司机', prices:'资源 · 参考价库', data:'数据 · 备份与同步'};
+const CRUMB = {today:'排班 · 今日', week:'排班 · 周历', orders:'业务 · 订单管理', report:'业务 · 报表中心', fleet:'资源 · 车辆与司机', prices:'资源 · 参考价库', data:'数据 · 备份与同步'};
 let curRoute = 'today';
 let viewDate = todayStr();
 let weekOffset = 0;
@@ -806,6 +831,7 @@ function showView(r){
   if(r==='today') renderToday();
   if(r==='week') renderWeek();
   if(r==='orders') renderOrders();
+  if(r==='report') renderReport();
   if(r==='fleet') renderFleet();
   if(r==='prices') renderPrices();
   if(r==='data') renderData();
@@ -1381,6 +1407,44 @@ function markFleetSent(){
 document.getElementById('fleetOverlay').addEventListener('click', e=>{ if(e.target.id==='fleetOverlay') closeFleetMsg(); });
 
 /* =========================================================
+   给客人的报价单（中英双语）
+   ========================================================= */
+function quoteMsg(id){
+  const o = id? S.orders.find(x=>x.id===id) : null;
+  if(!o){ toast('请先保存订单，再生成报价单'); return; }
+  if(!(+o.quote||0)){ toast('请先填写「对外报价」再生成报价单'); return; }
+  const tm=TYPE_META[o.type]?TYPE_META[o.type].label:o.type;
+  const g=(o.guest||'Guest').split(/\s+/)[0];
+  const price='¥'+Number(o.quote).toLocaleString('zh-CN');
+  const d=(o.date||'').replace(/(\d{4})-(\d{2})-(\d{2})/,'$2/$3')||'TBD';
+  const lines=[];
+  lines.push('【Elite Travel · 报价单 Quotation】');
+  lines.push('————————————————————————');
+  lines.push('Service 服务：'+tm+(o.type==='arrival'||o.type==='departure'||o.type==='transfer'?'（'+(o.airport?airportName(o.airport):'')+(o.flight?' '+o.flight:'')+'）':''));
+  lines.push('Date 日期：'+d);
+  if(o.time) lines.push('Pickup 出发：'+o.time);
+  if(o.route) lines.push('Route 线路：'+o.route);
+  lines.push('Vehicle 车型：'+(o.vehicle||'TBD')+(o.pax?(' · '+o.pax+'人 / pax'):''));
+  lines.push('Price 价格：'+price);
+  if(o.note) lines.push('Note 备注：'+o.note);
+  lines.push('————————————————————————');
+  lines.push('Hi '+g+', here is your quotation for Elite Travel private car service.');
+  lines.push((o.time?('Pickup at '+o.time+' on '+d+'. '):'')+'Total: '+price+' for the service above.');
+  lines.push('If you have any questions, please feel free to contact us. — Elite Travel');
+  $('quoteMsgBox').value=lines.join('\n');
+  $('quoteOverlay').classList.add('open');
+}
+function closeQuoteMsg(){ $('quoteOverlay').classList.remove('open'); }
+function copyQuoteMsg(){
+  const t=$('quoteMsgBox').value;
+  if(!t) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>toast('已复制报价单，粘贴发给客人')).catch(()=>fallbackCopy(t));
+  } else fallbackCopy(t);
+}
+document.getElementById('quoteOverlay').addEventListener('click', e=>{ if(e.target.id==='quoteOverlay') closeQuoteMsg(); });
+
+/* =========================================================
    打印出车单
    ========================================================= */
 function printSheet(){
@@ -1508,6 +1572,51 @@ function exportOrdersMd(){
   toast('已导出 '+list.length+' 条为 Markdown');
 }
 function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=todayStr(); if(!$('exFrom').value){ const d=new Date(); d.setDate(d.getDate()-6); $('exFrom').value=fmtDate(d);} }
+
+/* =========================================================
+   报表中心：按月汇总 城市/车队 的订单、营业额、成本、利润
+   ========================================================= */
+function renderReport(){
+  const s=$('rpMonth');
+  const months=[...new Set((S.orders||[]).map(o=>(o.date||'').slice(0,7)).filter(Boolean))].sort().reverse();
+  if(!months.length){ $('rpBody').innerHTML='<div style="color:var(--text-3);text-align:center;padding:40px 0">暂无订单数据</div>'; return; }
+  const cur=s.value || months[0];
+  if(s.options.length!==months.length || ![...s.options].some(o=>o.value===cur)){
+    s.innerHTML=months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+    s.value=cur;
+  }
+  const orders=(S.orders||[]).filter(o=>(o.date||'').slice(0,7)===cur);
+  const sum=(os,key)=>os.reduce((t,o)=>t+(+o[key]||0),0);
+  const money=os=>sum(os,'quote'), cost=os=>sum(os,'cost');
+  const profit=os=>money(os)-cost(os);
+  const rate=(p,t)=>t>0? (p/t*100).toFixed(1)+'%' : '—';
+  const fmtMoney=n=>'¥'+Number(n).toLocaleString('zh-CN');
+  const cityMap={}, fleetMap={};
+  orders.forEach(o=>{
+    const c=cityOf(o)||'未标注'; (cityMap[c]=cityMap[c]||[]).push(o);
+    const f=o.fleet||'未指定'; (fleetMap[f]=fleetMap[f]||[]).push(o);
+  });
+  function tbl(title,map){
+    let html='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">'+title+'</b>';
+    html+='<table class="order-table" style="margin-top:10px"><thead><tr><th>维度</th><th>订单数</th><th>营业额</th><th>成本</th><th>利润</th><th>利润率</th></tr></thead><tbody>';
+    let to=0,tm=0,tc=0,tp=0;
+    Object.keys(map).sort().forEach(k=>{
+      const os=map[k], m=money(os), c=cost(os), p=profit(os);
+      to+=os.length; tm+=m; tc+=c; tp+=p;
+      html+='<tr><td>'+escapeHtml(k)+'</td><td>'+os.length+'</td><td>'+fmtMoney(m)+'</td><td>'+fmtMoney(c)+'</td><td style="color:'+(p>=0?'var(--confirmed)':'#e53935')+';font-weight:700">'+fmtMoney(p)+'</td><td>'+rate(p,m)+'</td></tr>';
+    });
+    html+='<tr style="background:var(--ink);color:#fff;font-weight:700"><td>合计</td><td>'+to+'</td><td>'+fmtMoney(tm)+'</td><td>'+fmtMoney(tc)+'</td><td>'+fmtMoney(tp)+'</td><td>'+rate(tp,tm)+'</td></tr>';
+    return html+'</tbody></table></div>';
+  }
+  function kpi(name,val){ return '<div style="flex:1 1 130px;min-width:110px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)"><div style="font-size:12px;color:var(--text-3)">'+name+'</div><div style="font-size:19px;font-weight:700;color:var(--ink);margin-top:4px">'+val+'</div></div>'; }
+  $('rpBody').innerHTML =
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">'
+    +kpi('订单数', orders.length)+kpi('营业额', fmtMoney(money(orders)))+kpi('成本', fmtMoney(cost(orders)))
+    +kpi('利润', fmtMoney(profit(orders)))+kpi('利润率', rate(profit(orders),money(orders)))
+    +'</div>'
+    +tbl('按城市汇总', cityMap)
+    +tbl('按对接车队汇总', fleetMap);
+}
 
 /* =========================================================
    粘贴快速录入
