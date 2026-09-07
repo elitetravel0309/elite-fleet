@@ -346,6 +346,7 @@ textarea{resize:vertical;line-height:1.5}
           <button class="btn ghost small" onclick="goThisWeek()">本周</button>
         </div>
         <button class="btn ghost" onclick="openPasteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>粘贴录入</button>
+        <button class="btn ghost" onclick="openQuickOrder()" style="background:var(--ink-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>快速录单</button>
         <button class="btn primary" onclick="openOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增任务</button>
         <button class="btn ghost" onclick="printSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>出车单</button>
       </div>
@@ -359,6 +360,7 @@ textarea{resize:vertical;line-height:1.5}
         <div><h2 class="section">订单管理</h2><p class="sub">全部接送 / 包车订单，可筛选、编辑、删除</p></div>
         <div class="spacer" style="flex:1"></div>
         <button class="btn ghost" onclick="openPasteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>粘贴录入</button>
+        <button class="btn ghost" onclick="openQuickOrder()" style="background:var(--ink-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>快速录单</button>
         <button class="btn primary" onclick="openOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增订单</button>
       </div>
       <div class="filters bar">
@@ -622,6 +624,34 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn ghost" onclick="quoteMsg(editingId)" title="生成给客人的中英文报价单，可复制发微信/WhatsApp">生成报价单</button>
       <button class="btn ghost" onclick="tripMsg(editingId)" title="生成给司机的单订单车单，可复制发微信或打印">司机车单</button>
       <button class="btn primary" onclick="saveOrder()">保存任务</button>
+    </div>
+  </div>
+</div>
+
+<!-- 快速录单弹窗 -->
+<div class="overlay" id="quickOverlay">
+  <div class="modal" style="max-width:480px">
+    <h3>快速录单</h3>
+    <div class="m-sub">只填核心5项，回车跳转下一格，保存后自动清空继续录下一条</div>
+    <div class="fgrid" style="grid-template-columns:1fr 1fr">
+      <div class="fgroup"><label>日期 <span class="req">*</span></label><input type="date" id="qDate" onkeydown="qNext(event,'qTime')"></div>
+      <div class="fgroup"><label>时间 <span class="req">*</span></label><input type="time" id="qTime" onkeydown="qNext(event,'qRoute')"></div>
+      <div class="fgroup full"><label>路线 <span class="req">*</span></label><input type="text" id="qRoute" list="routeList" placeholder="如 慕田峪长城 / 市内 / 大足石刻" onkeydown="qNext(event,'qGuest')"></div>
+      <div class="fgroup"><label>客人 / 团名</label><input type="text" id="qGuest" list="guestPickList" placeholder="从客人库选或直接输入" onkeydown="qNext(event,'qVehicle')"></div>
+      <div class="fgroup"><label>车型</label>
+        <select id="qVehicle" onkeydown="qNext(event,'qSave')">
+          <option value="五座">五座</option>
+          <option value="七座" selected>七座</option>
+          <option value="九座">九座</option>
+          <option value="考斯特">考斯特</option>
+          <option value="大巴">大巴</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-3);margin-top:8px">默认：类型=包车、状态=询价中、人数=1、报价/成本待补</div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeQuickOrder()">关闭</button>
+      <button class="btn primary" id="qSave" onclick="saveQuickOrder()">保存并继续 (Ctrl+Enter)</button>
     </div>
   </div>
 </div>
@@ -1019,9 +1049,10 @@ function loadState(){
   try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; return s; } } }catch(e){}
   const s = seedState(); saveState(s); return s;
 }
-function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} if(appReady) scheduleAutoSync(); }
+function saveState(s){ try{ s._lastModified=Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} if(appReady) scheduleAutoSync(); }
 let appReady = false;
 let autoSyncTimer = null;
+let cloudLastModified = 0;
 function scheduleAutoSync(){
   clearTimeout(autoSyncTimer);
   autoSyncTimer = setTimeout(()=>{ if(appReady) uploadToCloud(true); }, 3000);
@@ -2102,6 +2133,67 @@ function deleteOrder(){
 document.getElementById('orderOverlay').addEventListener('click', e=>{ if(e.target.id==='orderOverlay') closeOrder(); });
 
 /* =========================================================
+   快速录单
+   ========================================================= */
+function openQuickOrder(){
+  $('qDate').value = todayStr();
+  $('qTime').value = '08:00';
+  $('qRoute').value = '';
+  $('qGuest').value = '';
+  $('qVehicle').value = '七座';
+  $('quickOverlay').classList.add('open');
+  setTimeout(()=>$('qDate').focus(), 50);
+}
+function closeQuickOrder(){ $('quickOverlay').classList.remove('open'); }
+function qNext(e, nextId){
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(nextId==='qSave'){ saveQuickOrder(); return; }
+    const el=$(nextId); if(el){ el.focus(); if(el.select) el.select(); }
+  }
+}
+function saveQuickOrder(){
+  const date=$('qDate').value, time=$('qTime').value, route=$('qRoute').value.trim();
+  if(!date||!time||!route){ toast('日期、时间、路线为必填'); return; }
+  const guest=$('qGuest').value.trim();
+  // 自动识别城市
+  let city='';
+  for(const c of CITY_LIST){ if(route.includes(c)){ city=c; break; } }
+  const obj={
+    id: uid(),
+    date, time,
+    type:'charter',
+    city: city||'其他',
+    airport:'', flight:'',
+    route,
+    vehicle:$('qVehicle').value,
+    pax:1,
+    guest: guest||'待补客人',
+    contact:'',
+    driver:'', plate:'', fleet:'',
+    price:0, quote:0, cost:0,
+    status:'inquiry',
+    note:''
+  };
+  S.orders.push(obj);
+  saveState(S);
+  viewDate=date;
+  renderToday(); renderOrders(); renderGuests(); renderKpis();
+  // 清空准备下一条
+  $('qRoute').value='';
+  $('qGuest').value='';
+  $('qRoute').focus();
+  toast('已保存，继续录下一条');
+}
+document.getElementById('quickOverlay').addEventListener('click', e=>{ if(e.target.id==='quickOverlay') closeQuickOrder(); });
+// Ctrl+Enter 快捷保存
+document.addEventListener('keydown', e=>{
+  if(e.ctrlKey && e.key==='Enter' && $('quickOverlay').classList.contains('open')){
+    e.preventDefault(); saveQuickOrder();
+  }
+});
+
+/* =========================================================
    派单给车队
    ========================================================= */
 function fleetMsg(id){
@@ -2301,6 +2393,7 @@ function fetchCloudData(){
   fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
     .then(d=>{
       if(!d || !d.orders) throw 0;
+      if(d._lastModified) cloudLastModified = d._lastModified;
       mergeCloud(d);
       saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       appReady = true;
@@ -2367,8 +2460,32 @@ function uploadToCloud(silent){
   const url=$('cfUrl').value.trim(), key=$('cfKey').value.trim();
   if(!url||!key){ if(!silent) toast('请先填写接口地址和密钥'); return; }
   localStorage.setItem('ef-cf', JSON.stringify({url,key}));
-  const st=$('cfStatus'); if(st) st.textContent='同步中…（'+((S.orders||[]).length)+' 单）';
+  const st=$('cfStatus'); if(st) st.textContent='检查云端版本…';
   const n=(S.orders||[]).length;
+  const localTs = S._lastModified || 0;
+  // 先拉云端数据对比版本
+  fetch(cloudUrl(),{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(cloud=>{
+      const cloudTs = cloud && cloud._lastModified ? cloud._lastModified : 0;
+      if(cloudTs > localTs){
+        const cd = new Date(cloudTs).toLocaleString('zh-CN');
+        const ld = localTs? new Date(localTs).toLocaleString('zh-CN') : '未知';
+        if(silent){
+          if(st) st.textContent='⚠ 云端更新，已暂停自动同步';
+          toast('云端数据比本地新（'+cd+'），自动同步已暂停，请点「一键上云」确认覆盖');
+          return;
+        }
+        if(!confirm('云端数据比本地新！\n\n云端最后修改：'+cd+'\n本地最后修改：'+ld+'\n\n覆盖可能丢失云端更新。确定覆盖？')){
+          if(st) st.textContent='已取消（云端版本更新）';
+          return;
+        }
+      }
+      doUpload(url,key,n,silent);
+    })
+    .catch(()=>{ doUpload(url,key,n,silent); });
+}
+function doUpload(url,key,n,silent){
+  const st=$('cfStatus'); if(st) st.textContent='同步中…（'+n+' 单）';
   fetch(url.replace(/\/$/,'')+'/api/upload?key='+encodeURIComponent(key),{
     method:'POST',
     headers:{'Content-Type':'text/plain'},
@@ -2376,7 +2493,7 @@ function uploadToCloud(silent){
   }).then(r=>r.json().catch(()=>({ok:false,error:'响应解析失败'})))
     .then(d=>{
       if(st) st.textContent = d.ok? '✓ 已同步 '+n+' 单' : '✗ '+(d.error||'失败');
-      if(d.ok){ if(!silent) toast('已上云 '+n+' 单'); }
+      if(d.ok){ cloudLastModified = S._lastModified || Date.now(); if(!silent) toast('已上云 '+n+' 单'); }
       else if(!silent) toast('上云失败：'+(d.error||''));
     })
     .catch(e=>{ if(st) st.textContent='✗ 网络错误'; if(!silent) toast('上云失败：网络错误'); });
