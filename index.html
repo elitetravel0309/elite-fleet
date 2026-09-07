@@ -730,8 +730,8 @@ textarea{resize:vertical;line-height:1.5}
 <div class="overlay" id="driverPasteOverlay">
   <div class="modal">
     <h3>粘贴导入司机（带车）</h3>
-    <div class="m-sub">支持 JSON（<span class="mono">{"drivers":[...]}</span>，字段 name/city/carType/plate/phone/seatType/fleet/note）或键值对文本，多位司机用空行分隔。格式示例见下。已存在的司机（同名）自动跳过。</div>
-    <textarea class="textarea-mon" id="driverPasteInput" style="min-height:180px" placeholder='司机: 刘洋&#10;城市: 北京&#10;车型: 极狐525黑色&#10;车号：京ACN2007&#10;电话：15120033382&#10;座位：五座&#10;车队：北京首汽旅游车队&#10;&#10;司机: 张师傅&#10;城市: 上海&#10;车型: 帕萨特&#10;车号：沪A·88001&#10;电话：13800000001'></textarea>
+    <div class="m-sub">支持三种格式：① 自然语言，每行一位，如「<span class="mono">刘洋 极狐525黑色 京ACN2007 15120033382 五座</span>」；② 键值对（<span class="mono">司机: 刘洋</span> / <span class="mono">城市: 北京</span>…），多位用空行分隔；③ JSON（<span class="mono">{"drivers":[...]}</span>，字段 name/city/carType/plate/phone/seatType/fleet/note）。已存在的司机（同名）自动跳过。</div>
+    <textarea class="textarea-mon" id="driverPasteInput" style="min-height:180px" placeholder='每行一位司机，字段用空格/逗号分隔：&#10;刘洋 极狐525黑色 京ACN2007 15120033382 五座&#10;上海 王师傅 别克GL8 沪A·12345 13600000000 七座&#10;&#10;或键值对：&#10;司机: 张师傅&#10;城市: 北京&#10;车型: 帕萨特&#10;车号：京A·88001&#10;电话：13800000001'></textarea>
     <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
       <button class="btn primary" onclick="parseDriverPaste()">开始识别</button>
       <span style="color:var(--text-3);font-size:12px" id="driverPasteCount"></span>
@@ -1396,13 +1396,17 @@ function parseDriverPaste(){
       if(!block) return;
       const item={name:'',city:'',carType:'',plate:'',phone:'',seatType:'五座',fleet:'',note:''};
       let has=false;
-      block.split(/\r?\n/).forEach(line=>{
-        line=line.trim();
-        if(!line || /^[-—=_*]{3,}$/.test(line)) return;
+      const lines=block.split(/\r?\n/).map(l=>l.trim()).filter(l=>l && !/^[-—=_*]{3,}$/.test(l));
+      lines.forEach(line=>{
         const kv=kvParseLine(line,{name:/^(司机|司机姓名|姓名|name)$/i, city:/^(城市|目的地|city)$/i, carType:/^(车型|车辆|carType)$/i, plate:/^(车号|车牌|plate)$/i, phone:/^(电话|手机|tel|phone)$/i, seatType:/^(座位|座位档|seatType)$/i, fleet:/^(车队|所属车队|fleet)$/i, note:/^(备注|note)$/i});
         if(kv){ Object.keys(kv).forEach(k=>{ if(kv[k]!==undefined && kv[k]!==null && kv[k]!==''){ item[k]=kv[k]; has=true; } }); }
       });
-      if(has && item.name) arr.push(item);
+      if(has && item.name){ arr.push(item); return; }
+      // 自然语言行：每行一个司机，如「刘洋 极狐525黑色 京ACN2007 15120033382 五座」
+      lines.forEach(line=>{
+        const d=parseDriverLine(line);
+        if(d) arr.push(d);
+      });
     });
   }
   arr=arr.filter(x=>x && x.name && String(x.name).trim());
@@ -1430,6 +1434,34 @@ function kvParseLine(line,map){
     for(const field in map){ if(map[field].test(k)){ item[field]=v; ok=true; return; } }
   });
   return ok? item : null;
+}
+/* 自然语言司机行解析：`刘洋 极狐525黑色 京ACN2007 15120033382 五座`
+   自动识别：车号（车牌正则）、电话、座位档；剩余段首位为姓名、其余为车型；城市从行首城市名或车牌首字推断 */
+const PLATE_RE = /^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-Z][A-Z0-9·]{4,7}$/i;
+function parseDriverLine(line){
+  const seg=line.split(/[\s\t，,、;；/]+/).map(s=>s.trim()).filter(Boolean);
+  if(!seg.length) return null;
+  let phone='', plate='', seat='', rest=[], city='';
+  const seatOf=p=>{ if(/七座|7座/.test(p)) return '七座'; if(/九座|9座/.test(p)) return '九座'; if(/考斯特/.test(p)) return '考斯特'; if(/大巴/.test(p)) return '大巴'; if(/五座|5座|轿车/.test(p)) return '五座'; return ''; };
+  seg.forEach(s=>{
+    if(!phone && /^[0-9+\-]{5,}$/.test(s.replace(/[\s-]/g,''))){ phone=s.replace(/[\s-]/g,''); return; }
+    if(!plate && PLATE_RE.test(s)){ plate=s; return; }
+    if(!seat && seatOf(s)){ seat=seatOf(s); return; }
+    rest.push(s);
+  });
+  if(!rest.length) return null;
+  let name=rest[0];
+  if(!city){
+    if(CITYS.includes(name)){ city=name; rest.shift(); name=rest[0]||''; }
+    else{
+      const hit=CITYS.find(c=>name.startsWith(c) && name.length>c.length);
+      if(hit){ city=hit; name=name.slice(hit.length).trim(); rest[0]=name; }
+    }
+  }
+  if(!city && plate){ city=PLATE_CITY[plate.charAt(0)]||''; }
+  if(!name) return null;
+  const carType=rest.slice(1).join(' ');
+  return {name, city, carType, plate, phone, seatType:seat||'五座', fleet:'', note:''};
 }
 
 /* =========================================================
