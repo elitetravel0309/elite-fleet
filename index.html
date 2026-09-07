@@ -2362,9 +2362,9 @@ function uploadToCloud(){
   localStorage.setItem('ef-cf', JSON.stringify({url,key}));
   const st=$('cfStatus'); if(st) st.textContent='上传中…（'+((S.orders||[]).length)+' 单）';
   const n=(S.orders||[]).length;
-  fetch(url.replace(/\/$/,'')+'/api/upload',{
+  fetch(url.replace(/\/$/,'')+'/api/upload?key='+encodeURIComponent(key),{
     method:'POST',
-    headers:{'Content-Type':'application/json','X-Api-Key':key},
+    headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({data:S})
   }).then(r=>r.json().catch(()=>({ok:false,error:'响应解析失败'})))
     .then(d=>{
