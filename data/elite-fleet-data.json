@@ -295,32 +295,12 @@
     {
       "city": "北京",
       "route": "慕田峪 · 机场接送",
-      "vehicle": "五座",
-      "duration": "10小时",
-      "distance": "",
-      "cost": 700,
-      "quote": 0,
-      "note": "大兴机场接 → 慕田峪 → 送市区酒店"
-    },
-    {
-      "city": "北京",
-      "route": "慕田峪 · 机场接送",
       "vehicle": "七座",
       "duration": "10小时",
       "distance": "",
       "cost": 750,
       "quote": 0,
       "note": "首都机场接 → 慕田峪 → 送市区酒店"
-    },
-    {
-      "city": "北京",
-      "route": "慕田峪 · 机场接送",
-      "vehicle": "七座",
-      "duration": "10小时",
-      "distance": "",
-      "cost": 800,
-      "quote": 0,
-      "note": "大兴机场接 → 慕田峪 → 送市区酒店"
     },
     {
       "city": "北京",
@@ -1370,7 +1350,7 @@
     }
   ],
   "_meta": {
-    "built": "2026-09-07T06:50:15.034Z",
+    "built": "2026-09-07T07:22:57.751Z",
     "source": "workbench-upload"
   }
 }
