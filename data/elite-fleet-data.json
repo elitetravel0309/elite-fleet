@@ -345,6 +345,18 @@
       "seatType": "七座",
       "note": "接过我公务机",
       "fleet": ""
+    },
+    {
+      "id": "d12",
+      "city": "西安",
+      "name": "韩涛",
+      "phone": "18066512528",
+      "plate": "陕AFW6283",
+      "carType": "帕萨特混动",
+      "color": "",
+      "seatType": "五座",
+      "note": "",
+      "fleet": ""
     }
   ],
   "fleets": [
