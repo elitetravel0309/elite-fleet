@@ -555,7 +555,7 @@ textarea{resize:vertical;line-height:1.5}
         </select>
       </div>
       <div class="fgroup"><label>城市 / 目的地</label>
-        <select id="oCity">
+        <select id="oCity" onchange="onCityPick()">
           <option value="">自动识别</option>
           <option value="北京">北京</option>
           <option value="上海">上海</option>
@@ -622,6 +622,7 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn danger" id="omDelete" style="margin-right:auto" onclick="deleteOrder()">删除</button>
       <button class="btn ghost" onclick="fleetMsg(editingId)" title="生成给车队的派单消息，可复制发微信/WhatsApp">派单给车队</button>
       <button class="btn ghost" onclick="quoteMsg(editingId)" title="生成给客人的中英文报价单，可复制发微信/WhatsApp">生成报价单</button>
+      <button class="btn ghost" onclick="serviceMsg(editingId)" title="生成给客人的司机服务信息（车型/车牌/司机/电话），一键复制">服务信息</button>
       <button class="btn ghost" onclick="tripMsg(editingId)" title="生成给司机的单订单车单，可复制发微信或打印">司机车单</button>
       <button class="btn primary" onclick="saveOrder()">保存任务</button>
     </div>
@@ -2019,8 +2020,10 @@ function openOrder(id){
   $('oGuest').value = o? (o.guest||'') : '';
   $('oContact').value = o? (o.contact||'') : '';
   $('oFleet').value = o? (o.fleet||'') : '';
-  // 车队 + 司机下拉（选车队后该车队司机排前，其余保留可手动选）
-  syncFleetSel(o? (o.fleet||'') : '');
+  // 车队 + 司机下拉（按订单城市推荐+最近使用排序）
+  let initCity = o? (o.city||'') : '';
+  if(!initCity && o && o.route){ for(const c of CITY_LIST){ if(o.route.includes(c)){ initCity=c; break; } } }
+  syncFleetSel(o? (o.fleet||'') : '', initCity);
   $('oPlate').value = o? (o.plate||'') : '';
   $('oQuote').value = o? (o.quote || o.price || '') : '';
   $('oCost').value = o? (o.cost||'') : '';
@@ -2042,23 +2045,37 @@ function onDriverPick(){
   const h=$('oDriverHint');
   if(h) h.textContent = d? [d.carType, d.color, d.seatType, d.phone].filter(Boolean).join(' · ') : '';
 }
-/* 订单弹窗：同步车队下拉 + 司机下拉（所选车队的司机排前，其余保留可手动选） */
-function syncFleetSel(fleet){
+/* 订单弹窗：同步车队下拉 + 司机下拉（按订单城市推荐+最近使用排序） */
+function syncFleetSel(fleet, city){
   const fSel=$('oFleet');
   fSel.innerHTML='<option value="">— 未对接车队 —</option>'+S.fleets.map(f=>'<option value="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+(f.city?'（'+escapeHtml(f.city)+'）':'')+(f.contact?' · '+escapeHtml(f.contact):'')+'</option>').join('');
   if(fleet && S.fleets.some(f=>f.name===fleet)) fSel.value=fleet;
   const fc=(S.fleets.find(f=>f.name===fleet)||{}).city||'';
+  const orderCity = city || fc || '';
   const sel=$('oDriver');
   const cur=sel.value;
   const ds=[...S.drivers].sort((a,b)=>{
-    const af=(a.fleet===fleet?1:0)+(fc&&a.city===fc?1:0), bf=(b.fleet===fleet?1:0)+(fc&&b.city===fc?1:0);
-    return bf-af || (a.name||'').localeCompare(b.name||'','zh');
+    // 第一优先级：城市匹配（订单城市或车队城市）
+    const aCity = (orderCity && a.city===orderCity)?1:0;
+    const bCity = (orderCity && b.city===orderCity)?1:0;
+    if(aCity!==bCity) return bCity-aCity;
+    // 第二优先级：同城市内按最近使用排序
+    const aLu = a.lastUsed||0, bLu = b.lastUsed||0;
+    if(aLu!==bLu) return bLu-aLu;
+    // 第三优先级：车队匹配
+    const af=(a.fleet===fleet?1:0), bf=(b.fleet===fleet?1:0);
+    if(af!==bf) return bf-af;
+    return (a.name||'').localeCompare(b.name||'','zh');
   });
-  sel.innerHTML='<option value="">— 未指派</option>'+ds.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+(d.fleet&&d.fleet!==fleet? '（'+escapeHtml(d.fleet)+'）':'')+(d.city?'（'+escapeHtml(d.city)+'）':'')+'</option>').join('');
+  sel.innerHTML='<option value="">— 未指派 —</option>'+ds.map(d=>{
+    const rec = (orderCity && d.city===orderCity)? '★ ' : '';
+    return '<option value="'+escapeHtml(d.name)+'">'+rec+escapeHtml(d.name)+(d.city?'（'+escapeHtml(d.city)+'）':'')+(d.fleet&&d.fleet!==fleet? ' · '+escapeHtml(d.fleet):'')+'</option>';
+  }).join('');
   if(cur && S.drivers.some(d=>d.name===cur)) sel.value=cur;
   onDriverPick();
 }
-function onFleetPick(){ syncFleetSel($('oFleet').value); }
+function onFleetPick(){ syncFleetSel($('oFleet').value, $('oCity').value); }
+function onCityPick(){ syncFleetSel($('oFleet').value, $('oCity').value); }
 /* 客人库 datalist：订单弹窗可选客人，选后自动带出联系方式 */
 function syncGuestList(){
   const gl=$('guestPickList'); if(!gl) return;
@@ -2117,6 +2134,8 @@ function saveOrder(){
   };
   if(editingId){ const i=S.orders.findIndex(x=>x.id===editingId); if(i>=0) S.orders[i]=obj; }
   else S.orders.push(obj);
+  // 记录司机最近使用时间（用于智能推荐排序）
+  if(obj.driver){ const drv=S.drivers.find(x=>x.name===obj.driver); if(drv){ drv.lastUsed=Date.now(); } }
   saveState(S);
   closeOrder();
   viewDate=date;
@@ -2299,9 +2318,41 @@ function tripMsg(id){
   if(o.note) lines.push('备注：'+o.note);
   lines.push('—— Elite Travel');
   $('tripMsgBox').value=lines.join('\n');
+  const titleEl=$('tripOverlay').querySelector('h3');
+  const subEl=$('tripOverlay').querySelector('.m-sub');
+  if(titleEl) titleEl.textContent='司机出车单';
+  if(subEl) subEl.textContent='给司机的单订单车单，复制后发微信，或点「打印」生成纸质/PDF 车单。';
   $('tripOverlay').classList.add('open');
 }
 function closeTripMsg(){ $('tripOverlay').classList.remove('open'); }
+/* 服务信息（给客人的司机服务卡片，一键复制） */
+function serviceMsg(id){
+  const o=S.orders.find(x=>x.id===id); if(!o){ toast('请先保存订单，再生成服务信息'); return; }
+  const drv=S.drivers.find(x=>x.name===o.driver);
+  const d=(o.date||'').replace(/(\d{4})-(\d{2})-(\d{2})/,'$1年$2月$3日')||'';
+  const lines=[];
+  lines.push('服务信息');
+  lines.push('——————————');
+  if(d) lines.push('日期：'+d);
+  if(o.time) lines.push('时间：'+o.time);
+  if(o.route) lines.push('行程：'+o.route);
+  lines.push('——————————');
+  lines.push('车型：'+(drv&&drv.carType? drv.carType : o.vehicle||'—'));
+  lines.push('车牌：'+(o.plate||(drv&&drv.plate)||'—'));
+  if(drv&&drv.color) lines.push('颜色：'+drv.color);
+  lines.push('司机：'+(o.driver||'—'));
+  lines.push('电话：'+(drv&&drv.phone? drv.phone : '—'));
+  if(o.note) lines.push('备注：'+o.note);
+  lines.push('——————————');
+  lines.push('Elite Travel · China Wonder Tours');
+  $('tripMsgBox').value=lines.join('\n');
+  // 改标题为服务信息
+  const titleEl=$('tripOverlay').querySelector('h3');
+  const subEl=$('tripOverlay').querySelector('.m-sub');
+  if(titleEl) titleEl.textContent='司机服务信息';
+  if(subEl) subEl.textContent='给客人的司机服务卡片，复制后发微信 / WhatsApp / 邮件。';
+  $('tripOverlay').classList.add('open');
+}
 function copyTripMsg(){
   const t=$('tripMsgBox').value; if(!t) return;
   if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(()=>toast('已复制车单，粘贴发给司机')).catch(()=>fallbackCopy(t)); }
