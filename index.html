@@ -2269,7 +2269,9 @@ function renderReport(){
   const s=$('rpMonth');
   const months=[...new Set((S.orders||[]).map(o=>(o.date||'').slice(0,7)).filter(Boolean))].sort().reverse();
   if(!months.length){ $('rpBody').innerHTML='<div style="color:var(--text-3);text-align:center;padding:40px 0">暂无订单数据</div>'; return; }
-  const cur=s.value || months[0];
+  const nd=new Date();
+  const curMonth=nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0');
+  const cur=s.value || (months.includes(curMonth)? curMonth : months[0]);
   if(s.options.length!==months.length || ![...s.options].some(o=>o.value===cur)){
     s.innerHTML=months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
     s.value=cur;
