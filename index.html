@@ -481,6 +481,16 @@ textarea{resize:vertical;line-height:1.5}
           </div>
         </div>
         <div class="panel">
+          <h3>一键上云（Cloudflare）</h3>
+          <p class="desc">把本机全部数据上传到 GitHub 云端，所有设备打开即最新。首次需填接口地址与密钥（见项目里 cloudflare-worker/README.md）。</p>
+          <div class="stack">
+            <input type="text" id="cfUrl" placeholder="https://elite-fleet-sync.你的子域.workers.dev">
+            <input type="password" id="cfKey" placeholder="API 密钥（与 Worker 机密一致）">
+            <button class="btn primary" onclick="uploadToCloud()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>保存全部数据到云端</button>
+            <div id="cfStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
+          </div>
+        </div>
+        <div class="panel">
           <h3>当日出车单</h3>
           <p class="desc">为司机生成当日任务清单，可打印或存为 PDF。</p>
           <div class="stack">
@@ -2341,7 +2351,29 @@ function exportOrdersMd(){
   a.download='travelkb_接送订单_'+first+'_'+last+'.md'; a.click(); URL.revokeObjectURL(a.href);
   toast('已导出 '+list.length+' 条为 Markdown');
 }
-function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=todayStr(); if(!$('exFrom').value){ const d=new Date(); d.setDate(d.getDate()-6); $('exFrom').value=fmtDate(d);} }
+function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=todayStr(); if(!$('exFrom').value){ const d=new Date(); d.setDate(d.getDate()-6); $('exFrom').value=fmtDate(d);} loadCfSync(); }
+/* ---- 一键上云（Cloudflare Worker → GitHub 仓库 → Pages 自动发布） ---- */
+function loadCfSync(){
+  try{ const s=JSON.parse(localStorage.getItem('ef-cf')||'{}'); if($('cfUrl')) $('cfUrl').value=s.url||''; if($('cfKey')) $('cfKey').value=s.key||''; }catch(e){}
+}
+function uploadToCloud(){
+  const url=$('cfUrl').value.trim(), key=$('cfKey').value.trim();
+  if(!url||!key){ toast('请先填写接口地址和密钥'); return; }
+  localStorage.setItem('ef-cf', JSON.stringify({url,key}));
+  const st=$('cfStatus'); if(st) st.textContent='上传中…（'+((S.orders||[]).length)+' 单）';
+  const n=(S.orders||[]).length;
+  fetch(url.replace(/\/$/,'')+'/api/upload',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Api-Key':key},
+    body:JSON.stringify({data:S})
+  }).then(r=>r.json().catch(()=>({ok:false,error:'响应解析失败'})))
+    .then(d=>{
+      if(st) st.textContent = d.ok? '✓ '+d.note : '✗ '+(d.error||'失败');
+      if(d.ok){ toast('已上云 '+n+' 单，约 1-2 分钟后全网生效'); }
+      else toast('上云失败：'+(d.error||''));
+    })
+    .catch(e=>{ if(st) st.textContent='✗ 网络错误：'+e.message; toast('上云失败：网络错误'); });
+}
 
 /* =========================================================
    报表中心：按月汇总 城市/车队 的订单、营业额、成本、利润
