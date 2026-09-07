@@ -302,6 +302,7 @@ textarea{resize:vertical;line-height:1.5}
     <button data-route="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>周历排班</button>
     <div class="nav-label">业务</div>
     <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
+    <button data-route="guests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
     <button data-route="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>报表中心</button>
     <div class="nav-label">资源</div>
     <button data-route="fleet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆与司机</button>
@@ -393,6 +394,17 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn ghost" onclick="clearFilters()">重置</button>
       </div>
       <div id="ordersWrap"></div>
+    </section>
+
+    <!-- 客人库 -->
+    <section class="view" data-route="guests">
+      <div class="today-head">
+        <div><h2 class="section">客人库</h2><p class="sub">自动从订单提取客人档案 · 电话 / 微信 / WhatsApp · 历史消费</p></div>
+        <div class="spacer" style="flex:1"></div>
+        <input type="text" id="guestKw" placeholder="搜索姓名 / 电话 / 微信" oninput="renderGuests()" style="min-width:170px;padding:8px 12px;border:1px solid var(--line-2);border-radius:9px;font-size:13px;background:#FBFCFE">
+        <button class="btn primary" onclick="openGuestModal('')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加客人</button>
+      </div>
+      <div id="guestList"></div>
     </section>
 
     <!-- 车队与司机 -->
@@ -590,6 +602,29 @@ textarea{resize:vertical;line-height:1.5}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ===== 客人档案弹窗 ===== -->
+<div class="overlay" id="guestModal">
+  <div class="modal">
+    <h3 id="guestModalTitle">添加客人</h3>
+    <div class="fgrid">
+      <div class="fgroup full"><label>姓名 *</label><input type="text" id="gName" placeholder="如 Byhamre 或 王女士"></div>
+      <div class="fgroup"><label>电话 / WhatsApp</label><input type="text" id="gPhone" placeholder="如 +46 72 237 12 45"></div>
+      <div class="fgroup"><label>微信</label><input type="text" id="gWechat" placeholder="微信号或备注「微信」"></div>
+      <div class="fgroup"><label>国家 / 地区</label><input type="text" id="gCountry" placeholder="如 瑞典 / 德国"></div>
+      <div class="fgroup"><label>所在城市</label><input type="text" id="gCity" list="cityList" placeholder="如 北京"></div>
+      <div class="fgroup full"><label>来源渠道</label><select id="gSource"><option value="">— 不填 —</option><option>微信</option><option>WhatsApp</option><option>社交媒体</option><option>老客转介</option><option>邮件</option><option>其他</option></select></div>
+      <div class="fgroup full"><label>备注</label><input type="text" id="gNote" placeholder="如 3岁儿童需儿童座椅 / 中文司机优先"></div>
+    </div>
+    <div id="guestOrders" style="margin-top:6px"></div>
+    <div class="modal-foot">
+      <button class="btn danger" id="gDelBtn" onclick="delGuest()" style="display:none">删除客人</button>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn ghost" onclick="closeGuestModal()">取消</button>
+      <button class="btn primary" onclick="saveGuestModal()">保存客人</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== 派单给车队弹窗 ===== -->
 <div class="overlay" id="fleetOverlay">
@@ -928,10 +963,10 @@ const SEED_DRIVERS = [
   {id:'d3', city:'北京', name:'李师傅', phone:'13800000002', plate:'京A·88002', carType:'', seatType:'七座', note:'商务车', fleet:''}
 ];
 function seedState(){
-  return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:JSON.parse(JSON.stringify(SEED_FLEETS))};
+  return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:JSON.parse(JSON.stringify(SEED_FLEETS)), guests:[]};
 }
 function loadState(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders) return s; } }catch(e){}
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; return s; } } }catch(e){}
   const s = seedState(); saveState(s); return s;
 }
 function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} }
@@ -992,7 +1027,7 @@ function routeList(){ const set=new Set(); S.orders.forEach(o=>o.route&&set.add(
 /* =========================================================
    视图路由
    ========================================================= */
-const CRUMB = {today:'排班 · 今日', week:'排班 · 周历', orders:'业务 · 订单管理', report:'业务 · 报表中心', fleet:'资源 · 车辆与司机', prices:'资源 · 参考价库', data:'数据 · 备份与同步'};
+const CRUMB = {today:'排班 · 今日', week:'排班 · 周历', orders:'业务 · 订单管理', guests:'业务 · 客人库', report:'业务 · 报表中心', fleet:'资源 · 车辆与司机', prices:'资源 · 参考价库', data:'数据 · 备份与同步'};
 let curRoute = 'today';
 let viewDate = todayStr();
 let weekOffset = 0;
@@ -1020,6 +1055,7 @@ function showView(r){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.dataset.route===r));
   if(r==='schedule') showSchedule(scheduleMode);
   if(r==='orders') renderOrders();
+  if(r==='guests') renderGuests();
   if(r==='report') renderReport();
   if(r==='fleet') renderFleet();
   if(r==='prices') renderPrices();
@@ -1170,7 +1206,7 @@ function renderOrders(){
     return;
   }
   let html='<table class="order-table"><thead><tr>'
-    +'<th>日期</th><th>时间</th><th>类型</th><th>路线</th><th>客户</th><th>车型/人数</th><th>司机/车牌</th><th>报价 / 成本 / 利润</th><th>状态</th><th></th>'
+    +'<th>日期</th><th>时间</th><th>类型</th><th>路线</th><th>客户</th><th>联系</th><th>车型/人数</th><th>司机/车牌</th><th>报价 / 成本 / 利润</th><th>状态</th><th></th>'
     +'</tr></thead><tbody>';
   list.forEach(o=>{
     const tm=TYPE_META[o.type]; const st=STATUS_META[o.status]; const px=calcPx(o);
@@ -1186,6 +1222,7 @@ function renderOrders(){
       +'<td><span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span>'+(cityOf(o)?' <span style="font-size:11px;color:var(--text-3)">'+cityOf(o)+'</span>':'')+'</td>'
       +'<td>'+escapeHtml(o.route||'')+(o.airport?' <span style="color:var(--text-3)">· '+airportName(o.airport)+'</span>':'')+'</td>'
       +'<td>'+escapeHtml(o.guest||'')+'</td>'
+      +'<td>'+contactChips(o.contact)+'</td>'
       +'<td>'+escapeHtml(o.vehicle||'')+(o.pax?' · '+o.pax+'人':'')+'</td>'
       +(function(){
         const drv=o.driver? S.drivers.find(x=>x.name===o.driver) : null;
@@ -1204,7 +1241,7 @@ function renderOrders(){
 function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach(id=>{ if($(id)) $(id).value=''; }); renderOrders(); }
 function delOrder(id){
   if(!confirm('确定删除该订单？')) return;
-  S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderKpis();
+  S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderGuests(); renderKpis();
 }
 /* ---- 订单指派司机（弹窗，替代 prompt） ---- */
 var qaOrderId='';
@@ -1235,6 +1272,117 @@ function confirmQa(){
   toast('已指派 '+d.name+(d.carType?' · '+d.carType:'')+(d.plate?' · '+d.plate:''));
 }
 document.getElementById('qaModal').addEventListener('click', e=>{ if(e.target.id==='qaModal') closeQa(); });
+
+/* =========================================================
+   客人库（自动从订单提取档案 + 手动维护）
+   ========================================================= */
+function parseContact(c){
+  const out={phone:'', wechat:'', raw:c||''};
+  if(!c) return out;
+  const m=c.match(/\+?[0-9][0-9\s\-]{6,15}/);
+  if(m) out.phone=m[0].trim();
+  if(/微信|wechat/i.test(c)){ const wm=c.match(/微信[:：]?\s*([A-Za-z0-9_\-]{2,})/i); out.wechat = wm? wm[1] : '微信'; }
+  return out;
+}
+function contactChips(c){
+  if(!c) return '<span style="color:var(--text-3)">—</span>';
+  const pc=parseContact(c);
+  let chips='';
+  if(pc.phone) chips+='<span class="tag" style="background:var(--accent-soft);color:var(--accent-dark);font-size:10.5px;font-family:ui-monospace,Consolas,monospace">'+escapeHtml(pc.phone)+'</span> ';
+  if(pc.wechat) chips+='<span class="tag" style="background:rgba(7,193,96,.14);color:#07A04B;font-size:10.5px">微信</span> ';
+  if(!chips) return '<span style="font-size:12px;color:var(--text-3)">'+escapeHtml(c)+'</span>';
+  return chips;
+}
+function ensureGuests(){
+  let ch=!Array.isArray(S.guests);
+  if(ch) S.guests=[];
+  (S.orders||[]).forEach(o=>{
+    const nm=(o.guest||'').trim(); if(!nm) return;
+    const low=nm.toLowerCase();
+    let g=S.guests.find(x=>(x.name||'').trim().toLowerCase()===low);
+    if(!g){ g={id:uid(), name:nm, phone:'', wechat:'', contact:'', country:'', city:'', source:'', note:'', createdAt:todayStr(), updatedAt:''}; S.guests.push(g); ch=true; }
+    if(o.contact){
+      const pc=parseContact(o.contact);
+      let changed=false;
+      if(pc.phone && !g.phone){ g.phone=pc.phone; changed=true; }
+      if(pc.wechat && !g.wechat){ g.wechat=pc.wechat; changed=true; }
+      if(!g.contact){ g.contact=o.contact; changed=true; }
+      if(changed){ g.updatedAt=todayStr(); ch=true; }
+    }
+  });
+  if(ch) saveState(S);
+}
+function guestOrders(g){
+  const nm=(g.name||'').trim().toLowerCase();
+  const gp=(g.phone||'').replace(/[\s\-]/g,'');
+  return (S.orders||[]).filter(o=>{
+    const on=(o.guest||'').trim().toLowerCase();
+    if(on && on===nm) return true;
+    if(o.contact && gp){ const pc=parseContact(o.contact); if(pc.phone && pc.phone.replace(/[\s\-]/g,'')===gp) return true; }
+    return false;
+  }).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+}
+function renderGuests(){
+  ensureGuests();
+  const kw=($('guestKw')?$('guestKw').value:'').trim().toLowerCase();
+  let list=(S.guests||[]).filter(g=>{
+    if(!kw) return true;
+    const h=[g.name,g.phone,g.wechat,g.contact,g.country,g.city].join(' ').toLowerCase();
+    return h.includes(kw);
+  }).sort((a,b)=>(a.name||'').localeCompare(b.name||'','zh'));
+  const cnt=$('guestCount'); if(cnt) cnt.textContent=(S.guests||[]).length;
+  if(!list.length){
+    $('guestList').innerHTML='<div style="text-align:center;color:var(--text-3);padding:40px 0">'+(kw? '没有匹配的客人':'还没有客人档案。订单里写过客人的会自动建档，也可点「添加客人」手动录入。')+'</div>';
+    return;
+  }
+  $('guestList').innerHTML = list.map(g=>{
+    const os=guestOrders(g);
+    const total=os.reduce((s,o)=>s+((+o.quote)||0),0);
+    const last=os.length? os[os.length-1].date : '';
+    return '<div class="fleet-row" style="cursor:pointer" onclick="openGuestModal(\''+g.id+'\')">'
+      +'<div class="avatar" style="background:var(--charter);color:#fff">'+escapeHtml((g.name||'?').slice(0,1).toUpperCase())+'</div>'
+      +'<div class="info"><b>'+escapeHtml(g.name)+'</b>'
+      +'<span>'+(g.country?'<span class="tag" style="background:var(--bg);color:var(--text-2);font-size:11px">'+escapeHtml(g.country)+'</span> · ':'')+(g.city?'<span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(g.city)+'</span> · ':'')+(g.source?'来源 '+escapeHtml(g.source)+' · ':'')+(g.note?escapeHtml(g.note):'')+'</span>'
+      +'<span style="color:var(--text-3);font-size:11.5px">'+(g.phone?'电话 '+escapeHtml(g.phone):'')+(g.wechat?' · 微信 '+escapeHtml(g.wechat):'')+(g.contact&&!g.phone&&!g.wechat?' · '+escapeHtml(g.contact):'')+'</span></div>'
+      +'<span class="type-pill">'+os.length+' 单 · ¥'+total+'</span>'
+      +(last?'<span style="font-size:11px;color:var(--text-3);margin-left:6px">最近 '+last+'</span>':'')
+      +'<button class="iconbtn" onclick="event.stopPropagation();openGuestModal(\''+g.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
+      +'<button class="iconbtn" onclick="event.stopPropagation();delGuest(\''+g.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+  }).join('');
+}
+var editingGuestId='';
+function openGuestModal(id){
+  editingGuestId=id||'';
+  const g=id? S.guests.find(x=>x.id===id) : {name:'',phone:'',wechat:'',contact:'',country:'',city:'',source:'',note:''};
+  if(!g) return;
+  $('guestModalTitle').textContent = id? '客人档案' : '添加客人';
+  $('gName').value=g.name||''; $('gPhone').value=g.phone||''; $('gWechat').value=g.wechat||'';
+  $('gCountry').value=g.country||''; $('gCity').value=g.city||''; $('gSource').value=g.source||''; $('gNote').value=g.note||'';
+  $('gDelBtn').style.display = id? 'inline-flex':'none';
+  const os=id? guestOrders(g) : [];
+  $('guestOrders').innerHTML = os.length? '<div style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px"><b style="font-size:13px">历史订单 '+os.length+' 单</b><div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">'+os.map(o=>{
+    const st=STATUS_META[o.status];
+    return '<div style="display:flex;gap:10px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;cursor:pointer;flex-wrap:wrap" onclick="closeGuestModal();openOrder(\''+o.id+'\')"><span style="font-size:12px;font-weight:600">'+o.date+' '+o.time+'</span><span style="font-size:12px;color:var(--text-2);flex:1;min-width:120px">'+escapeHtml(o.route||'')+'</span><span style="font-size:12px">¥'+(+o.quote||0)+'</span><span class="st" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span></div>';
+  }).join('')+'</div></div>' : '';
+  $('guestModal').classList.add('open');
+  setTimeout(()=>$('gName').focus(),50);
+}
+function closeGuestModal(){ $('guestModal').classList.remove('open'); editingGuestId=''; }
+function saveGuestModal(){
+  const name=$('gName').value.trim();
+  if(!name){ toast('请填写客人姓名'); $('gName').focus(); return; }
+  const obj={name, phone:$('gPhone').value.trim(), wechat:$('gWechat').value.trim(), country:$('gCountry').value.trim(), city:$('gCity').value.trim(), source:$('gSource').value, note:$('gNote').value.trim()};
+  if(editingGuestId){ const g=S.guests.find(x=>x.id===editingGuestId); if(g) Object.assign(g,obj,{updatedAt:todayStr()}); }
+  else S.guests.push(Object.assign({id:uid(), contact:'', createdAt:todayStr(), updatedAt:todayStr()},obj));
+  saveState(S); renderGuests(); closeGuestModal(); toast('已保存客人');
+}
+function delGuest(id){
+  const target=id||editingGuestId;
+  if(!target) return;
+  if(!confirm('删除该客人档案？（订单不受影响）')) return;
+  S.guests=S.guests.filter(g=>g.id!==target); saveState(S); renderGuests(); closeGuestModal(); toast('已删除客人');
+}
+document.getElementById('guestModal').addEventListener('click', e=>{ if(e.target.id==='guestModal') closeGuestModal(); });
 
 /* =========================================================
    司机与车辆（配对）
@@ -1715,14 +1863,14 @@ function saveOrder(){
   saveState(S);
   closeOrder();
   viewDate=date;
-  renderToday(); renderOrders(); renderKpis();
+  renderToday(); renderOrders(); renderGuests(); renderKpis();
   toast('任务已保存');
 }
 function deleteOrder(){
   if(!editingId) return;
   if(!confirm('确定删除该订单？')) return;
   S.orders=S.orders.filter(o=>o.id!==editingId);
-  saveState(S); closeOrder(); renderToday(); renderOrders(); renderKpis();
+  saveState(S); closeOrder(); renderToday(); renderOrders(); renderGuests(); renderKpis();
   toast('已删除');
 }
 document.getElementById('orderOverlay').addEventListener('click', e=>{ if(e.target.id==='orderOverlay') closeOrder(); });
@@ -1895,7 +2043,7 @@ function importBackup(ev){
       const d=JSON.parse(rd.result);
       if(!d||!d.orders) throw new Error('格式不对');
       if(!confirm('导入将覆盖当前全部数据，确认继续？')) return;
-      S=d; saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+      S=d; saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       toast('备份已导入');
     }catch(e){ toast('导入失败：'+e.message); }
   };
@@ -1917,7 +2065,8 @@ function mergeCloud(d){
     drivers: dedup((d.drivers||[]).concat(local.drivers||[]), x=>x.plate||x.name),
     fleets: dedup((d.fleets||[]).concat(local.fleets||[]), x=>x.name),
     prices: dedup((d.prices||[]).concat(local.prices||[]), x=>x.city+'|'+x.route+'|'+x.vehicle),
-    vehicles: dedup((d.vehicles||[]).concat(local.vehicles||[]), x=>x.plate)
+    vehicles: dedup((d.vehicles||[]).concat(local.vehicles||[]), x=>x.plate),
+    guests: dedup((local.guests||[]).concat(d.guests||[]), x=>(x.name||'').trim().toLowerCase())
   });
 }
 function fetchCloudData(){
@@ -1926,7 +2075,7 @@ function fetchCloudData(){
     .then(d=>{
       if(!d || !d.orders) throw 0;
       mergeCloud(d);
-      saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+      saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       toast('已加载并合并云端数据（订单 '+(S.orders||[]).length+' 条）');
     }).catch(()=>{ if(cloudUrl()) toast('云端数据拉取失败，显示本地数据'); });
 }
@@ -1936,13 +2085,13 @@ function refreshFromCloud(){
   fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw new Error('线上没有数据文件'); return r.json(); })
     .then(d=>{
       if(!d || !d.orders) throw new Error('数据格式不对');
-      S=d; saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+      S=d; saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       toast('已从云端刷新');
     }).catch(e=>toast('云端刷新失败：'+e.message));
 }
 function resetData(){  if(!confirm('确定清空全部订单、车辆、司机、参考价？此操作不可恢复！')) return;
   if(!confirm('再次确认：将删除所有本地数据。')) return;
-  S=seedState(); saveState(S); renderToday(); renderOrders(); renderFleet(); renderPrices(); renderKpis();
+  S=seedState(); saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
   toast('数据已重置');
 }
 function exportOrdersMd(){
@@ -2173,7 +2322,7 @@ function confirmSmartImport(){
   const n=smartOrders.length;
   saveState(S); closePasteModal(); smartOrders=[];
   if(n) viewDate=firstDate;
-  renderToday(); renderOrders(); renderKpis();
+  renderToday(); renderOrders(); renderGuests(); renderKpis();
   toast('已导入 '+n+' 条订单（识别结果可进订单修改）');
 }
 function loadExampleOrder(){
@@ -2215,7 +2364,7 @@ function runPasteImport(){
   saveState(S);
   closePasteModal();
   if(n && arr[0] && arr[0].date) viewDate = arr[0].date;
-  renderToday(); renderOrders(); renderKpis();
+  renderToday(); renderOrders(); renderGuests(); renderKpis();
   toast('已导入 '+n+' 条订单'+(skip? '，跳过 '+skip+' 条缺必填':''));
 }
 document.getElementById('pasteOverlay').addEventListener('click', e=>{ if(e.target.id==='pasteOverlay') closePasteModal(); });

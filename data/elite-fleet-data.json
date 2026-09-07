@@ -1260,8 +1260,114 @@
    "note": "首汽旅游车队日租价区间 800-2500"
   }
  ],
+ "guests": [
+  {
+   "id": "gnicola",
+   "name": "Nicola",
+   "phone": "+49 1512 0135851",
+   "wechat": "",
+   "contact": "+49 1512 0135851",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  },
+  {
+   "id": "gcharmaine",
+   "name": "Charmaine",
+   "phone": "+61 406 304 639",
+   "wechat": "",
+   "contact": "+61 406 304 639",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  },
+  {
+   "id": "gellice",
+   "name": "Ellice",
+   "phone": "+447966235582",
+   "wechat": "",
+   "contact": "+447966235582",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  },
+  {
+   "id": "gstefaniekrug",
+   "name": "Stefanie Krug",
+   "phone": "",
+   "wechat": "",
+   "contact": "",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  },
+  {
+   "id": "geszeklenczyk",
+   "name": "Mr. Leszek Lenczyk",
+   "phone": "",
+   "wechat": "",
+   "contact": "",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  },
+  {
+   "id": "gbyhamre",
+   "name": "Byhamre",
+   "phone": "+46 72 237 12 45",
+   "wechat": "",
+   "contact": "+46 72 237 12 45",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  },
+  {
+   "id": "gaudvercammen",
+   "name": "Arnaud Vercammen",
+   "phone": "+32 477 23 78 25",
+   "wechat": "",
+   "contact": "+32 477 23 78 25",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  },
+  {
+   "id": "gsdihdciparty",
+   "name": "Mr. HUSDI HDCI & Party",
+   "phone": "",
+   "wechat": "",
+   "contact": "",
+   "country": "",
+   "city": "",
+   "source": "",
+   "note": "",
+   "createdAt": "",
+   "updatedAt": ""
+  }
+ ],
  "_meta": {
-  "built": "2026-09-07T11:35:32+0800",
+  "built": "2026-09-07T11:48:22+0800",
   "count": 10
  }
 }
