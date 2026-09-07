@@ -95,10 +95,10 @@
    "driver": "",
    "plate": "",
    "price": 0,
-   "quote": 0,
+   "quote": 950,
    "cost": 0,
-   "status": "pending",
-   "note": "航班TK280 约06:25抵达，约07:15可出关；举牌 Mr. Leszek Lenczyk；送达常州万豪酒店（新北区龙锦路1590号）；五座或七座均可"
+   "status": "quoted",
+   "note": "航班TK280 约06:25抵达，约07:15可出关；举牌 Mr. Leszek Lenczyk；送达常州万豪酒店（新北区龙锦路1590号）；五座或七座均可；对外报价 950（上海浦东→常州单程跨城，建议价，可改）；成本待车队确认"
   },
   {
    "id": "x609211100byhamre",

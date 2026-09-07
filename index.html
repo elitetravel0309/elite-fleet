@@ -539,6 +539,7 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn danger" id="omDelete" style="margin-right:auto" onclick="deleteOrder()">删除</button>
       <button class="btn ghost" onclick="fleetMsg(editingId)" title="生成给车队的派单消息，可复制发微信/WhatsApp">派单给车队</button>
       <button class="btn ghost" onclick="quoteMsg(editingId)" title="生成给客人的中英文报价单，可复制发微信/WhatsApp">生成报价单</button>
+      <button class="btn ghost" onclick="tripMsg(editingId)" title="生成给司机的单订单车单，可复制发微信或打印">司机车单</button>
       <button class="btn primary" onclick="saveOrder()">保存任务</button>
     </div>
   </div>
@@ -568,6 +569,20 @@ textarea{resize:vertical;line-height:1.5}
     <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
       <button class="btn ghost" onclick="closeQuoteMsg()">关闭</button>
       <button class="btn primary" onclick="copyQuoteMsg()">复制报价单</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 司机车单弹窗 ===== -->
+<div class="overlay" id="tripOverlay">
+  <div class="modal">
+    <h3>司机出车单</h3>
+    <div class="m-sub">给司机的单订单车单，复制后发微信，或点「打印」生成纸质/PDF 车单。</div>
+    <textarea class="textarea-mon" id="tripMsgBox" readonly style="min-height:300px;white-space:pre-wrap"></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeTripMsg()">关闭</button>
+      <button class="btn ghost" onclick="copyTripMsg()">复制车单</button>
+      <button class="btn primary" onclick="printTripMsg()">打印车单</button>
     </div>
   </div>
 </div>
@@ -1684,6 +1699,45 @@ function copyQuoteMsg(){
   } else fallbackCopy(t);
 }
 document.getElementById('quoteOverlay').addEventListener('click', e=>{ if(e.target.id==='quoteOverlay') closeQuoteMsg(); });
+document.getElementById('tripOverlay').addEventListener('click', e=>{ if(e.target.id==='tripOverlay') closeTripMsg(); });
+
+/* =========================================================
+   司机出车单（单订单）
+   ========================================================= */
+function tripMsg(id){
+  const o=S.orders.find(x=>x.id===id); if(!o){ toast('请先保存订单，再生成车单'); return; }
+  const tm=TYPE_META[o.type]?TYPE_META[o.type].label:o.type;
+  const d=(o.date||'').replace(/(\d{4})-(\d{2})-(\d{2})/,'$1年$2月$3日')||'';
+  const drv=S.drivers.find(x=>x.name===o.driver);
+  const lines=[];
+  lines.push('【出车单】'+(d? d+' ':'')+tm);
+  if(o.time) lines.push('时间：'+o.time);
+  if(o.airport||o.flight) lines.push('机场/航班：'+(o.airport?airportName(o.airport):'')+(o.flight? ' '+o.flight:''));
+  if(o.route) lines.push('线路：'+o.route);
+  lines.push('客人：'+(o.guest||'—')+(o.pax?('（'+o.pax+'人）'):''));
+  if(o.vehicle) lines.push('车型：'+o.vehicle);
+  lines.push('司机：'+(o.driver||'________')+(drv&&drv.carType?('（'+drv.carType+'）'):'')+((o.plate||(drv&&drv.plate))?(' 车号 '+(o.plate||drv.plate)):''));
+  if(o.contact) lines.push('客人电话：'+o.contact);
+  if(drv&&drv.phone) lines.push('司机电话：'+drv.phone);
+  if(o.note) lines.push('备注：'+o.note);
+  lines.push('—— Elite Travel');
+  $('tripMsgBox').value=lines.join('\n');
+  $('tripOverlay').classList.add('open');
+}
+function closeTripMsg(){ $('tripOverlay').classList.remove('open'); }
+function copyTripMsg(){
+  const t=$('tripMsgBox').value; if(!t) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(()=>toast('已复制车单，粘贴发给司机')).catch(()=>fallbackCopy(t)); }
+  else fallbackCopy(t);
+}
+function printTripMsg(){
+  const t=$('tripMsgBox').value;
+  const w=window.open('','_blank');
+  if(!w){ toast('浏览器拦截了新窗口，请允许弹窗或改用复制'); return; }
+  w.document.write('<html><head><meta charset="utf-8"><title>出车单</title><style>body{font-family:system-ui,-apple-system,sans-serif;padding:36px;font-size:14px;line-height:1.9;color:#222}pre{white-space:pre-wrap;font-family:inherit;margin:0}.box{border:1.5px dashed #999;padding:22px;border-radius:10px}</style></head><body><div class="box"><pre>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre></div><script>window.onload=function(){window.print()}<\/script></body></html>');
+  w.document.close();
+}
+document.getElementById('tripOverlay').addEventListener('click', e=>{ if(e.target.id==='tripOverlay') closeTripMsg(); });
 document.getElementById('fleetModal').addEventListener('click', e=>{ if(e.target.id==='fleetModal') closeFleetModal(); });
 document.getElementById('driverModal').addEventListener('click', e=>{ if(e.target.id==='driverModal') closeDriverModal(); });
 document.getElementById('fleetPasteOverlay').addEventListener('click', e=>{ if(e.target.id==='fleetPasteOverlay') closeFleetPaste(); });
