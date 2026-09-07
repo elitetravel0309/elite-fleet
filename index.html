@@ -1269,13 +1269,18 @@ function parseFleetPaste(){
       if(!line) return;
       const kv=kvParseLine(line,{name:/^(车队|名称|名字|name)$/i, contact:/^(联系人|contact)$/i, phone:/^(电话|手机|tel|phone)$/i, note:/^(备注|note)$/i});
       if(kv && kv.name){ arr.push(kv); return; }
-      const seg=line.split(/[\t，,、;；]+/).map(s=>s.trim()).filter(Boolean);
+      const seg=line.split(/[\s\t，,、;；]+/).map(s=>s.trim()).filter(Boolean);
       if(!seg.length) return;
-      const item={name:seg[0]};
-      seg.slice(1).forEach(s=>{
-        const pm=s.match(/^([0-9+\-\s]{5,})$/); if(pm && !item.phone){ item.phone=pm[1].replace(/[\s-]/g,''); return; }
-        if(!item.contact) item.contact=s; else if(!item.note) item.note=s;
+      let phone='', contact='', rest=[];
+      seg.forEach(s=>{
+        if(/^[0-9+\-]{5,}$/.test(s.replace(/[\s-]/g,''))){ phone=s.replace(/[\s-]/g,''); }
+        else if(/经理|师傅|总$|先生|女士|小姐|老板|联系人|负责人/.test(s) && !contact){ contact=s; }
+        else rest.push(s);
       });
+      if(!rest.length) return;
+      const item={name:rest.join(' '), phone};
+      if(contact) item.contact=contact;
+      else if(rest.length>1) item.contact=rest.slice(1).join(' ');
       arr.push(item);
     });
   }
