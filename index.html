@@ -2395,7 +2395,9 @@ function fetchCloudData(){
       if(!d || !d.orders) throw 0;
       if(d._lastModified) cloudLastModified = d._lastModified;
       mergeCloud(d);
-      saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
+      saveState(S);
+      if(cloudLastModified) S._lastModified = cloudLastModified;
+      renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       appReady = true;
       toast('已加载并合并云端数据（订单 '+(S.orders||[]).length+' 条）');
     }).catch(()=>{ appReady = true; if(cloudUrl()) toast('云端数据拉取失败，显示本地数据'); });
