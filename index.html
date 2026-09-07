@@ -1407,7 +1407,9 @@ document.getElementById('guestModal').addEventListener('click', e=>{ if(e.target
 var guestPasteBuf=[];
 const GUEST_COUNTRIES = ['德国','法国','英国','美国','加拿大','澳大利亚','新西兰','俄罗斯','西班牙','意大利','葡萄牙','爱尔兰','荷兰','比利时','瑞士','奥地利','瑞典','挪威','丹麦','芬兰','波兰','捷克','匈牙利','希腊','土耳其','印度','巴西','墨西哥','韩国','日本','新加坡','马来西亚','泰国','越南','菲律宾','印尼','阿联酋','卡塔尔','沙特','以色列','南非','埃及','智利','阿根廷','乌克兰','克罗地亚','塞尔维亚','哈萨克斯坦'];
 const GUEST_CITIES = ['巴黎','伦敦','纽约','东京','首尔','柏林','罗马','米兰','马德里','巴塞罗那','里斯本','维也纳','苏黎世','日内瓦','哥本哈根','斯德哥尔摩','奥斯陆','赫尔辛基','莫斯科','圣彼得堡','伊斯坦布尔','迪拜','多哈','利雅得','孟买','德里','圣保罗','布宜诺斯艾利斯','墨西哥城','开普敦','开罗','特拉维夫','基辅','曼谷','巴厘岛','河内','胡志明市','马尼拉','雅加达','吉隆坡'];
+const GUEST_KEY_HINT=/^(姓名|客人|客人姓名|客户|电话|手机|微信|微信号|国家|国籍|城市|所在城市|来源|渠道|备注|name|phone|wechat|country|city|source|note)(?=[\s，,、;；]|$)/i;
 function parseGuestLine(line){
+  if(GUEST_KEY_HINT.test(line.trim())) return null;
   let work=line;
   let phone='', wechat='', source='';
   const pm=work.match(/\+?\d[\d\s\-]{6,16}/);
@@ -1649,14 +1651,20 @@ function parseDriverPaste(){
     txt.split(/\n\s*\n|\n\s*[-—=_*]{3,}\s*\n|\n(?=\s*(?:司机|姓名|name)\s*[:：])/i).forEach(block=>{
       block=(block||'').trim();
       if(!block) return;
-      const item={name:'',city:'',carType:'',plate:'',phone:'',seatType:'五座',fleet:'',note:''};
+      const item={name:'',city:'',carType:'',plate:'',phone:'',seatType:'',fleet:'',note:''};
       let has=false;
       const lines=block.split(/\r?\n/).map(l=>l.trim()).filter(l=>l && !/^[-—=_*]{3,}$/.test(l));
       lines.forEach(line=>{
-        const kv=kvParseLine(line,{name:/^(司机|司机姓名|姓名|name)$/i, city:/^(城市|目的地|city)$/i, carType:/^(车型|车辆|carType)$/i, plate:/^(车号|车牌|plate)$/i, phone:/^(电话|手机|tel|phone)$/i, seatType:/^(座位|座位档|seatType)$/i, fleet:/^(车队|所属车队|fleet)$/i, note:/^(备注|note)$/i});
-        if(kv){ Object.keys(kv).forEach(k=>{ if(kv[k]!==undefined && kv[k]!==null && kv[k]!==''){ item[k]=kv[k]; has=true; } }); }
+        const kv=kvParseLine(line,{name:/^(司机|司机姓名|姓名|name)$/i, city:/^(城市|目的地|city)$/i, carType:/^(车型|车辆|carType)$/i, plate:/^(车号|车牌|plate)$/i, phone:/^(电话|手机|tel|phone)$/i, seatType:/^(座位|座位档|seatType)$/i, fleet:/^(车队|所属车队|fleet)$/i, note:/^(备注|note)$/i, color:/^(颜色|color)$/i});
+        if(kv){ Object.keys(kv).forEach(k=>{ if(kv[k]!==undefined && kv[k]!==null && kv[k]!==''){ if(k==='color'){ item.note=(item.note? item.note+' ':'')+('颜色'+kv[k]); } else { item[k]=kv[k]; } has=true; } }); }
       });
-      if(has && item.name){ arr.push(item); return; }
+      // 独立城市行：整行就是城市名（如「上海」）
+      lines.forEach(line=>{ const t=line.trim(); if(!item.city && CITYS.includes(t)){ item.city=t; has=true; } });
+      if(has && item.name){
+        if(!item.seatType){ const st=seatOfStr(item.carType||''); if(st) item.seatType=st; }
+        if(!item.seatType) item.seatType='五座';
+        arr.push(item); return;
+      }
       // 自然语言行：每行一个司机，如「刘洋 极狐525黑色 京ACN2007 15120033382 五座」
       lines.forEach(line=>{
         const d=parseDriverLine(line);
@@ -1678,30 +1686,42 @@ function doDriverPaste(){
   driverPasteBuf.forEach(x=>S.drivers.push({id:uid(), name:x.name.trim(), city:x.city||'', carType:x.carType||'', plate:x.plate||'', phone:x.phone||'', seatType:x.seatType||'五座', fleet:x.fleet||'', note:x.note||''}));
   saveState(S); renderFleet(); closeDriverPaste(); toast('已导入 '+driverPasteBuf.length+' 位司机');
 }
-/* 键值对行解析：'键: 值' → 按映射表归到字段；支持 : 和 ： */
+/* 键值对行解析：'键: 值' 或无冒号 '键 值'（首段命中已知键名才算）→ 按映射表归到字段；支持 : 和 ： */
 function kvParseLine(line,map){
   const item={}; let ok=false;
   line.split(/[;；]+/).forEach(p=>{
     p=p.trim(); if(!p) return;
-    const m=p.match(/^([^:：]+)\s*[:：]\s*(.+)$/);
+    let m=p.match(/^([^:：]+)\s*[:：]\s*(.+)$/);
+    if(!m) m=p.match(/^([^:：\s]+)\s+(\S.*)$/);
     if(!m) return;
     const k=m[1].trim(), v=m[2].trim();
     for(const field in map){ if(map[field].test(k)){ item[field]=v; ok=true; return; } }
   });
   return ok? item : null;
 }
+/* 座位档推断：7座/九座/考斯特/大巴/五座 */
+function seatOfStr(s){
+  if(/七座|7座/.test(s)) return '七座';
+  if(/九座|9座/.test(s)) return '九座';
+  if(/考斯特/.test(s)) return '考斯特';
+  if(/大巴/.test(s)) return '大巴';
+  if(/五座|5座|轿车/.test(s)) return '五座';
+  return '';
+}
+/* 键名行保护：首段是已知字段名的行不当作自然语言司机行（避免"手机 138…"被识别成假司机） */
+const DRIVER_KEY_HINT=/^(司机|司机姓名|姓名|手机|电话|车牌|车号|车型|车辆|颜色|城市|目的地|座位|座位档|车队|备注|name|phone|plate|carType|city|seatType|fleet|note)(?=[\s，,、;；]|$)/i;
 /* 自然语言司机行解析：`刘洋 极狐525黑色 京ACN2007 15120033382 五座`
    自动识别：车号（车牌正则）、电话、座位档；剩余段首位为姓名、其余为车型；城市从行首城市名或车牌首字推断 */
 const PLATE_RE = /^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-Z][A-Z0-9·]{4,7}$/i;
 function parseDriverLine(line){
+  if(DRIVER_KEY_HINT.test(line.trim())) return null;
   const seg=line.split(/[\s\t，,、;；/]+/).map(s=>s.trim()).filter(Boolean);
   if(!seg.length) return null;
   let phone='', plate='', seat='', rest=[], city='';
-  const seatOf=p=>{ if(/七座|7座/.test(p)) return '七座'; if(/九座|9座/.test(p)) return '九座'; if(/考斯特/.test(p)) return '考斯特'; if(/大巴/.test(p)) return '大巴'; if(/五座|5座|轿车/.test(p)) return '五座'; return ''; };
   seg.forEach(s=>{
     if(!phone && /^[0-9+\-]{5,}$/.test(s.replace(/[\s-]/g,''))){ phone=s.replace(/[\s-]/g,''); return; }
     if(!plate && PLATE_RE.test(s)){ plate=s; return; }
-    if(!seat && seatOf(s)){ seat=seatOf(s); return; }
+    if(!seat && seatOfStr(s)){ seat=seatOfStr(s); return; }
     rest.push(s);
   });
   if(!rest.length) return null;
@@ -1716,7 +1736,7 @@ function parseDriverLine(line){
   if(!city && plate){ city=PLATE_CITY[plate.charAt(0)]||''; }
   if(!name) return null;
   const carType=rest.slice(1).join(' ');
-  return {name, city, carType, plate, phone, seatType:seat||'五座', fleet:'', note:''};
+  return {name, city, carType, plate, phone, seatType:seat||seatOfStr(carType)||'五座', fleet:'', note:''};
 }
 
 /* =========================================================
