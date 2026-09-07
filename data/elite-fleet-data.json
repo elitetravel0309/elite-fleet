@@ -232,8 +232,8 @@
       "pax": 4,
       "guest": "",
       "contact": "",
-      "driver": "",
-      "plate": "",
+      "driver": "傅祖彬",
+      "plate": "渝AAC8098",
       "price": 0,
       "quote": 0,
       "cost": 0,
@@ -375,6 +375,18 @@
       "carType": "帕萨特混动",
       "color": "",
       "seatType": "五座",
+      "note": "",
+      "fleet": ""
+    },
+    {
+      "id": "d13",
+      "city": "重庆",
+      "name": "傅祖彬",
+      "phone": "13896088752",
+      "plate": "渝AAC8098",
+      "carType": "岚图梦想家",
+      "color": "黑色",
+      "seatType": "七座",
       "note": "",
       "fleet": ""
     }
