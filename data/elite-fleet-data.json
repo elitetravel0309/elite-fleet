@@ -333,6 +333,18 @@
       "seatType": "七座",
       "note": "双电门",
       "fleet": ""
+    },
+    {
+      "id": "d11",
+      "city": "北京",
+      "name": "王路发",
+      "phone": "13333363573",
+      "plate": "京AEK1326",
+      "carType": "岚图梦想家",
+      "color": "",
+      "seatType": "七座",
+      "note": "接过我公务机",
+      "fleet": ""
     }
   ],
   "fleets": [
