@@ -714,10 +714,13 @@ textarea{resize:vertical;line-height:1.5}
     <h3>司机出车单</h3>
     <div class="m-sub">给司机的单订单车单，复制后发微信，或点「打印」生成纸质/PDF 车单。</div>
     <textarea class="textarea-mon" id="tripMsgBox" readonly style="min-height:300px;white-space:pre-wrap"></textarea>
-    <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
-      <button class="btn ghost" onclick="closeTripMsg()">关闭</button>
-      <button class="btn ghost" onclick="copyTripMsg()">复制车单</button>
-      <button class="btn primary" onclick="printTripMsg()">打印车单</button>
+    <div style="display:flex;gap:10px;margin-top:12px;justify-content:space-between;align-items:center">
+      <button class="btn ghost" id="svcLangBtn" onclick="toggleSvcLang()" style="display:none">English</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn ghost" onclick="closeTripMsg()">关闭</button>
+        <button class="btn ghost" onclick="copyTripMsg()" id="copyTripBtn">复制车单</button>
+        <button class="btn primary" onclick="printTripMsg()" id="printTripBtn">打印车单</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2322,36 +2325,75 @@ function tripMsg(id){
   const subEl=$('tripOverlay').querySelector('.m-sub');
   if(titleEl) titleEl.textContent='司机出车单';
   if(subEl) subEl.textContent='给司机的单订单车单，复制后发微信，或点「打印」生成纸质/PDF 车单。';
+  // 恢复出车单模式：隐藏语言切换，显示打印按钮
+  $('svcLangBtn').style.display='none';
+  $('copyTripBtn').textContent='复制车单';
+  $('printTripBtn').style.display='inline-flex';
   $('tripOverlay').classList.add('open');
 }
 function closeTripMsg(){ $('tripOverlay').classList.remove('open'); }
-/* 服务信息（给客人的司机服务卡片，一键复制） */
+/* 服务信息（给客人的司机服务卡片，支持中英文，一键复制） */
+let svcLang='zh'; // 当前服务信息语言
+let svcOrderId=null;
+function fmtDateEn(dateStr){
+  if(!dateStr) return '';
+  const m=dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return dateStr;
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return months[parseInt(m[2])-1]+' '+parseInt(m[3])+', '+m[1];
+}
 function serviceMsg(id){
   const o=S.orders.find(x=>x.id===id); if(!o){ toast('请先保存订单，再生成服务信息'); return; }
+  svcOrderId=id;
   const drv=S.drivers.find(x=>x.name===o.driver);
   const d=(o.date||'').replace(/(\d{4})-(\d{2})-(\d{2})/,'$1年$2月$3日')||'';
   const lines=[];
-  lines.push('服务信息');
-  lines.push('——————————');
-  if(d) lines.push('日期：'+d);
-  if(o.time) lines.push('时间：'+o.time);
-  if(o.route) lines.push('行程：'+o.route);
-  lines.push('——————————');
-  lines.push('车型：'+(drv&&drv.carType? drv.carType : o.vehicle||'—'));
-  lines.push('车牌：'+(o.plate||(drv&&drv.plate)||'—'));
-  if(drv&&drv.color) lines.push('颜色：'+drv.color);
-  lines.push('司机：'+(o.driver||'—'));
-  lines.push('电话：'+(drv&&drv.phone? drv.phone : '—'));
-  if(o.note) lines.push('备注：'+o.note);
-  lines.push('——————————');
-  lines.push('Elite Travel · China Wonder Tours');
+  if(svcLang==='zh'){
+    lines.push('服务信息');
+    lines.push('——————————');
+    if(d) lines.push('日期：'+d);
+    if(o.time) lines.push('时间：'+o.time);
+    if(o.route) lines.push('行程：'+o.route);
+    lines.push('——————————');
+    lines.push('车型：'+(drv&&drv.carType? drv.carType : o.vehicle||'—'));
+    lines.push('车牌：'+(o.plate||(drv&&drv.plate)||'—'));
+    if(drv&&drv.color) lines.push('颜色：'+drv.color);
+    lines.push('司机：'+(o.driver||'—'));
+    lines.push('电话：'+(drv&&drv.phone? drv.phone : '—'));
+    if(o.note) lines.push('备注：'+o.note);
+    lines.push('——————————');
+    lines.push('Elite Travel · China Wonder Tours');
+  } else {
+    lines.push('Service Information');
+    lines.push('——————————');
+    if(o.date) lines.push('Date: '+fmtDateEn(o.date));
+    if(o.time) lines.push('Time: '+o.time);
+    if(o.route) lines.push('Itinerary: '+o.route);
+    lines.push('——————————');
+    lines.push('Vehicle: '+(drv&&drv.carType? drv.carType : o.vehicle||'—'));
+    lines.push('License Plate: '+(o.plate||(drv&&drv.plate)||'—'));
+    if(drv&&drv.color) lines.push('Color: '+drv.color);
+    lines.push('Driver: '+(o.driver||'—'));
+    lines.push('Phone: '+(drv&&drv.phone? ('+86 '+drv.phone) : '—'));
+    if(o.note) lines.push('Note: '+o.note);
+    lines.push('——————————');
+    lines.push('Elite Travel · China Wonder Tours');
+  }
   $('tripMsgBox').value=lines.join('\n');
-  // 改标题为服务信息
   const titleEl=$('tripOverlay').querySelector('h3');
   const subEl=$('tripOverlay').querySelector('.m-sub');
-  if(titleEl) titleEl.textContent='司机服务信息';
-  if(subEl) subEl.textContent='给客人的司机服务卡片，复制后发微信 / WhatsApp / 邮件。';
+  if(titleEl) titleEl.textContent = svcLang==='zh' ? '司机服务信息' : 'Driver Service Info';
+  if(subEl) subEl.textContent = svcLang==='zh' ? '给客人的司机服务卡片，复制后发微信 / WhatsApp / 邮件。' : 'Driver service card for your guest. Copy and send via WhatsApp / email.';
+  // 显示语言切换按钮，改复制按钮文字
+  $('svcLangBtn').style.display='inline-flex';
+  $('svcLangBtn').textContent = svcLang==='zh' ? 'English' : '中文';
+  $('copyTripBtn').textContent = svcLang==='zh' ? '复制' : 'Copy';
+  $('printTripBtn').style.display='none';
   $('tripOverlay').classList.add('open');
+}
+function toggleSvcLang(){
+  svcLang = svcLang==='zh' ? 'en' : 'zh';
+  if(svcOrderId) serviceMsg(svcOrderId);
 }
 function copyTripMsg(){
   const t=$('tripMsgBox').value; if(!t) return;
