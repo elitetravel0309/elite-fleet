@@ -1533,6 +1533,7 @@ function renderFleet(){
       +'<span>'+(d.city?'<span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(d.city)+'</span> · ':'')+(d.carType?('车型 '+escapeHtml(d.carType)+' · '):'')+(d.color?'<span class="tag" style="background:var(--bg);color:var(--text-2);font-size:11px">'+escapeHtml(d.color)+'</span> · ':'')+(d.seatType?'<span class="tag" style="background:var(--charter-soft);color:var(--charter);font-size:11px">'+escapeHtml(d.seatType)+'</span> · ':'')+'车号 '+escapeHtml(d.plate||'—')+(d.fleet?' · '+escapeHtml(d.fleet):'')+'</span>'
       +'<span style="color:var(--text-3);font-size:11.5px">'+(d.phone?'电话 '+escapeHtml(d.phone):'')+(d.note?' · '+escapeHtml(d.note):'')+'</span></div>'
       +'<span class="type-pill">'+cnt+' 个任务</span>'
+      +'<button class="iconbtn" onclick="copyDriverCard(\''+d.id+'\')" title="复制服务信息，粘贴给客人"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'
       +'<button class="iconbtn" onclick="editDriver(\''+d.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
       +'<button class="iconbtn" onclick="removeDriver(\''+d.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
   }).join('') : '<div style="color:var(--text-3);text-align:center;padding:18px 0">暂无司机，点击右上角「添加司机（带车）」</div>';
@@ -1598,6 +1599,32 @@ function saveDriverModal(){
   saveState(S); renderFleet(); closeDriverModal(); toast('已保存司机');
 }
 function removeDriver(id){ if(!confirm('删除该司机？')) return; S.drivers=S.drivers.filter(d=>d.id!==id); saveState(S); renderFleet(); }
+
+/* ---- 司机服务信息：一键复制发客人 ---- */
+function copyDriverCard(id){
+  const d=S.drivers.find(x=>x.id===id); if(!d) return;
+  const lines=['服务信息'];
+  if(d.carType) lines.push('车型：'+d.carType);
+  if(d.plate) lines.push('车牌：'+d.plate);
+  if(d.color) lines.push('配置：'+d.color);
+  lines.push('司机：'+d.name);
+  if(d.phone) lines.push('电话：'+d.phone);
+  copyText(lines.join('\n'));
+  toast('服务信息已复制，可直接粘贴给客人');
+}
+function copyText(t){
+  const done=()=>toast('已复制');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done, ()=>{ legacyCopy(t); done(); });
+  } else { legacyCopy(t); done(); }
+}
+function legacyCopy(t){
+  const ta=document.createElement('textarea'); ta.value=t;
+  ta.style.position='fixed'; ta.style.left='-9999px';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+}
 
 /* ---- 车队：粘贴导入 ---- */
 var fleetPasteBuf = [];
