@@ -2252,6 +2252,7 @@ function importBackup(ev){
     try{
       const d=JSON.parse(rd.result);
       if(!d||!d.orders) throw new Error('格式不对');
+      ['orders','guests','fleets','drivers','vehicles','prices'].forEach(k=>{ if(!Array.isArray(d[k])) d[k]=[]; });
       if(!confirm('导入将覆盖当前全部数据，确认继续？')) return;
       S=d; saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       toast('备份已导入');
