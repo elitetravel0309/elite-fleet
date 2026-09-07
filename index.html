@@ -1019,7 +1019,13 @@ function loadState(){
   try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; return s; } } }catch(e){}
   const s = seedState(); saveState(s); return s;
 }
-function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} }
+function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} if(appReady) scheduleAutoSync(); }
+let appReady = false;
+let autoSyncTimer = null;
+function scheduleAutoSync(){
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(()=>{ if(appReady) uploadToCloud(true); }, 3000);
+}
 let S = loadState();
 
 /* =========================================================
@@ -2297,8 +2303,9 @@ function fetchCloudData(){
       if(!d || !d.orders) throw 0;
       mergeCloud(d);
       saveState(S); renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
+      appReady = true;
       toast('已加载并合并云端数据（订单 '+(S.orders||[]).length+' 条）');
-    }).catch(()=>{ if(cloudUrl()) toast('云端数据拉取失败，显示本地数据'); });
+    }).catch(()=>{ appReady = true; if(cloudUrl()) toast('云端数据拉取失败，显示本地数据'); });
 }
 function refreshFromCloud(){
   const u=cloudUrl();
@@ -2356,11 +2363,11 @@ function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=toda
 function loadCfSync(){
   try{ const s=JSON.parse(localStorage.getItem('ef-cf')||'{}'); if($('cfUrl')) $('cfUrl').value=s.url||''; if($('cfKey')) $('cfKey').value=s.key||''; }catch(e){}
 }
-function uploadToCloud(){
+function uploadToCloud(silent){
   const url=$('cfUrl').value.trim(), key=$('cfKey').value.trim();
-  if(!url||!key){ toast('请先填写接口地址和密钥'); return; }
+  if(!url||!key){ if(!silent) toast('请先填写接口地址和密钥'); return; }
   localStorage.setItem('ef-cf', JSON.stringify({url,key}));
-  const st=$('cfStatus'); if(st) st.textContent='上传中…（'+((S.orders||[]).length)+' 单）';
+  const st=$('cfStatus'); if(st) st.textContent='同步中…（'+((S.orders||[]).length)+' 单）';
   const n=(S.orders||[]).length;
   fetch(url.replace(/\/$/,'')+'/api/upload?key='+encodeURIComponent(key),{
     method:'POST',
@@ -2368,11 +2375,11 @@ function uploadToCloud(){
     body:JSON.stringify({data:S})
   }).then(r=>r.json().catch(()=>({ok:false,error:'响应解析失败'})))
     .then(d=>{
-      if(st) st.textContent = d.ok? '✓ '+d.note : '✗ '+(d.error||'失败');
-      if(d.ok){ toast('已上云 '+n+' 单，约 1-2 分钟后全网生效'); }
-      else toast('上云失败：'+(d.error||''));
+      if(st) st.textContent = d.ok? '✓ 已同步 '+n+' 单' : '✗ '+(d.error||'失败');
+      if(d.ok){ if(!silent) toast('已上云 '+n+' 单'); }
+      else if(!silent) toast('上云失败：'+(d.error||''));
     })
-    .catch(e=>{ if(st) st.textContent='✗ 网络错误：'+e.message; toast('上云失败：网络错误'); });
+    .catch(e=>{ if(st) st.textContent='✗ 网络错误'; if(!silent) toast('上云失败：网络错误'); });
 }
 
 /* =========================================================
@@ -2621,6 +2628,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOrder(); cl
 showSchedule('today');
 renderKpis();
 fetchCloudData();
+setTimeout(()=>{ appReady = true; }, 3000);
 </script>
 </body>
 </html>
