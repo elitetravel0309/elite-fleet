@@ -231,27 +231,15 @@
       "fleet": ""
     },
     {
-      "id": "d2",
-      "city": "北京",
-      "name": "张师傅",
-      "phone": "13800000001",
-      "plate": "京A·88001",
-      "carType": "",
-      "color": "",
-      "seatType": "五座",
-      "note": "轿车",
-      "fleet": ""
-    },
-    {
-      "id": "d3",
-      "city": "北京",
-      "name": "李师傅",
-      "phone": "13800000002",
-      "plate": "京A·88002",
-      "carType": "",
-      "color": "",
+      "id": "d4",
+      "city": "深圳",
+      "name": "陈师傅",
+      "phone": "19934019940",
+      "plate": "粤BFZ8549",
+      "carType": "腾势D9",
+      "color": "黑色",
       "seatType": "七座",
-      "note": "商务车",
+      "note": "",
       "fleet": ""
     }
   ],
