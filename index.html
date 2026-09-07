@@ -244,6 +244,10 @@ textarea{resize:vertical;line-height:1.5}
   .price-grid{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
   #ordersWrap .order-table,#rpBody .order-table,#smartPreview .order-table,#fleetPastePreview .order-table,#driverPastePreview .order-table,.price-grid .order-table{min-width:720px}
   .date-nav .date-txt{min-width:120px}
+/* 排班视图切换（今日 / 周历） */
+.seg{display:flex;background:var(--bg);border:1px solid var(--line-2);border-radius:10px;padding:3px;gap:2px;flex:0 0 auto}
+.seg-btn{border:none;background:transparent;padding:6px 16px;border-radius:8px;font-size:13px;color:var(--text-2);cursor:pointer;transition:all .12s}
+.seg-btn.active{background:#fff;color:var(--accent-dark);font-weight:600;box-shadow:0 1px 4px rgba(20,38,63,.14)}
   .timeline{padding-bottom:8px}
   .tl-track{left:74px}
   .tl-hour span{width:58px}
@@ -317,41 +321,36 @@ textarea{resize:vertical;line-height:1.5}
   </div>
   <div class="content">
 
-    <!-- 今日排班 -->
-    <section class="view active" data-route="today">
+    <!-- 排班（今日 + 周历，同一界面切换） -->
+    <section class="view active" data-route="schedule">
       <div class="today-head">
         <div>
-          <h2 class="section" id="todayTitle">今日排班</h2>
-          <p class="sub" id="todaySub"></p>
+          <h2 class="section" id="schedTitle">今日排班</h2>
+          <p class="sub" id="schedSub"></p>
         </div>
         <div class="spacer" style="flex:1"></div>
-        <div class="date-nav">
+        <div class="seg" id="schedSeg">
+          <button class="seg-btn active" id="segToday" onclick="showSchedule('today')">今日</button>
+          <button class="seg-btn" id="segWeek" onclick="showSchedule('week')">周历</button>
+        </div>
+        <div class="date-nav" id="dayNav">
           <button class="iconbtn" onclick="shiftDate(-1)" title="前一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
           <div class="date-txt" id="dateTxt"><b id="dateB"></b><small id="dateS"></small></div>
           <button class="iconbtn" onclick="shiftDate(1)" title="后一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
           <button class="btn ghost small" onclick="goToday()">今天</button>
+        </div>
+        <div class="date-nav" id="weekNav" style="display:none">
+          <button class="iconbtn" onclick="shiftWeek(-1)" title="上一周"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="date-txt"><b id="weekRange"></b></div>
+          <button class="iconbtn" onclick="shiftWeek(1)" title="下一周"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+          <button class="btn ghost small" onclick="goThisWeek()">本周</button>
         </div>
         <button class="btn ghost" onclick="openPasteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>粘贴录入</button>
         <button class="btn primary" onclick="openOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增任务</button>
         <button class="btn ghost" onclick="printSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>出车单</button>
       </div>
       <div class="timeline" id="timeline"></div>
-    </section>
-
-    <!-- 周历 -->
-    <section class="view" data-route="week">
-      <div class="today-head">
-        <div><h2 class="section">周历排班</h2><p class="sub" id="weekSub"></p></div>
-        <div class="spacer" style="flex:1"></div>
-        <div class="date-nav">
-          <button class="iconbtn" onclick="shiftWeek(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-          <div class="date-txt"><b id="weekRange"></b></div>
-          <button class="iconbtn" onclick="shiftWeek(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-          <button class="btn ghost small" onclick="goThisWeek()">本周</button>
-        </div>
-        <button class="btn primary" onclick="openOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增任务</button>
-      </div>
-      <div class="week-grid" id="weekGrid"></div>
+      <div class="week-grid" id="weekGrid" style="display:none"></div>
     </section>
 
     <!-- 订单 -->
@@ -997,13 +996,29 @@ const CRUMB = {today:'排班 · 今日', week:'排班 · 周历', orders:'业务
 let curRoute = 'today';
 let viewDate = todayStr();
 let weekOffset = 0;
+let scheduleMode = 'today';
+function showSchedule(mode){
+  scheduleMode = mode||'today';
+  const isToday = scheduleMode==='today';
+  $('schedTitle').textContent = isToday? '今日排班' : '周历排班';
+  $('segToday').classList.toggle('active', isToday);
+  $('segWeek').classList.toggle('active', !isToday);
+  $('dayNav').style.display = isToday? 'flex' : 'none';
+  $('weekNav').style.display = isToday? 'none' : 'flex';
+  $('timeline').style.display = isToday? 'block' : 'none';
+  $('weekGrid').style.display = isToday? 'none' : 'block';
+  $('crumb').innerHTML = '接送包车工作台 <b>· 排班 · '+(isToday?'今日':'周历')+'</b>';
+  document.querySelectorAll('.nav button').forEach(b=>{
+    const on = (b.dataset.route==='today'&&isToday) || (b.dataset.route==='week'&&!isToday);
+    b.classList.toggle('active', on);
+  });
+  if(isToday) renderToday(); else renderWeek();
+}
 function showView(r){
+  if(r==='today'||r==='week'){ scheduleMode = (r==='today')? 'today':'week'; r='schedule'; }
   curRoute = r;
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active', b.dataset.route===r));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.dataset.route===r));
-  $('crumb').innerHTML = '接送包车工作台 <b>· '+CRUMB[r]+'</b>';
-  if(r==='today') renderToday();
-  if(r==='week') renderWeek();
+  if(r==='schedule') showSchedule(scheduleMode);
   if(r==='orders') renderOrders();
   if(r==='report') renderReport();
   if(r==='fleet') renderFleet();
@@ -1041,9 +1056,9 @@ function renderToday(){
   const d = parseDate(viewDate);
   $('dateB').textContent = viewDate;
   $('dateS').textContent = weekdayCN(d);
-  $('todayTitle').textContent = (viewDate===todayStr()?'今日排班':'排班 · '+viewDate);
+  $('schedTitle').textContent = (viewDate===todayStr()?'今日排班':'排班 · '+viewDate);
   const list = ordersOn(viewDate);
-  $('todaySub').textContent = '共 '+list.length+' 个任务 · 拖入时间轴按出发时间排布 · 点击卡片编辑';
+  $('schedSub').textContent = '共 '+list.length+' 个任务 · 拖入时间轴按出发时间排布 · 点击卡片编辑';
   // 时间轴：从最早任务的前一小时到最晚任务的后一小时，至少 6:00-23:00
   let h0=6, h1=23;
   if(list.length){
@@ -1113,7 +1128,7 @@ function weekDays(offset){
 function renderWeek(){
   const days = weekDays(weekOffset);
   $('weekRange').textContent = fmtDate(days[0])+' ~ '+fmtDate(days[6]);
-  $('weekSub').textContent = '本周'+weekOffset===0?'（本周）':weekOffset>0?'（后'+weekOffset+'周）':'（前'+(-weekOffset)+'周）';
+  $('schedSub').textContent = weekOffset===0?'（本周）':weekOffset>0?'（后'+weekOffset+'周）':'（前'+(-weekOffset)+'周）';
   let html='';
   days.forEach((d,i)=>{
     const ds=fmtDate(d);
@@ -2209,7 +2224,7 @@ document.getElementById('pasteOverlay').addEventListener('click', e=>{ if(e.targ
    初始化
    ========================================================= */
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOrder(); closePasteModal(); } });
-renderToday();
+showSchedule('today');
 renderKpis();
 fetchCloudData();
 </script>
