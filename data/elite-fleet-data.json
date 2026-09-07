@@ -219,6 +219,26 @@
       "cost": 0,
       "status": "confirmed",
       "note": "转机Layover；航班CA750约12:10抵达大兴，出关后接；慕田峪长城；21:00之前送到首都机场3号航站楼（客人00:05国际航班）；不用代收；仅WhatsApp"
+    },
+    {
+      "id": "x2609140830dazu",
+      "date": "2026-09-14",
+      "time": "08:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "重庆嘉发希尔顿逸林酒店 → 大足石刻 → 返回酒店",
+      "vehicle": "七座",
+      "pax": 4,
+      "guest": "",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "confirmed",
+      "note": "重庆嘉发希尔顿逸林酒店（Glenview ITC Plaza Chongqing）08:30接；大足石刻；当日返回同一酒店；4位成人；7座车"
     }
   ],
   "vehicles": [
