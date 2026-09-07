@@ -691,11 +691,17 @@ textarea{resize:vertical;line-height:1.5}
     <div class="fgrid">
       <div class="fgroup full"><label>司机姓名 *</label><input type="text" id="dName" placeholder="如 刘洋"></div>
       <div class="fgroup"><label>车型</label><input type="text" id="dCarType" placeholder="如 极狐525"></div>
-      <div class="fgroup"><label>颜色</label><input type="text" id="dColor" placeholder="如 黑色 / 白色 / 银色"></div>
+      <div class="fgroup"><label>颜色</label><select id="dColor"><option value="">— 未填 —</option></select></div>
       <div class="fgroup"><label>城市/目的地</label><input type="text" id="dCity" list="cityList" placeholder="如 北京"></div>
       <div class="fgroup"><label>车号</label><input type="text" id="dPlate" placeholder="如 京ACN2007"></div>
       <div class="fgroup"><label>电话</label><input type="text" id="dPhone" placeholder="如 15120033382"></div>
-      <div class="fgroup"><label>座位档</label><input type="text" id="dSeat" placeholder="五座/七座/九座/考斯特/大巴" value="五座"></div>
+      <div class="fgroup"><label>座位档</label><select id="dSeat">
+        <option value="五座">五座</option>
+        <option value="七座">七座</option>
+        <option value="九座">九座</option>
+        <option value="考斯特">考斯特</option>
+        <option value="大巴">大巴</option>
+      </select></div>
       <div class="fgroup full"><label>所属车队</label><select id="dFleet"><option value="">— 未关联车队 —</option></select></div>
       <div class="fgroup full"><label>备注</label><input type="text" id="dNote" placeholder="如 常驻首都机场附近"></div>
     </div>
@@ -1568,7 +1574,16 @@ function openDriverModal(id){
   const fSel=$('dFleet');
   fSel.innerHTML='<option value="">— 未关联车队 —</option>'+S.fleets.map(f=>'<option value="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+(f.city?'（'+escapeHtml(f.city)+'）':'')+'</option>').join('');
   $('driverModalTitle').textContent = id? '编辑司机' : '添加司机（带车）';
-  $('dName').value=d.name||''; $('dCarType').value=d.carType||''; $('dColor').value=d.color||''; $('dCity').value=d.city||''; $('dPlate').value=d.plate||''; $('dPhone').value=d.phone||'';
+  $('dName').value=d.name||''; $('dCarType').value=d.carType||''; $('dCity').value=d.city||''; $('dPlate').value=d.plate||''; $('dPhone').value=d.phone||'';
+  // 颜色下拉：20 常用色 + 保留历史自定义值
+  const col=$('dColor'), cv=(d.color||'').trim();
+  if(col.options.length===1){
+    col.innerHTML='<option value="">— 未填 —</option>'+COLOR_WORDS.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+  }
+  if(cv && ![...col.options].some(o=>o.value===cv)){
+    const op=document.createElement('option'); op.value=cv; op.textContent=cv; col.appendChild(op);
+  }
+  col.value=cv;
   $('dSeat').value=d.seatType||'五座'; $('dFleet').value=d.fleet||''; $('dNote').value=d.note||'';
   $('driverModal').classList.add('open');
   setTimeout(()=>$('dName').focus(),50);
