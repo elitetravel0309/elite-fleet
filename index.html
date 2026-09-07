@@ -2625,6 +2625,7 @@ document.getElementById('pasteOverlay').addEventListener('click', e=>{ if(e.targ
    初始化
    ========================================================= */
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOrder(); closePasteModal(); } });
+loadCfSync();
 showSchedule('today');
 renderKpis();
 fetchCloudData();
