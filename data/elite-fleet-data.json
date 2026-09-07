@@ -285,6 +285,18 @@
       "seatType": "",
       "note": "",
       "fleet": ""
+    },
+    {
+      "id": "d7",
+      "city": "北京",
+      "name": "黄锦涛",
+      "phone": "13521331511",
+      "plate": "京A3RR63",
+      "carType": "本田奥德赛",
+      "color": "",
+      "seatType": "七座",
+      "note": "",
+      "fleet": ""
     }
   ],
   "fleets": [
