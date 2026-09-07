@@ -571,7 +571,7 @@ textarea{resize:vertical;line-height:1.5}
       <div class="fgroup"><label>人数</label><input type="number" id="oPax" min="0" value="1"></div>
       <div class="fgroup"><label>客户 / 团名</label><input type="text" id="oGuest" placeholder="如 德国团 3 人"></div>
       <div class="fgroup"><label>联系人</label><input type="text" id="oContact"></div>
-      <div class="fgroup"><label>对接车队</label><input type="text" id="oFleet" placeholder="如 北京车队（车队报价＝成本）"></div>
+      <div class="fgroup"><label>对接车队</label><select id="oFleet" onchange="onFleetPick()"><option value="">— 未对接车队 —</option></select></div>
       <div class="fgroup"><label>司机</label><select id="oDriver" onchange="onDriverPick()"><option value="">— 未指派</option></select></div>
       <div class="fgroup"><label>车牌</label><input type="text" id="oPlate" list="plateList" placeholder="选司机自动带出"><datalist id="plateList"></datalist><div id="oDriverHint" style="font-size:11px;color:var(--text-3);min-height:14px;margin-top:2px"></div></div>
       <div class="fgroup"><label>对外报价（元）</label><input type="number" id="oQuote" min="0" placeholder="给客户的价"></div>
@@ -1530,8 +1530,8 @@ function renderFleet(){
       +'<button class="iconbtn" onclick="editDriver(\''+d.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
       +'<button class="iconbtn" onclick="removeDriver(\''+d.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
   }).join('') : '<div style="color:var(--text-3);text-align:center;padding:18px 0">暂无司机，点击右上角「添加司机（带车）」</div>';
-  // 同步司机下拉
-  const sel=$('oDriver'); sel.innerHTML='<option value="">— 未指派</option>'+S.drivers.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+'</option>').join('');
+  // 同步订单弹窗的车队/司机下拉
+  syncFleetSel('');
 }
 /* ---- 车队：编辑用弹窗（原 prompt 在某些环境被拦截，改为自定义 modal） ---- */
 var editingFleetId = '';
@@ -1914,9 +1914,8 @@ function openOrder(id){
   $('oGuest').value = o? (o.guest||'') : '';
   $('oContact').value = o? (o.contact||'') : '';
   $('oFleet').value = o? (o.fleet||'') : '';
-  // 司机下拉
-  const ds=$('oDriver'); ds.innerHTML='<option value="">— 未指派</option>'+S.drivers.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+'</option>').join('');
-  ds.value = o? (o.driver||'') : '';
+  // 车队 + 司机下拉（选车队后该车队司机排前，其余保留可手动选）
+  syncFleetSel(o? (o.fleet||'') : '');
   $('oPlate').value = o? (o.plate||'') : '';
   $('oQuote').value = o? (o.quote || o.price || '') : '';
   $('oCost').value = o? (o.cost||'') : '';
@@ -1934,8 +1933,25 @@ function onDriverPick(){
   const d=S.drivers.find(x=>x.name===name);
   $('oPlate').value = d? (d.plate||'') : '';
   const h=$('oDriverHint');
-  if(h) h.textContent = d? [d.carType, d.seatType, d.phone].filter(Boolean).join(' · ') : '';
+  if(h) h.textContent = d? [d.carType, d.color, d.seatType, d.phone].filter(Boolean).join(' · ') : '';
 }
+/* 订单弹窗：同步车队下拉 + 司机下拉（所选车队的司机排前，其余保留可手动选） */
+function syncFleetSel(fleet){
+  const fSel=$('oFleet');
+  fSel.innerHTML='<option value="">— 未对接车队 —</option>'+S.fleets.map(f=>'<option value="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+(f.city?'（'+escapeHtml(f.city)+'）':'')+(f.contact?' · '+escapeHtml(f.contact):'')+'</option>').join('');
+  if(fleet && S.fleets.some(f=>f.name===fleet)) fSel.value=fleet;
+  const fc=(S.fleets.find(f=>f.name===fleet)||{}).city||'';
+  const sel=$('oDriver');
+  const cur=sel.value;
+  const ds=[...S.drivers].sort((a,b)=>{
+    const af=(a.fleet===fleet?1:0)+(fc&&a.city===fc?1:0), bf=(b.fleet===fleet?1:0)+(fc&&b.city===fc?1:0);
+    return bf-af || (a.name||'').localeCompare(b.name||'','zh');
+  });
+  sel.innerHTML='<option value="">— 未指派</option>'+ds.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+(d.fleet&&d.fleet!==fleet? '（'+escapeHtml(d.fleet)+'）':'')+(d.city?'（'+escapeHtml(d.city)+'）':'')+'</option>').join('');
+  if(cur && S.drivers.some(d=>d.name===cur)) sel.value=cur;
+  onDriverPick();
+}
+function onFleetPick(){ syncFleetSel($('oFleet').value); }
 function closeOrder(){ $('orderOverlay').classList.remove('open'); editingId=null; }
 function autoPrice(){
   const route=$('oRoute').value.trim(), vehicle=$('oVehicle').value;
