@@ -1483,6 +1483,19 @@
       "note": "",
       "createdAt": "",
       "updatedAt": ""
+    },
+    {
+      "id": "g9",
+      "name": "Rebecca Jamieson",
+      "phone": "+64 22 088 9322",
+      "wechat": "",
+      "country": "新西兰",
+      "note": "9月9日北京转机订单；仅WhatsApp",
+      "contact": "+64 22 088 9322",
+      "source": "WhatsApp",
+      "city": "",
+      "createdAt": "2026-09-09",
+      "updatedAt": "2026-09-09"
     }
   ],
   "_meta": {
