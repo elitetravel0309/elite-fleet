@@ -542,6 +542,19 @@ textarea{resize:vertical;line-height:1.5}
           <option value="transfer">市内接送</option>
         </select>
       </div>
+      <div class="fgroup"><label>城市 / 目的地</label>
+        <select id="oCity">
+          <option value="">自动识别</option>
+          <option value="北京">北京</option>
+          <option value="上海">上海</option>
+          <option value="广州">广州</option>
+          <option value="杭州">杭州</option>
+          <option value="西安">西安</option>
+          <option value="深圳">深圳</option>
+          <option value="悉尼">悉尼</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
       <div class="fgroup"><label>机场 / 站点</label>
         <select id="oAirport">
           <option value="">—</option>
@@ -569,7 +582,9 @@ textarea{resize:vertical;line-height:1.5}
         </select>
       </div>
       <div class="fgroup"><label>人数</label><input type="number" id="oPax" min="0" value="1"></div>
-      <div class="fgroup"><label>客户 / 团名</label><input type="text" id="oGuest" placeholder="如 德国团 3 人"></div>
+      <div class="fgroup"><label>客户 / 团名</label><input type="text" id="oGuest" list="guestPickList" onchange="onGuestPick()" placeholder="从客人库选，或直接输入">
+        <datalist id="guestPickList"></datalist>
+      </div>
       <div class="fgroup"><label>联系人</label><input type="text" id="oContact"></div>
       <div class="fgroup"><label>对接车队</label><select id="oFleet" onchange="onFleetPick()"><option value="">— 未对接车队 —</option></select></div>
       <div class="fgroup"><label>司机</label><select id="oDriver" onchange="onDriverPick()"><option value="">— 未指派</option></select></div>
@@ -1397,13 +1412,13 @@ function saveGuestModal(){
   const obj={name, phone:$('gPhone').value.trim(), wechat:$('gWechat').value.trim(), country:$('gCountry').value.trim(), city:$('gCity').value.trim(), source:$('gSource').value, note:$('gNote').value.trim()};
   if(editingGuestId){ const g=S.guests.find(x=>x.id===editingGuestId); if(g) Object.assign(g,obj,{updatedAt:todayStr()}); }
   else S.guests.push(Object.assign({id:uid(), contact:'', createdAt:todayStr(), updatedAt:todayStr()},obj));
-  saveState(S); renderGuests(); closeGuestModal(); toast('已保存客人');
+  saveState(S); renderGuests(); syncGuestList(); closeGuestModal(); toast('已保存客人');
 }
 function delGuest(id){
   const target=id||editingGuestId;
   if(!target) return;
   if(!confirm('删除该客人档案？（订单不受影响）')) return;
-  S.guests=S.guests.filter(g=>g.id!==target); saveState(S); renderGuests(); closeGuestModal(); toast('已删除客人');
+  S.guests=S.guests.filter(g=>g.id!==target); saveState(S); renderGuests(); syncGuestList(); closeGuestModal(); toast('已删除客人');
 }
 document.getElementById('guestModal').addEventListener('click', e=>{ if(e.target.id==='guestModal') closeGuestModal(); });
 
@@ -1948,6 +1963,7 @@ function openOrder(id){
   $('oDate').value = o? o.date : viewDate;
   $('oTime').value = o? o.time : '09:00';
   $('oType').value = o? o.type : 'arrival';
+  $('oCity').value = o? (o.city||'') : '';
   $('oAirport').value = o? (o.airport||'') : '';
   $('oFlight').value = o? (o.flight||'') : '';
   $('oRoute').value = o? (o.route||'') : '';
@@ -1965,6 +1981,8 @@ function openOrder(id){
   $('oNote').value = o? (o.note||'') : '';
   // 路线 datalist
   $('routeList').innerHTML = routeList().map(r=>'<option value="'+escapeHtml(r)+'">').join('');
+  // 客人库 datalist
+  syncGuestList();
   const plates=[]; (S.drivers||[]).forEach(d=>{ if(d.plate) plates.push(d.plate); }); (S.vehicles||[]).forEach(v=>plates.push(v.plate));
   $('plateList').innerHTML = plates.filter((p,i,a)=>p&&a.indexOf(p)===i).map(p=>'<option value="'+escapeHtml(p)+'">').join('');
   onDriverPick();
@@ -1994,12 +2012,31 @@ function syncFleetSel(fleet){
   onDriverPick();
 }
 function onFleetPick(){ syncFleetSel($('oFleet').value); }
+/* 客人库 datalist：订单弹窗可选客人，选后自动带出联系方式 */
+function syncGuestList(){
+  const gl=$('guestPickList'); if(!gl) return;
+  gl.innerHTML = (S.guests||[]).map(g=>{
+    const info=[g.contact||g.phone||'', g.wechat?('微信 '+g.wechat):''].filter(Boolean).join(' · ');
+    return '<option value="'+escapeHtml(g.name||'')+'">'+escapeHtml(info)+'</option>';
+  }).join('');
+}
+function onGuestPick(){
+  const name=$('oGuest').value.trim();
+  const g=(S.guests||[]).find(x=>x.name===name);
+  if(g){
+    const cur=$('oContact').value.trim();
+    const auto=g.contact||g.phone||(g.wechat?('微信:'+g.wechat):'')||'';
+    if(auto && !cur){ $('oContact').value=auto; }
+    else if(!cur && g.wechat){ $('oContact').value='微信:'+g.wechat; }
+  }
+}
 function closeOrder(){ $('orderOverlay').classList.remove('open'); editingId=null; }
 function autoPrice(){
   const route=$('oRoute').value.trim(), vehicle=$('oVehicle').value;
   if(!route){ toast('请先填线路'); return; }
-  const o={route, vehicle, airport:$('oAirport').value, city:''};
-  for(const c of CITY_LIST){ if(route.includes(c)){ o.city=c; break; } }
+  let city=$('oCity').value;
+  if(!city){ for(const c of CITY_LIST){ if(route.includes(c)){ city=c; break; } } }
+  const o={route, vehicle, airport:$('oAirport').value, city};
   const q=guessQuote(o), c=guessCost(o);
   if(q==null && c==null){ toast('参考价库没有匹配「'+route+' / '+(vehicle||'车型')+'」，请手工填写'); return; }
   if(q!=null) $('oQuote').value=q;
@@ -2014,6 +2051,7 @@ function saveOrder(){
     id: editingId||uid(),
     date, time,
     type:$('oType').value,
+    city:$('oCity').value,
     airport:$('oAirport').value,
     flight:$('oFlight').value.trim(),
     route,
