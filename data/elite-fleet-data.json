@@ -297,6 +297,18 @@
       "seatType": "七座",
       "note": "",
       "fleet": ""
+    },
+    {
+      "id": "d8",
+      "city": "北京",
+      "name": "户师傅",
+      "phone": "18618229440",
+      "plate": "京HHW960",
+      "carType": "别克GL8",
+      "color": "极光银",
+      "seatType": "七座",
+      "note": "",
+      "fleet": ""
     }
   ],
   "fleets": [
