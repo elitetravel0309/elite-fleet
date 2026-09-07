@@ -978,8 +978,8 @@ const SEED_VEHICLES = [
 // 司机与车辆配对：每名司机绑定 车型(carType)/车号(plate)/电话(phone)/座位档(seatType)/所属车队(fleet)
 const SEED_DRIVERS = [
   {id:'d1', city:'北京', name:'刘洋', phone:'15120033382', plate:'京ACN2007', carType:'极狐525黑色', color:'黑色', seatType:'五座', note:'', fleet:''},
-  {id:'d2', city:'北京', name:'张师傅', phone:'13800000001', plate:'京A·88001', carType:'', seatType:'五座', note:'轿车', fleet:''},
-  {id:'d3', city:'北京', name:'李师傅', phone:'13800000002', plate:'京A·88002', carType:'', seatType:'七座', note:'商务车', fleet:''}
+  {id:'d2', city:'北京', name:'张师傅', phone:'13800000001', plate:'京A·88001', carType:'', color:'', seatType:'五座', note:'轿车', fleet:''},
+  {id:'d3', city:'北京', name:'李师傅', phone:'13800000002', plate:'京A·88002', carType:'', color:'', seatType:'七座', note:'商务车', fleet:''}
 ];
 function seedState(){
   return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:JSON.parse(JSON.stringify(SEED_FLEETS)), guests:[]};
