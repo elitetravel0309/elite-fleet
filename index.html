@@ -47,7 +47,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
 ::selection{background:var(--accent);color:#fff}
 /* ===== 顶栏 ===== */
-.app{display:flex;min-height:100vh;min-width:1120px}
+.app{display:flex;min-height:100vh;min-width:0}
 .side{
   width:224px;flex:0 0 224px;background:var(--ink);color:#DCE4F0;
   display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
@@ -85,7 +85,7 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
 .kpi span{font-size:11px;color:var(--text-2)}
 .kpi.hl{border-color:var(--accent);background:var(--accent-soft)}
 .kpi.hl b{color:var(--accent-dark)}
-.content{padding:22px 28px 40px;flex:1}
+.content{padding:22px 28px 40px;flex:1;max-width:1640px;margin:0 auto;width:100%}
 .view{display:none}
 .view.active{display:block}
 h2.section{font-family:var(--serif);font-size:22px;font-weight:900;color:var(--ink);margin:0 0 4px}
@@ -215,6 +215,51 @@ textarea{resize:vertical;line-height:1.5}
 .step .num{width:22px;height:22px;border-radius:7px;background:var(--accent-soft);color:var(--accent-dark);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex:0 0 22px}
 .step div{font-size:13px;color:var(--text)}
 .step div small{display:block;color:var(--text-2);font-size:12px;margin-top:2px}
+/* ===== 移动端适配（≤880px：底部导航 + 单列表单 + 表格横滚） ===== */
+@media (max-width:880px){
+  .app{flex-direction:column}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:auto;flex-direction:row;z-index:60;border-top:1px solid rgba(255,255,255,.12);box-shadow:0 -6px 24px rgba(20,38,63,.18)}
+  .brand,.side-foot,.nav-label{display:none}
+  .nav{display:flex;flex-direction:row;align-items:stretch;padding:6px 8px;overflow-x:auto;gap:4px}
+  .nav button{flex-direction:column;gap:3px;padding:7px 8px;font-size:10.5px;text-align:center;min-width:64px;border-radius:10px;margin-bottom:0}
+  .nav button svg{width:18px;height:18px;flex:none}
+  .nav .count{display:none}
+  .main{min-width:0;padding-bottom:0}
+  .content{padding:14px 14px 84px}
+  .topbar{padding:12px 14px;gap:10px;flex-wrap:wrap}
+  .topbar .crumb{font-size:12px}
+  .kpis{flex-wrap:wrap;gap:8px}
+  .kpi{min-width:56px;padding:4px 10px}
+  .kpi b{font-size:15px}
+  .today-head{flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  h2.section{font-size:19px}
+  .sub{margin-bottom:14px}
+  .bar{gap:8px}
+  .fgrid{grid-template-columns:1fr}
+  .overlay{padding:4vh 0 0;align-items:flex-end}
+  .modal{width:100%;max-width:100%;max-height:92vh;border-radius:16px 16px 0 0;padding:18px 16px}
+  .modal-foot{flex-wrap:wrap}
+  .modal-foot .btn{flex:1;justify-content:center}
+  #ordersWrap,#rpBody,#smartPreview,#fleetPastePreview,#driverPastePreview{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .price-grid{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #ordersWrap .order-table,#rpBody .order-table,#smartPreview .order-table,#fleetPastePreview .order-table,#driverPastePreview .order-table,.price-grid .order-table{min-width:720px}
+  .date-nav .date-txt{min-width:120px}
+  .timeline{padding-bottom:8px}
+  .tl-track{left:74px}
+  .tl-hour span{width:58px}
+  .task-card{left:86px;right:8px;padding:8px 10px}
+  .rowbtn{opacity:1}
+}
+@media (max-width:480px){
+  .topbar .crumb{display:none}
+  .nav button{min-width:56px;font-size:10px;padding:6px 4px;gap:2px}
+  .kpi span{display:none}
+  .kpi{min-width:48px;padding:4px 8px}
+  .today-head .btn{flex:1;justify-content:center}
+  .date-nav{flex:1}
+  .date-nav .date-txt{flex:1}
+  .modal{padding:16px 14px}
+}
 /* ===== 打印 ===== */
 @media print{
   .side,.topbar,.bar,.modal,.overlay,.toast,.print-hide{display:none!important}
