@@ -321,6 +321,18 @@
       "seatType": "七座",
       "note": "",
       "fleet": ""
+    },
+    {
+      "id": "d10",
+      "city": "北京",
+      "name": "张海轮",
+      "phone": "13436622666",
+      "plate": "京LPT597",
+      "carType": "别克653T",
+      "color": "香槟金",
+      "seatType": "七座",
+      "note": "双电门",
+      "fleet": ""
     }
   ],
   "fleets": [
