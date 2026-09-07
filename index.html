@@ -356,12 +356,14 @@ textarea{resize:vertical;line-height:1.5}
       <div class="today-head">
         <div><h2 class="section">车队与司机</h2><p class="sub">合作车队档案 + 车队司机（司机与车辆配对）；订单指派司机即自动带出车辆</p></div>
         <div class="spacer" style="flex:1"></div>
+        <button class="btn ghost" onclick="openFleetPaste()" title="从微信/表格/文件粘贴车队信息批量导入">粘贴导入</button>
         <button class="btn primary" onclick="addDriver()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加司机（带车）</button>
       </div>
       <div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)">
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:15px">合作车队</b><span style="font-size:12px;color:var(--text-3)">车队给你的报价＝成本价，录入「参考价库」的 cost 列</span><button class="btn ghost small" style="margin-left:auto" onclick="addFleet()">+ 添加车队</button></div>
         <div id="fleetList" style="margin-top:10px"></div>
       </div>
+      <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px"><b style="font-size:15px">车队司机</b><span style="font-size:12px;color:var(--text-3)">司机与车辆信息配对录入；点击编辑可修改</span><button class="btn ghost small" style="margin-left:auto" onclick="openDriverPaste()">粘贴导入司机</button></div>
       <div id="driverList"></div>
     </section>
 
@@ -566,6 +568,116 @@ textarea{resize:vertical;line-height:1.5}
     <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
       <button class="btn ghost" onclick="closeQuoteMsg()">关闭</button>
       <button class="btn primary" onclick="copyQuoteMsg()">复制报价单</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 车队编辑弹窗 ===== -->
+<div class="overlay" id="fleetModal">
+  <div class="modal">
+    <h3 id="fleetModalTitle">添加车队</h3>
+    <div class="fgrid">
+      <div class="fgroup full"><label>车队名称 *</label><input type="text" id="fleetName" placeholder="如 北京首汽旅游车队"></div>
+      <div class="fgroup"><label>联系人</label><input type="text" id="fleetContact" placeholder="如 王经理"></div>
+      <div class="fgroup"><label>电话</label><input type="text" id="fleetPhone" placeholder="如 13800000000"></div>
+      <div class="fgroup full"><label>备注</label><input type="text" id="fleetNote" placeholder="如 日租区间800-2500，超时100/h"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeFleetModal()">取消</button>
+      <button class="btn primary" onclick="saveFleetModal()">保存车队</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 司机编辑弹窗 ===== -->
+<div class="overlay" id="driverModal">
+  <div class="modal">
+    <h3 id="driverModalTitle">添加司机（带车）</h3>
+    <div class="fgrid">
+      <div class="fgroup full"><label>司机姓名 *</label><input type="text" id="dName" placeholder="如 刘洋"></div>
+      <div class="fgroup"><label>车型</label><input type="text" id="dCarType" placeholder="如 极狐525黑色"></div>
+      <div class="fgroup"><label>车号</label><input type="text" id="dPlate" placeholder="如 京ACN2007"></div>
+      <div class="fgroup"><label>电话</label><input type="text" id="dPhone" placeholder="如 15120033382"></div>
+      <div class="fgroup"><label>座位档</label><input type="text" id="dSeat" placeholder="五座/七座/九座/考斯特/大巴" value="五座"></div>
+      <div class="fgroup"><label>所属车队</label><select id="dFleet"><option value="">— 未关联车队 —</option></select></div>
+      <div class="fgroup full"><label>备注</label><input type="text" id="dNote" placeholder="如 常驻首都机场附近"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeDriverModal()">取消</button>
+      <button class="btn primary" onclick="saveDriverModal()">保存司机</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 车队粘贴导入弹窗 ===== -->
+<div class="overlay" id="fleetPasteOverlay">
+  <div class="modal">
+    <h3>粘贴导入合作车队</h3>
+    <div class="m-sub">支持两种格式：① JSON（<span class="mono">{"fleets":[...]}</span> 或数组，字段 name/contact/phone/note）；② 自然语言，每行一个车队，如「深圳埃尔法租车 祝经理 15099918888」或「车队：北京首汽旅游车队；联系人：王经理；电话：13800000000」。已存在的车队（同名）自动跳过。</div>
+    <textarea class="textarea-mon" id="fleetPasteInput" style="min-height:180px" placeholder='每行一个车队，字段用空格/逗号分隔：&#10;深圳埃尔法租车 祝经理 15099918888&#10;车队：北京首汽旅游车队；联系人：王经理；电话：13800000000'></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+      <button class="btn primary" onclick="parseFleetPaste()">开始识别</button>
+      <span style="color:var(--text-3);font-size:12px" id="fleetPasteCount"></span>
+    </div>
+    <div id="fleetPastePreview" style="margin-top:12px"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeFleetPaste()">取消</button>
+      <button class="btn primary" onclick="doFleetPaste()">导入车队</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 订单指派司机弹窗 ===== -->
+<div class="overlay" id="qaModal">
+  <div class="modal">
+    <h3>指派司机</h3>
+    <div class="m-sub">选择司机后自动带出车型与车号，保存即更新订单</div>
+    <div class="fgrid">
+      <div class="fgroup full"><label>司机</label><select id="qaDriver" onchange="showQaHint()"></select></div>
+    </div>
+    <div id="qaHint" style="font-size:12px;color:var(--text-3);margin-bottom:10px"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeQa()">取消</button>
+      <button class="btn primary" onclick="confirmQa()">确认指派</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 参考价编辑弹窗 ===== -->
+<div class="overlay" id="priceModal">
+  <div class="modal">
+    <h3 id="priceModalTitle">新增参考价</h3>
+    <div class="fgrid">
+      <div class="fgroup"><label>城市 *</label><input type="text" id="pCity" list="cityList"><datalist id="cityList"><option value="北京"><option value="上海"><option value="杭州"><option value="西安"><option value="深圳"><option value="悉尼"></datalist></div>
+      <div class="fgroup"><label>车型</label><input type="text" id="pVehicle" placeholder="五座/七座/九座/考斯特"></div>
+      <div class="fgroup full"><label>线路 *</label><input type="text" id="pRoute" placeholder="如 慕田峪 · 机场接送"></div>
+      <div class="fgroup"><label>时长</label><input type="text" id="pDuration" placeholder="如 10小时"></div>
+      <div class="fgroup"><label>距离（公里）</label><input type="text" id="pDistance"></div>
+      <div class="fgroup"><label>成本价（元）</label><input type="number" id="pCost" min="0" placeholder="车队报价"></div>
+      <div class="fgroup"><label>对外报价（元）</label><input type="number" id="pQuote" min="0" placeholder="给客人的价"></div>
+      <div class="fgroup full"><label>备注</label><input type="text" id="pNote" placeholder="如 超时100/h，节假日加价"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closePriceModal()">取消</button>
+      <button class="btn primary" onclick="savePriceModal()">保存价格</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 司机粘贴导入弹窗 ===== -->
+<div class="overlay" id="driverPasteOverlay">
+  <div class="modal">
+    <h3>粘贴导入司机（带车）</h3>
+    <div class="m-sub">支持 JSON（<span class="mono">{"drivers":[...]}</span>，字段 name/carType/plate/phone/seatType/fleet/note）或键值对文本，多位司机用空行分隔。格式示例见下。已存在的司机（同名）自动跳过。</div>
+    <textarea class="textarea-mon" id="driverPasteInput" style="min-height:180px" placeholder='司机: 刘洋&#10;车型: 极狐525黑色&#10;车号：京ACN2007&#10;电话：15120033382&#10;座位：五座&#10;车队：北京首汽旅游车队&#10;&#10;司机: 张师傅&#10;车型: 帕萨特&#10;车号：京A·88001&#10;电话：13800000001'></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+      <button class="btn primary" onclick="parseDriverPaste()">开始识别</button>
+      <span style="color:var(--text-3);font-size:12px" id="driverPasteCount"></span>
+    </div>
+    <div id="driverPastePreview" style="margin-top:12px"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeDriverPaste()">取消</button>
+      <button class="btn primary" onclick="doDriverPaste()">导入司机</button>
     </div>
   </div>
 </div>
@@ -1017,18 +1129,32 @@ function delOrder(id){
   if(!confirm('确定删除该订单？')) return;
   S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderKpis();
 }
+/* ---- 订单指派司机（弹窗，替代 prompt） ---- */
+var qaOrderId='';
 function quickAssign(id){
   const o=S.orders.find(x=>x.id===id); if(!o) return;
   if(!S.drivers.length){ toast('请先在「司机与车辆」添加司机'); return; }
-  const pick=prompt('指派司机（输入序号）：\n'+S.drivers.map((d,i)=>(i+1)+'. '+d.name+'（'+(d.carType||d.seatType||'')+' · '+(d.plate||'无牌')+' · '+(d.phone||'')+'）').join('\n'), '1');
-  if(pick===null) return;
-  const i=parseInt(pick,10)-1;
-  if(isNaN(i)||i<0||i>=S.drivers.length){ toast('序号无效'); return; }
-  const d=S.drivers[i];
+  qaOrderId=id;
+  const sel=$('qaDriver');
+  sel.innerHTML=S.drivers.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+(d.carType?' · '+escapeHtml(d.carType):'')+(d.plate?' · '+escapeHtml(d.plate):'')+(d.phone?' · '+escapeHtml(d.phone):'')+'</option>').join('');
+  if(o.driver){ const hit=S.drivers.find(d=>d.name===o.driver); if(hit) sel.value=hit.name; }
+  showQaHint();
+  $('qaModal').classList.add('open');
+}
+function showQaHint(){
+  const sel=$('qaDriver'); const d=S.drivers.find(x=>x.name===sel.value);
+  $('qaHint').textContent = d? '车型 '+(d.carType||'—')+' · 车号 '+(d.plate||'—')+' · 电话 '+(d.phone||'—')+(d.fleet? ' · 车队 '+d.fleet:'') : '';
+}
+function closeQa(){ $('qaModal').classList.remove('open'); qaOrderId=''; }
+function confirmQa(){
+  const o=S.orders.find(x=>x.id===qaOrderId); if(!o){ closeQa(); return; }
+  const d=S.drivers.find(x=>x.name===$('qaDriver').value);
+  if(!d){ toast('请选择司机'); return; }
   o.driver=d.name; o.plate=d.plate||'';
-  saveState(S); renderOrders(); renderKpis();
+  saveState(S); renderOrders(); renderKpis(); closeQa();
   toast('已指派 '+d.name+(d.carType?' · '+d.carType:'')+(d.plate?' · '+d.plate:''));
 }
+document.getElementById('qaModal').addEventListener('click', e=>{ if(e.target.id==='qaModal') closeQa(); });
 
 /* =========================================================
    司机与车辆（配对）
@@ -1075,50 +1201,152 @@ function renderFleet(){
   // 同步司机下拉
   const sel=$('oDriver'); sel.innerHTML='<option value="">— 未指派</option>'+S.drivers.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+'</option>').join('');
 }
-function addFleet(){ editFleet(); }
-function editFleet(id){
+/* ---- 车队：编辑用弹窗（原 prompt 在某些环境被拦截，改为自定义 modal） ---- */
+var editingFleetId = '';
+function addFleet(){ openFleetModal(''); }
+function editFleet(id){ openFleetModal(id); }
+function openFleetModal(id){
+  editingFleetId = id||'';
   const f = id? S.fleets.find(x=>x.id===id) : {name:'',contact:'',phone:'',note:''};
-  if(!f) return;
-  const name=prompt('车队名称', f.name); if(name===null) return;
-  const contact=prompt('联系人', f.contact||''); if(contact===null) return;
-  const phone=prompt('电话', f.phone||''); if(phone===null) return;
-  const note=prompt('备注', f.note||''); if(note===null) return;
-  const obj={name,contact,phone,note};
-  if(id){ const x=S.fleets.find(x=>x.id===id); Object.assign(x,obj); }
+  if(!f){ return; }
+  $('fleetModalTitle').textContent = id? '编辑车队' : '添加车队';
+  $('fleetName').value = f.name||''; $('fleetContact').value = f.contact||''; $('fleetPhone').value = f.phone||''; $('fleetNote').value = f.note||'';
+  $('fleetModal').classList.add('open');
+  setTimeout(()=>$('fleetName').focus(),50);
+}
+function closeFleetModal(){ $('fleetModal').classList.remove('open'); }
+function saveFleetModal(){
+  const name=$('fleetName').value.trim();
+  if(!name){ toast('请填写车队名称'); $('fleetName').focus(); return; }
+  const obj={name, contact:$('fleetContact').value.trim(), phone:$('fleetPhone').value.trim(), note:$('fleetNote').value.trim()};
+  if(editingFleetId){ const x=S.fleets.find(x=>x.id===editingFleetId); if(x) Object.assign(x,obj); }
   else S.fleets.push(Object.assign({id:uid()},obj));
-  saveState(S); renderFleet();
+  saveState(S); renderFleet(); closeFleetModal(); toast('已保存车队');
 }
 function removeFleet(id){ if(!confirm('删除该车队？（司机不受影响）')) return; S.fleets=S.fleets.filter(f=>f.id!==id); saveState(S); renderFleet(); }
-function addVehicle(){ editVehicle(); }
-function editVehicle(id){
-  const v = id? S.vehicles.find(x=>x.id===id) : {plate:'',type:'五座',seats:4,note:''};
-  if(!v) return;
-  const plate=prompt('车牌号', v.plate); if(plate===null) return;
-  const type=prompt('车型（五座/七座/考斯特等）', v.type); if(type===null) return;
-  const seats=prompt('座位数', String(v.seats||4)); if(seats===null) return;
-  const note=prompt('备注', v.note||''); if(note===null) return;
-  if(id){ const x=S.vehicles.find(x=>x.id===id); Object.assign(x,{plate,type,seats:+seats,note}); }
-  else S.vehicles.push({id:uid(),plate,type,seats:+seats,note});
-  saveState(S); renderFleet();
-}
-function removeVehicle(id){ if(!confirm('删除该车辆？')) return; S.vehicles=S.vehicles.filter(v=>v.id!==id); saveState(S); renderFleet(); }
-function addDriver(){ editDriver(); }
-function editDriver(id){
+
+/* ---- 司机：编辑用弹窗 ---- */
+var editingDriverId = '';
+function addDriver(){ openDriverModal(''); }
+function editDriver(id){ openDriverModal(id); }
+function openDriverModal(id){
+  editingDriverId = id||'';
   const d = id? S.drivers.find(x=>x.id===id) : {name:'',phone:'',plate:'',carType:'',seatType:'五座',note:'',fleet:''};
-  if(!d) return;
-  const name=prompt('司机姓名', d.name); if(name===null) return;
-  const carType=prompt('车型（如 极狐525黑色）', d.carType||''); if(carType===null) return;
-  const plate=prompt('车号', d.plate||''); if(plate===null) return;
-  const phone=prompt('电话', d.phone||''); if(phone===null) return;
-  const seatType=prompt('座位档（五座/七座/九座/考斯特/大巴）', d.seatType||'五座'); if(seatType===null) return;
-  const fleet=prompt('所属车队（可留空）', d.fleet||''); if(fleet===null) return;
-  const note=prompt('备注', d.note||''); if(note===null) return;
-  const obj={name,carType,plate,phone,seatType,fleet,note};
-  if(id){ const x=S.drivers.find(x=>x.id===id); Object.assign(x,obj); }
+  if(!d){ return; }
+  const fSel=$('dFleet');
+  fSel.innerHTML='<option value="">— 未关联车队 —</option>'+S.fleets.map(f=>'<option value="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+'</option>').join('');
+  $('driverModalTitle').textContent = id? '编辑司机' : '添加司机（带车）';
+  $('dName').value=d.name||''; $('dCarType').value=d.carType||''; $('dPlate').value=d.plate||''; $('dPhone').value=d.phone||'';
+  $('dSeat').value=d.seatType||'五座'; $('dFleet').value=d.fleet||''; $('dNote').value=d.note||'';
+  $('driverModal').classList.add('open');
+  setTimeout(()=>$('dName').focus(),50);
+}
+function closeDriverModal(){ $('driverModal').classList.remove('open'); }
+function saveDriverModal(){
+  const name=$('dName').value.trim();
+  if(!name){ toast('请填写司机姓名'); $('dName').focus(); return; }
+  const obj={name, carType:$('dCarType').value.trim(), plate:$('dPlate').value.trim(), phone:$('dPhone').value.trim(), seatType:$('dSeat').value.trim()||'五座', fleet:$('dFleet').value, note:$('dNote').value.trim()};
+  if(editingDriverId){ const x=S.drivers.find(x=>x.id===editingDriverId); if(x) Object.assign(x,obj); }
   else S.drivers.push(Object.assign({id:uid()},obj));
-  saveState(S); renderFleet();
+  saveState(S); renderFleet(); closeDriverModal(); toast('已保存司机');
 }
 function removeDriver(id){ if(!confirm('删除该司机？')) return; S.drivers=S.drivers.filter(d=>d.id!==id); saveState(S); renderFleet(); }
+
+/* ---- 车队：粘贴导入 ---- */
+var fleetPasteBuf = [];
+function openFleetPaste(){ $('fleetPasteOverlay').classList.add('open'); $('fleetPastePreview').innerHTML=''; $('fleetPasteCount').textContent=''; setTimeout(()=>$('fleetPasteInput').focus(),50); }
+function closeFleetPaste(){ $('fleetPasteOverlay').classList.remove('open'); fleetPasteBuf=[]; }
+function parseFleetPaste(){
+  const txt=$('fleetPasteInput').value.trim();
+  if(!txt){ toast('请先粘贴车队信息'); return; }
+  let arr=[];
+  try{
+    const j=JSON.parse(txt);
+    arr=Array.isArray(j)? j : (Array.isArray(j.fleets)? j.fleets : []);
+  }catch(e){
+    txt.split(/\r?\n/).forEach(line=>{
+      line=line.trim().replace(/^\s*\d+[\.、\)）]\s*/,'');
+      if(!line) return;
+      const kv=kvParseLine(line,{name:/^(车队|名称|名字|name)$/i, contact:/^(联系人|contact)$/i, phone:/^(电话|手机|tel|phone)$/i, note:/^(备注|note)$/i});
+      if(kv && kv.name){ arr.push(kv); return; }
+      const seg=line.split(/[\t，,、;；]+/).map(s=>s.trim()).filter(Boolean);
+      if(!seg.length) return;
+      const item={name:seg[0]};
+      seg.slice(1).forEach(s=>{
+        const pm=s.match(/^([0-9+\-\s]{5,})$/); if(pm && !item.phone){ item.phone=pm[1].replace(/[\s-]/g,''); return; }
+        if(!item.contact) item.contact=s; else if(!item.note) item.note=s;
+      });
+      arr.push(item);
+    });
+  }
+  arr=arr.filter(x=>x && x.name && String(x.name).trim());
+  if(!arr.length){ toast('未识别到车队，请检查格式'); return; }
+  const exist=new Set((S.fleets||[]).map(f=>f.name));
+  const fresh=arr.filter(x=>!exist.has(x.name.trim()));
+  const skip=arr.length-fresh.length;
+  fleetPasteBuf=fresh;
+  $('fleetPasteCount').textContent='识别 '+arr.length+' 条，新增 '+fresh.length+' 条'+(skip? '，跳过已存在 '+skip+' 条':'');
+  $('fleetPastePreview').innerHTML = fresh.length? '<table class="order-table"><thead><tr><th>车队</th><th>联系人</th><th>电话</th><th>备注</th></tr></thead><tbody>'+fresh.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.contact||'')+'</td><td>'+escapeHtml(x.phone||'')+'</td><td>'+escapeHtml(x.note||'')+'</td></tr>').join('')+'</tbody></table>' : '<div style="color:var(--text-3);padding:8px 0">全部与已有车队重复，无需导入</div>';
+}
+function doFleetPaste(){
+  if(!fleetPasteBuf.length){ toast('没有可导入的车队'); return; }
+  fleetPasteBuf.forEach(x=>S.fleets.push({id:uid(), name:x.name.trim(), contact:x.contact||'', phone:x.phone||'', note:x.note||''}));
+  saveState(S); renderFleet(); closeFleetPaste(); toast('已导入 '+fleetPasteBuf.length+' 个车队');
+}
+
+/* ---- 司机：粘贴导入 ---- */
+var driverPasteBuf = [];
+function openDriverPaste(){ $('driverPasteOverlay').classList.add('open'); $('driverPastePreview').innerHTML=''; $('driverPasteCount').textContent=''; setTimeout(()=>$('driverPasteInput').focus(),50); }
+function closeDriverPaste(){ $('driverPasteOverlay').classList.remove('open'); driverPasteBuf=[]; }
+function parseDriverPaste(){
+  const txt=$('driverPasteInput').value.trim();
+  if(!txt){ toast('请先粘贴司机信息'); return; }
+  let arr=[];
+  try{
+    const j=JSON.parse(txt);
+    arr=Array.isArray(j)? j : (Array.isArray(j.drivers)? j.drivers : []);
+    arr=arr.map(d=>({name:d.name||d.司机||'', carType:d.carType||d.车型||'', plate:d.plate||d.车号||d.车牌||'', phone:d.phone||d.电话||'', seatType:d.seatType||d.座位||d.座位档||'五座', fleet:d.fleet||d.车队||'', note:d.note||d.备注||''}));
+  }catch(e){
+    txt.split(/\n\s*\n|\n\s*[-—=_*]{3,}\s*\n|\n(?=\s*(?:司机|姓名|name)\s*[:：])/i).forEach(block=>{
+      block=(block||'').trim();
+      if(!block) return;
+      const item={name:'',carType:'',plate:'',phone:'',seatType:'五座',fleet:'',note:''};
+      let has=false;
+      block.split(/\r?\n/).forEach(line=>{
+        line=line.trim();
+        if(!line || /^[-—=_*]{3,}$/.test(line)) return;
+        const kv=kvParseLine(line,{name:/^(司机|司机姓名|姓名|name)$/i, carType:/^(车型|车辆|carType)$/i, plate:/^(车号|车牌|plate)$/i, phone:/^(电话|手机|tel|phone)$/i, seatType:/^(座位|座位档|seatType)$/i, fleet:/^(车队|所属车队|fleet)$/i, note:/^(备注|note)$/i});
+        if(kv){ Object.keys(kv).forEach(k=>{ if(kv[k]!==undefined && kv[k]!==null && kv[k]!==''){ item[k]=kv[k]; has=true; } }); }
+      });
+      if(has && item.name) arr.push(item);
+    });
+  }
+  arr=arr.filter(x=>x && x.name && String(x.name).trim());
+  if(!arr.length){ toast('未识别到司机，请检查格式'); return; }
+  const exist=new Set((S.drivers||[]).map(d=>d.name));
+  const fresh=arr.filter(x=>!exist.has(x.name.trim()));
+  const skip=arr.length-fresh.length;
+  driverPasteBuf=fresh;
+  $('driverPasteCount').textContent='识别 '+arr.length+' 位，新增 '+fresh.length+' 位'+(skip? '，跳过已存在 '+skip+' 位':'');
+  $('driverPastePreview').innerHTML = fresh.length? '<table class="order-table"><thead><tr><th>司机</th><th>车型</th><th>车号</th><th>电话</th><th>座位</th><th>车队</th></tr></thead><tbody>'+fresh.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.carType||'')+'</td><td>'+escapeHtml(x.plate||'')+'</td><td>'+escapeHtml(x.phone||'')+'</td><td>'+escapeHtml(x.seatType||'五座')+'</td><td>'+escapeHtml(x.fleet||'')+'</td></tr>').join('')+'</tbody></table>' : '<div style="color:var(--text-3);padding:8px 0">全部与已有司机重复，无需导入</div>';
+}
+function doDriverPaste(){
+  if(!driverPasteBuf.length){ toast('没有可导入的司机'); return; }
+  driverPasteBuf.forEach(x=>S.drivers.push({id:uid(), name:x.name.trim(), carType:x.carType||'', plate:x.plate||'', phone:x.phone||'', seatType:x.seatType||'五座', fleet:x.fleet||'', note:x.note||''}));
+  saveState(S); renderFleet(); closeDriverPaste(); toast('已导入 '+driverPasteBuf.length+' 位司机');
+}
+/* 键值对行解析：'键: 值' → 按映射表归到字段；支持 : 和 ： */
+function kvParseLine(line,map){
+  const item={}; let ok=false;
+  line.split(/[;；]+/).forEach(p=>{
+    p=p.trim(); if(!p) return;
+    const m=p.match(/^([^:：]+)\s*[:：]\s*(.+)$/);
+    if(!m) return;
+    const k=m[1].trim(), v=m[2].trim();
+    for(const field in map){ if(map[field].test(k)){ item[field]=v; ok=true; return; } }
+  });
+  return ok? item : null;
+}
 
 /* =========================================================
    参考价库
@@ -1214,22 +1442,30 @@ function runCalc(){
     +'<div style="font-size:11.5px;color:var(--text-3);margin-top:6px">合计 = 基础价 × '+h+' + 超时 × 费率；'+(p&&p.duration?'该线路标准时长 '+p.duration+'，':'')+(p&&p.distance?'距离约 '+p.distance+' 公里，':'')+(hasQ?'':'录好对外报价后即可自动算利润。')+'</div>';
   $('qcRes').innerHTML=html;
 }
-function addPrice(){ editPrice(); }
-function editPrice(i){
-  const p = i!==undefined? S.prices[i] : {city:'北京',route:'',vehicle:'五座',duration:'',distance:'',cost:0,quote:0,note:''};
+/* ---- 参考价：编辑用弹窗（替代 prompt） ---- */
+var editingPriceIdx = -1;
+function addPrice(){ openPriceModal(-1); }
+function editPrice(i){ openPriceModal((i===undefined||i===null)? -1 : i); }
+function openPriceModal(i){
+  editingPriceIdx = i;
+  const p = editingPriceIdx>=0? S.prices[editingPriceIdx] : {city:'北京',route:'',vehicle:'五座',duration:'',distance:'',cost:0,quote:0,note:''};
   if(!p) return;
-  const city=prompt('城市', p.city); if(city===null) return;
-  const route=prompt('线路（如 慕田峪 · 机场接送）', p.route); if(route===null) return;
-  const vehicle=prompt('车型', p.vehicle); if(vehicle===null) return;
-  const duration=prompt('时长（如 10小时，可空）', p.duration||''); if(duration===null) return;
-  const distance=prompt('距离（公里，可空）', p.distance||''); if(distance===null) return;
-  const cost=prompt('成本价（元）', p.cost?String(p.cost):''); if(cost===null) return;
-  const quote=prompt('对外报价（元，可空）', p.quote?String(p.quote):''); if(quote===null) return;
-  const note=prompt('备注', p.note||''); if(note===null) return;
-  const obj={city,route,vehicle,duration,distance,cost:+cost||0,quote:+quote||0,note};
-  if(i!==undefined) S.prices[i]=obj; else S.prices.push(obj);
-  saveState(S); renderPrices();
+  $('priceModalTitle').textContent = editingPriceIdx>=0? '编辑参考价' : '新增参考价';
+  $('pCity').value=p.city||'北京'; $('pRoute').value=p.route||''; $('pVehicle').value=p.vehicle||''; $('pDuration').value=p.duration||''; $('pDistance').value=p.distance||'';
+  $('pCost').value=p.cost? String(p.cost):''; $('pQuote').value=p.quote? String(p.quote):''; $('pNote').value=p.note||'';
+  $('priceModal').classList.add('open');
+  setTimeout(()=>$('pRoute').focus(),50);
 }
+function closePriceModal(){ $('priceModal').classList.remove('open'); editingPriceIdx=-1; }
+function savePriceModal(){
+  const route=$('pRoute').value.trim();
+  if(!route){ toast('请填写线路'); $('pRoute').focus(); return; }
+  const city=$('pCity').value.trim()||'北京';
+  const obj={city, route, vehicle:$('pVehicle').value.trim()||'五座', duration:$('pDuration').value.trim(), distance:$('pDistance').value.trim(), cost:+$('pCost').value||0, quote:+$('pQuote').value||0, note:$('pNote').value.trim()};
+  if(editingPriceIdx>=0) S.prices[editingPriceIdx]=obj; else S.prices.push(obj);
+  saveState(S); renderPrices(); closePriceModal(); toast('已保存参考价');
+}
+document.getElementById('priceModal').addEventListener('click', e=>{ if(e.target.id==='priceModal') closePriceModal(); });
 function removePrice(i){ if(!confirm('删除该参考价？')) return; S.prices.splice(i,1); saveState(S); renderPrices(); }
 function importTkData(){
   const txt=$('tkImport').value.trim();
@@ -1443,6 +1679,10 @@ function copyQuoteMsg(){
   } else fallbackCopy(t);
 }
 document.getElementById('quoteOverlay').addEventListener('click', e=>{ if(e.target.id==='quoteOverlay') closeQuoteMsg(); });
+document.getElementById('fleetModal').addEventListener('click', e=>{ if(e.target.id==='fleetModal') closeFleetModal(); });
+document.getElementById('driverModal').addEventListener('click', e=>{ if(e.target.id==='driverModal') closeDriverModal(); });
+document.getElementById('fleetPasteOverlay').addEventListener('click', e=>{ if(e.target.id==='fleetPasteOverlay') closeFleetPaste(); });
+document.getElementById('driverPasteOverlay').addEventListener('click', e=>{ if(e.target.id==='driverPasteOverlay') closeDriverPaste(); });
 
 /* =========================================================
    打印出车单
