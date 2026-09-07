@@ -402,6 +402,7 @@ textarea{resize:vertical;line-height:1.5}
         <div><h2 class="section">客人库</h2><p class="sub">自动从订单提取客人档案 · 电话 / 微信 / WhatsApp · 历史消费</p></div>
         <div class="spacer" style="flex:1"></div>
         <input type="text" id="guestKw" placeholder="搜索姓名 / 电话 / 微信" oninput="renderGuests()" style="min-width:170px;padding:8px 12px;border:1px solid var(--line-2);border-radius:9px;font-size:13px;background:#FBFCFE">
+        <button class="btn ghost" onclick="openGuestPaste()" title="从微信/表格/文件粘贴客人信息批量导入">粘贴导入</button>
         <button class="btn primary" onclick="openGuestModal('')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加客人</button>
       </div>
       <div id="guestList"></div>
@@ -774,6 +775,24 @@ textarea{resize:vertical;line-height:1.5}
     <div class="modal-foot">
       <button class="btn ghost" onclick="closeDriverPaste()">取消</button>
       <button class="btn primary" onclick="doDriverPaste()">导入司机</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 客人粘贴导入弹窗 ===== -->
+<div class="overlay" id="guestPasteOverlay">
+  <div class="modal">
+    <h3>粘贴导入客人</h3>
+    <div class="m-sub">支持三种格式：① 自然语言，每行一位，如「<span class="mono">Byhamre +46 72 237 12 45 瑞典</span>」「<span class="mono">Charmaine WhatsApp +61 406 304 639</span>」；② 键值对（<span class="mono">姓名: 王女士</span> / <span class="mono">电话: 13800000000</span>…），多位用空行分隔；③ JSON（<span class="mono">{"guests":[...]}</span>，字段 name/phone/wechat/country/city/source/note）。同名客人自动跳过。</div>
+    <textarea class="textarea-mon" id="guestPasteInput" style="min-height:180px" placeholder='每行一位客人：&#10;Byhamre +46 72 237 12 45 瑞典&#10;Charmaine WhatsApp +61 406 304 639 澳大利亚&#10;微信: 王女士 13800000000 北京&#10;&#10;或键值对：&#10;姓名: Leszek Lenczyk&#10;电话: +48 600 000 000&#10;国家: 波兰'></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+      <button class="btn primary" onclick="parseGuestPaste()">开始识别</button>
+      <span style="color:var(--text-3);font-size:12px" id="guestPasteCount"></span>
+    </div>
+    <div id="guestPastePreview" style="margin-top:12px"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeGuestPaste()">取消</button>
+      <button class="btn primary" onclick="doGuestPaste()">导入客人</button>
     </div>
   </div>
 </div>
@@ -1383,6 +1402,79 @@ function delGuest(id){
   S.guests=S.guests.filter(g=>g.id!==target); saveState(S); renderGuests(); closeGuestModal(); toast('已删除客人');
 }
 document.getElementById('guestModal').addEventListener('click', e=>{ if(e.target.id==='guestModal') closeGuestModal(); });
+
+/* 客人粘贴导入：自然语言行 / 键值对 / JSON，三种格式 */
+var guestPasteBuf=[];
+const GUEST_COUNTRIES = ['德国','法国','英国','美国','加拿大','澳大利亚','新西兰','俄罗斯','西班牙','意大利','葡萄牙','爱尔兰','荷兰','比利时','瑞士','奥地利','瑞典','挪威','丹麦','芬兰','波兰','捷克','匈牙利','希腊','土耳其','印度','巴西','墨西哥','韩国','日本','新加坡','马来西亚','泰国','越南','菲律宾','印尼','阿联酋','卡塔尔','沙特','以色列','南非','埃及','智利','阿根廷','乌克兰','克罗地亚','塞尔维亚','哈萨克斯坦'];
+const GUEST_CITIES = ['巴黎','伦敦','纽约','东京','首尔','柏林','罗马','米兰','马德里','巴塞罗那','里斯本','维也纳','苏黎世','日内瓦','哥本哈根','斯德哥尔摩','奥斯陆','赫尔辛基','莫斯科','圣彼得堡','伊斯坦布尔','迪拜','多哈','利雅得','孟买','德里','圣保罗','布宜诺斯艾利斯','墨西哥城','开普敦','开罗','特拉维夫','基辅','曼谷','巴厘岛','河内','胡志明市','马尼拉','雅加达','吉隆坡'];
+function parseGuestLine(line){
+  let work=line;
+  let phone='', wechat='', source='';
+  const pm=work.match(/\+?\d[\d\s\-]{6,16}/);
+  if(pm){ phone=pm[0].trim(); work=work.replace(pm[0],' '); }
+  const wxm=work.match(/wx[:：]\s*([A-Za-z0-9_\-]{2,})/i);
+  if(wxm){ wechat=wxm[1]; work=work.replace(wxm[0],' '); }
+  const wcm=work.match(/wechat[:：]\s*([A-Za-z0-9_\-]{2,})/i);
+  if(wcm){ wechat=wcm[1]; source='微信'; work=work.replace(wcm[0],' '); }
+  if(!wechat && /微信/.test(work)){ wechat='微信'; if(!source) source='微信'; work=work.replace(/微信[:：]?\s*/g,' '); }
+  if(!source && /whatsapp/i.test(work)){ source='WhatsApp'; work=work.replace(/whatsapp/ig,' '); }
+  const seg=work.split(/[\s\t，,、;；/|]+/).map(s=>s.trim()).filter(Boolean);
+  let country='', city='', rest=[];
+  seg.forEach(s=>{
+    if(!country && GUEST_COUNTRIES.includes(s)){ country=s; return; }
+    if(!city && (CITYS.includes(s) || GUEST_CITIES.includes(s))){ city=s; return; }
+    rest.push(s);
+  });
+  if(!city && rest.length){ const c=CITYS.find(c=>rest[0].startsWith(c) && rest[0].length>c.length); if(c){ city=c; rest[0]=rest[0].slice(c.length).trim(); } }
+  if(!country && rest.length){ const c=GUEST_COUNTRIES.find(c=>rest[0].startsWith(c) && rest[0].length>c.length); if(c){ country=c; rest[0]=rest[0].slice(c.length).trim(); } }
+  let name=rest.filter(Boolean).join(' ').trim();
+  if(wechat && wechat!=='微信'){
+    const last=rest.length? rest[rest.length-1] : '';
+    if(rest.length<=1 || GUEST_CITIES.includes(last) || GUEST_COUNTRIES.includes(last)) name=wechat;
+  }
+  if(!name) return null;
+  return {name, phone, wechat, country, city, source, note:''};
+}
+function openGuestPaste(){ $('guestPasteOverlay').classList.add('open'); $('guestPastePreview').innerHTML=''; $('guestPasteCount').textContent=''; setTimeout(()=>$('guestPasteInput').focus(),50); }
+function closeGuestPaste(){ $('guestPasteOverlay').classList.remove('open'); guestPasteBuf=[]; }
+function parseGuestPaste(){
+  const txt=$('guestPasteInput').value.trim();
+  if(!txt){ toast('请先粘贴客人信息'); return; }
+  let arr=[];
+  try{
+    const j=JSON.parse(txt);
+    arr=Array.isArray(j)? j : (Array.isArray(j.guests)? j.guests : []);
+    arr=arr.map(g=>({name:g.name||g.姓名||g.客人||'', phone:g.phone||g.电话||g.whatsapp||'', wechat:g.wechat||g.微信||'', country:g.country||g.国家||'', city:g.city||g.城市||'', source:g.source||g.来源||'', note:g.note||g.备注||''}));
+  }catch(e){
+    txt.split(/\n\s*\n|\n\s*[-—=_*]{3,}\s*\n|\n(?=\s*(?:姓名|客人|客人姓名|name)\s*[:：])/i).forEach(block=>{
+      block=(block||'').trim();
+      if(!block) return;
+      const item={name:'',phone:'',wechat:'',country:'',city:'',source:'',note:''};
+      let has=false;
+      const lines=block.split(/\r?\n/).map(l=>l.trim()).filter(l=>l && !/^[-—=_*]{3,}$/.test(l));
+      lines.forEach(line=>{
+        const kv=kvParseLine(line,{name:/^(姓名|客人|客人姓名|客户|name)$/i, phone:/^(电话|手机|whatsapp|wa|tel|phone)$/i, wechat:/^(微信|微信号|wechat|wx)$/i, country:/^(国家|国籍|country)$/i, city:/^(城市|所在城市|city)$/i, source:/^(来源|渠道|source)$/i, note:/^(备注|note)$/i});
+        if(kv){ Object.keys(kv).forEach(k=>{ if(kv[k]!==undefined && kv[k]!==null && kv[k]!==''){ item[k]=kv[k]; has=true; } }); }
+      });
+      if(has && item.name){ arr.push(item); return; }
+      lines.forEach(line=>{ const g=parseGuestLine(line); if(g) arr.push(g); });
+    });
+  }
+  arr=arr.filter(x=>x && x.name && String(x.name).trim());
+  if(!arr.length){ toast('未识别到客人，请检查格式'); return; }
+  const exist=new Set((S.guests||[]).map(g=>g.name.trim().toLowerCase()));
+  const fresh=arr.filter(x=>!exist.has(x.name.trim().toLowerCase()));
+  const skip=arr.length-fresh.length;
+  guestPasteBuf=fresh;
+  $('guestPasteCount').textContent='识别 '+arr.length+' 位，新增 '+fresh.length+' 位'+(skip? '，跳过已存在 '+skip+' 位':'');
+  $('guestPastePreview').innerHTML = fresh.length? '<table class="order-table"><thead><tr><th>姓名</th><th>电话</th><th>微信</th><th>国家</th><th>城市</th><th>来源</th></tr></thead><tbody>'+fresh.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.phone||'')+'</td><td>'+escapeHtml(x.wechat||'')+'</td><td>'+escapeHtml(x.country||'')+'</td><td>'+escapeHtml(x.city||'')+'</td><td>'+escapeHtml(x.source||'')+'</td></tr>').join('')+'</tbody></table>' : '<div style="color:var(--text-3);padding:8px 0">全部与已有客人重复，无需导入</div>';
+}
+function doGuestPaste(){
+  if(!guestPasteBuf.length){ toast('没有可导入的客人'); return; }
+  guestPasteBuf.forEach(x=>S.guests.push({id:uid(), name:x.name.trim(), phone:x.phone||'', wechat:x.wechat||'', contact:'', country:x.country||'', city:x.city||'', source:x.source||'', note:x.note||'', createdAt:todayStr(), updatedAt:todayStr()}));
+  saveState(S); renderGuests(); closeGuestPaste(); toast('已导入 '+guestPasteBuf.length+' 位客人');
+}
+document.getElementById('guestPasteOverlay').addEventListener('click', e=>{ if(e.target.id==='guestPasteOverlay') closeGuestPaste(); });
 
 /* =========================================================
    司机与车辆（配对）
