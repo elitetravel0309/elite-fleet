@@ -1138,21 +1138,57 @@ function guessPrice(o){
 }
 function guessQuote(o){
   if(!o.route) return null;
+  const city = o.city || detectCity(o.route, o.airport, '');
+  const vehicle = o.vehicle || '';
+  // 第一优先级：同城市+同车型+路线关键词匹配
   for(const p of S.prices){
-    if(o.vehicle===p.vehicle && (o.route.includes(p.route.split('·')[0].trim()) || p.route.includes(o.route)) && p.quote){
-      return p.quote;
-    }
+    if(!p.quote) continue;
+    if(city && p.city && p.city!==city) continue;
+    if(vehicle && p.vehicle && p.vehicle!==vehicle) continue;
+    const kw = (p.route||'').split('·')[0].trim();
+    if(kw && o.route.includes(kw)) return p.quote;
+    if(p.route && o.route.includes(p.route)) return p.quote;
+  }
+  // 第二优先级：同城市+路线关键词匹配（不限车型）
+  for(const p of S.prices){
+    if(!p.quote) continue;
+    if(city && p.city && p.city!==city) continue;
+    const kw = (p.route||'').split('·')[0].trim();
+    if(kw && o.route.includes(kw)) return p.quote;
   }
   return null;
 }
 function guessCost(o){
   if(!o.route) return null;
+  const city = o.city || detectCity(o.route, o.airport, '');
+  const vehicle = o.vehicle || '';
+  // 第一优先级：同城市+同车型+路线关键词匹配
   for(const p of S.prices){
-    if(o.vehicle===p.vehicle && (o.route.includes(p.route.split('·')[0].trim()) || p.route.includes(o.route)) && p.cost){
-      return p.cost;
-    }
+    if(!p.cost) continue;
+    if(city && p.city && p.city!==city) continue;
+    if(vehicle && p.vehicle && p.vehicle!==vehicle) continue;
+    const kw = (p.route||'').split('·')[0].trim();
+    if(kw && o.route.includes(kw)) return p.cost;
+    if(p.route && o.route.includes(p.route)) return p.cost;
+  }
+  // 第二优先级：同城市+路线关键词匹配（不限车型）
+  for(const p of S.prices){
+    if(!p.cost) continue;
+    if(city && p.city && p.city!==city) continue;
+    const kw = (p.route||'').split('·')[0].trim();
+    if(kw && o.route.includes(kw)) return p.cost;
   }
   return null;
+}
+// 智能估价：同时返回报价和成本建议
+function smartPrice(o){
+  const q = guessQuote(o), c = guessCost(o);
+  // 如果有成本但没报价，按默认利润率35%估算报价
+  let suggestedQuote = q;
+  if(!suggestedQuote && c){
+    suggestedQuote = Math.round(c / 0.65 / 10) * 10; // 35%利润率，取整到10
+  }
+  return {quote: suggestedQuote, cost: c, hasQuote: !!q, hasCost: !!c};
 }
 function calcQuote(o){ return (o && (o.quote || o.price))? (o.quote || o.price) : guessQuote(o); }
 function calcCost(o){ return (o && o.cost)? o.cost : guessCost(o); }
@@ -2206,15 +2242,17 @@ function closeOrder(){ $('orderOverlay').classList.remove('open'); editingId=nul
 function autoPrice(){
   const route=$('oRoute').value.trim(), vehicle=$('oVehicle').value;
   if(!route){ toast('请先填线路'); return; }
-  let city=$('oCity').value;
-  if(!city){ for(const c of CITY_LIST){ if(route.includes(c)){ city=c; break; } } }
+  const city = $('oCity').value || detectCity(route, $('oAirport').value, '');
+  if(city && !$('oCity').value) $('oCity').value = city;
   const o={route, vehicle, airport:$('oAirport').value, city};
-  const q=guessQuote(o), c=guessCost(o);
-  if(q==null && c==null){ toast('参考价库没有匹配「'+route+' / '+(vehicle||'车型')+'」，请手工填写'); return; }
-  if(q!=null) $('oQuote').value=q;
-  if(c!=null) $('oCost').value=c;
-  const p=(S.prices||[]).find(x=>x.vehicle===vehicle && (route.includes(x.route.split('·')[0].trim())||x.route.includes(route)));
-  toast('已按参考价回填'+(q!=null?' 报价¥'+q:'')+(c!=null?' 成本¥'+c:'')+((p&&p.duration)?'（标准时长 '+p.duration+'）':''));
+  const sp = smartPrice(o);
+  if(sp.quote==null && sp.cost==null){ toast('参考价库没有匹配「'+route+' / '+(vehicle||'车型')+'」，请手工填写'); return; }
+  if(sp.quote!=null && !$('oQuote').value) $('oQuote').value=sp.quote;
+  if(sp.cost!=null && !$('oCost').value) $('oCost').value=sp.cost;
+  let msg='已按参考价回填';
+  if(sp.quote!=null) msg+=' 报价¥'+sp.quote+(sp.hasQuote?'':'(估算)');
+  if(sp.cost!=null) msg+=' 成本¥'+sp.cost+(sp.hasCost?'':'(估算)');
+  toast(msg);
 }
 function saveOrder(){
   const date=$('oDate').value, time=$('oTime').value, route=$('oRoute').value.trim();
