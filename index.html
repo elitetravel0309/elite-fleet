@@ -367,6 +367,7 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn ghost" onclick="printSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>出车单</button>
       </div>
       <div class="timeline" id="timeline"></div>
+      <div id="upcomingOrders" style="display:none"></div>
       <div class="week-grid" id="weekGrid" style="display:none"></div>
     </section>
 
@@ -1351,6 +1352,7 @@ function renderToday(){
     if(!sorted.length) html='<div style="text-align:center;color:var(--text-3);padding:50px 0">当天无任务</div>';
     $('timeline').innerHTML=html;
     checkConflicts(list);
+    renderUpcoming();
     return;
   }
 
@@ -1403,6 +1405,33 @@ function renderToday(){
   html+='</div>';
   $('timeline').innerHTML = '<div class="timeline" style="position:relative;margin-left:4px">'+html+'</div>';
   checkConflicts(list);
+  renderUpcoming();
+}
+/* 未来3天任务预览 */
+function renderUpcoming(){
+  const upcoming = [];
+  for(let i=1;i<=3;i++){
+    const d = fmtDate(new Date(parseDate(viewDate).getTime()+i*86400000));
+    const dl = ordersOn(d);
+    if(dl.length) upcoming.push({date:d, orders:dl});
+  }
+  const upEl = $('upcomingOrders');
+  if(!upEl) return;
+  if(upcoming.length){
+    let uh='<div style="margin-top:20px;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)"><b style="font-size:14px;color:var(--ink)">未来3天任务</b>';
+    upcoming.forEach(u=>{
+      uh+='<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--line-2)"><span style="font-weight:600;color:var(--accent)">'+u.date+'</span><span style="color:var(--text-3);font-size:12px;margin-left:8px">'+u.orders.length+'单</span>';
+      u.orders.forEach(o=>{
+        uh+='<div style="margin-top:6px;font-size:13px;padding:6px 10px;background:var(--bg);border-radius:8px;cursor:pointer" onclick="openOrder(\''+o.id+'\')"><span style="font-weight:600">'+o.time+'</span> · '+escapeHtml(o.guest||'客户')+' · '+escapeHtml(o.route||'').slice(0,40)+(o.driver?' · 司机:'+o.driver:'<span style="color:#d4380d"> · 未派司机</span>')+'</div>';
+      });
+      uh+='</div>';
+    });
+    uh+='</div>';
+    upEl.innerHTML=uh;
+    upEl.style.display='block';
+  } else {
+    upEl.style.display='none';
+  }
 }
 /* 任务卡片内部HTML（时间轴和列表共用） */
 function taskCardInner(o){
@@ -2823,10 +2852,11 @@ function renderReport(){
   const profit=os=>money(os)-cost(os);
   const rate=(p,t)=>t>0? (p/t*100).toFixed(1)+'%' : '—';
   const fmtMoney=n=>'¥'+Number(n).toLocaleString('zh-CN');
-  const cityMap={}, fleetMap={};
+  const cityMap={}, fleetMap={}, guestMap={};
   orders.forEach(o=>{
     const c=cityOf(o)||'未标注'; (cityMap[c]=cityMap[c]||[]).push(o);
     const f=o.fleet||'未指定'; (fleetMap[f]=fleetMap[f]||[]).push(o);
+    const g=o.guest||'未命名'; (guestMap[g]=guestMap[g]||[]).push(o);
   });
   function tbl(title,map){
     let html='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">'+title+'</b>';
@@ -2847,7 +2877,8 @@ function renderReport(){
     +kpi('利润', fmtMoney(profit(orders)))+kpi('利润率', rate(profit(orders),money(orders)))
     +'</div>'
     +tbl('按城市汇总', cityMap)
-    +tbl('按对接车队汇总', fleetMap);
+    +tbl('按对接车队汇总', fleetMap)
+    +tbl('按客人汇总', guestMap);
 }
 
 /* =========================================================
