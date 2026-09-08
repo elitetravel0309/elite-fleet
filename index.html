@@ -506,6 +506,7 @@ textarea{resize:vertical;line-height:1.5}
             <input type="password" id="cfKey" placeholder="API 密钥（与 Worker 机密一致）">
             <button class="btn primary" onclick="uploadToCloud()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>保存全部数据到云端</button>
             <div id="cfStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
+            <div id="syncStatus" style="font-size:12px;color:var(--text-3);min-height:16px">自动同步：每30秒检查云端更新</div>
           </div>
         </div>
         <div class="panel">
@@ -2539,21 +2540,20 @@ function importBackup(ev){
 }
 function cloudUrl(){ return location.protocol==='file:'? null : ('data/elite-fleet-data.json'); }
 function mergeCloud(d){
-  // 云端为基底，合并保留本地独有的订单/司机/参考价，避免在线版锁死旧快照或丢本地数据
-  const key=o=>o.date+'|'+o.time+'|'+o.guest;
-  const local=S||{orders:[],drivers:[],prices:[],vehicles:[]};
-  const seen=new Set(), merged=[];
-  (d.orders||[]).forEach(o=>{ merged.push(o); seen.add(key(o)); });
-  (local.orders||[]).forEach(o=>{ if(!seen.has(key(o))) merged.push(o); });
+  // 以 id 为优先去重键，避免修改姓名/车牌后生成重复条目
+  const local=S||{orders:[],drivers:[],prices:[],vehicles:[],guests:[],fleets:[]};
+  // id优先去重：有id用id，无id用fallback
+  const dedupById=(arr,fb)=>{ const s=new Set(), out=[]; (arr||[]).forEach(x=>{ const k=x.id? 'id:'+x.id : (fb? 'fb:'+fb(x):null); if(k&&!s.has(k)){ s.add(k); out.push(x); } }); return out; };
+  // 订单：云端为基底，本地独有订单追加，按id去重
+  const merged=dedupById((d.orders||[]).concat(local.orders||[]), x=>(x.date||'')+'|'+(x.time||'')+'|'+(x.guest||''));
   merged.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-  const dedup=(arr,kk)=>{ const s=new Set(), out=[]; (arr||[]).forEach(x=>{ const k=kk(x); if(k&&!s.has(k)){ s.add(k); out.push(x); } }); return out; };
   S=Object.assign({}, d, {
     orders: merged,
-    drivers: dedup((d.drivers||[]).concat(local.drivers||[]), x=>x.plate||x.name),
-    fleets: dedup((d.fleets||[]).concat(local.fleets||[]), x=>x.name),
-    prices: dedup((d.prices||[]).concat(local.prices||[]), x=>x.city+'|'+x.route+'|'+x.vehicle),
-    vehicles: dedup((d.vehicles||[]).concat(local.vehicles||[]), x=>x.plate),
-    guests: dedup((local.guests||[]).concat(d.guests||[]), x=>(x.name||'').trim().toLowerCase())
+    drivers: dedupById((d.drivers||[]).concat(local.drivers||[]), x=>(x.plate||'')+'|'+(x.name||'')),
+    fleets: dedupById((d.fleets||[]).concat(local.fleets||[]), x=>(x.name||'')),
+    prices: dedupById((d.prices||[]).concat(local.prices||[]), x=>(x.city||'')+'|'+(x.route||'')+'|'+(x.vehicle||'')),
+    vehicles: dedupById((d.vehicles||[]).concat(local.vehicles||[]), x=>(x.plate||'')),
+    guests: dedupById((local.guests||[]).concat(d.guests||[]), x=>(x.name||'').trim().toLowerCase())
   });
 }
 function fetchCloudData(){
@@ -2917,6 +2917,34 @@ showSchedule('today');
 renderKpis();
 fetchCloudData();
 setTimeout(()=>{ appReady = true; }, 3000);
+
+/* 定时云端同步：每30秒检查云端是否有更新，有则自动合并 */
+let cloudPollTimer = null;
+let lastCloudTs = 0;
+function checkCloudUpdates(){
+  if(!appReady) return;
+  const u=cloudUrl(); if(!u) return;
+  fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(d=>{
+      if(!d || !d._lastModified) return;
+      const localTs = S._lastModified || 0;
+      if(d._lastModified > localTs && d._lastModified !== lastCloudTs){
+        lastCloudTs = d._lastModified;
+        mergeCloud(d);
+        saveState(S);
+        if(d._lastModified) S._lastModified = d._lastModified;
+        renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
+        updateSyncStatus('云端有更新，已自动合并');
+      } else {
+        updateSyncStatus('已同步');
+      }
+    }).catch(()=>{});
+}
+function updateSyncStatus(msg){
+  const el = document.getElementById('syncStatus');
+  if(el) el.textContent = msg || '';
+}
+setTimeout(()=>{ cloudPollTimer = setInterval(checkCloudUpdates, 30000); }, 5000);
 </script>
 </body>
 </html>
