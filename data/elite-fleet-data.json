@@ -435,6 +435,19 @@
       "fleet": "",
       "note": "",
       "carType": "岚图梦想家"
+    },
+    {
+      "id": "drv_1788868529016_陈向民",
+      "name": "陈向民",
+      "phone": "13992875663",
+      "plate": "陕AHH0322",
+      "carType": "帕萨特",
+      "color": "",
+      "seatType": "五座",
+      "city": "西安",
+      "fleet": "",
+      "note": "",
+      "lastUsed": 0
     }
   ],
   "fleets": [
@@ -2003,5 +2016,5 @@
     "built": "2026-09-07T07:22:57.751Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1788868148564.1616
+  "_lastModified": 1788868529016.6362
 }
