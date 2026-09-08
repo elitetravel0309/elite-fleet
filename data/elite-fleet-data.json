@@ -37,7 +37,7 @@
       "plate": "",
       "price": 850,
       "quote": 850,
-      "cost": 0,
+      "cost": 650,
       "status": "confirmed",
       "note": "司机代收850；酒店：北京明豪华美达酒店（首都机场新国展店），顺义区天竺镇府前一街13号；14:00前送到北京南站（客人15:00火车）",
       "city": "北京"
@@ -79,7 +79,7 @@
       "plate": "",
       "price": 0,
       "quote": 0,
-      "cost": 0,
+      "cost": 650,
       "status": "confirmed",
       "note": "客人有微信；酒店：北京JEN新国贸饭店（朝阳区建国门外大街1号）；17:30之前返回酒店；不用代收，价格待定",
       "city": "北京"
@@ -142,7 +142,7 @@
       "plate": "",
       "price": 0,
       "quote": 0,
-      "cost": 0,
+      "cost": 750,
       "status": "confirmed",
       "note": "CA964预计04:45抵达T3，06:00星巴克接出发；机场-慕田峪-机场；15:00-16:00之间回到首都机场3号航站楼；接机牌用China Wonder Tours logo；价格待定",
       "city": "北京"
@@ -184,7 +184,7 @@
       "plate": "",
       "price": 0,
       "quote": 0,
-      "cost": 0,
+      "cost": 650,
       "status": "confirmed",
       "note": "6人+12个大小行李，单用车；酒店接→慕田峪→市区一景点（待定，不一定去）→酒店；接机牌Welcome Mr. HUSDI HDCI & Party；出发时间待确认（暂定09:00）",
       "city": "北京"
@@ -226,7 +226,7 @@
       "plate": "",
       "price": 0,
       "quote": 0,
-      "cost": 0,
+      "cost": 650,
       "status": "confirmed",
       "note": "转机Layover；航班CA750约12:10抵达大兴，出关后接；慕田峪长城；21:00之前送到首都机场3号航站楼（客人00:05国际航班）；不用代收；仅WhatsApp",
       "city": "北京"
@@ -1554,5 +1554,5 @@
     "built": "2026-09-07T07:22:57.751Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1788838367137.4324
+  "_lastModified": 1788838509081.024
 }
