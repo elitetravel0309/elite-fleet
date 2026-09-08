@@ -1136,6 +1136,12 @@ function guessPrice(o){
   }
   return null;
 }
+// 从价格路线中提取所有匹配关键词（按·和+拆分）
+function priceKeywords(route){
+  if(!route) return [];
+  const parts = route.split(/[·+]/).map(s=>s.trim()).filter(s=>s.length>=2 && s!=='包车' && s!=='单程' && s!=='包天' && s!=='全程包车' && s!=='车队日租');
+  return parts;
+}
 function guessQuote(o){
   if(!o.route) return null;
   const city = o.city || detectCity(o.route, o.airport, '');
@@ -1145,16 +1151,16 @@ function guessQuote(o){
     if(!p.quote) continue;
     if(city && p.city && p.city!==city) continue;
     if(vehicle && p.vehicle && p.vehicle!==vehicle) continue;
-    const kw = (p.route||'').split('·')[0].trim();
-    if(kw && o.route.includes(kw)) return p.quote;
+    const kws = priceKeywords(p.route);
+    for(const kw of kws){ if(kw && o.route.includes(kw)) return p.quote; }
     if(p.route && o.route.includes(p.route)) return p.quote;
   }
   // 第二优先级：同城市+路线关键词匹配（不限车型）
   for(const p of S.prices){
     if(!p.quote) continue;
     if(city && p.city && p.city!==city) continue;
-    const kw = (p.route||'').split('·')[0].trim();
-    if(kw && o.route.includes(kw)) return p.quote;
+    const kws = priceKeywords(p.route);
+    for(const kw of kws){ if(kw && o.route.includes(kw)) return p.quote; }
   }
   return null;
 }
@@ -1167,16 +1173,16 @@ function guessCost(o){
     if(!p.cost) continue;
     if(city && p.city && p.city!==city) continue;
     if(vehicle && p.vehicle && p.vehicle!==vehicle) continue;
-    const kw = (p.route||'').split('·')[0].trim();
-    if(kw && o.route.includes(kw)) return p.cost;
+    const kws = priceKeywords(p.route);
+    for(const kw of kws){ if(kw && o.route.includes(kw)) return p.cost; }
     if(p.route && o.route.includes(p.route)) return p.cost;
   }
   // 第二优先级：同城市+路线关键词匹配（不限车型）
   for(const p of S.prices){
     if(!p.cost) continue;
     if(city && p.city && p.city!==city) continue;
-    const kw = (p.route||'').split('·')[0].trim();
-    if(kw && o.route.includes(kw)) return p.cost;
+    const kws = priceKeywords(p.route);
+    for(const kw of kws){ if(kw && o.route.includes(kw)) return p.cost; }
   }
   return null;
 }
