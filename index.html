@@ -407,6 +407,7 @@ textarea{resize:vertical;line-height:1.5}
           <option value="杭州">杭州</option>
         </select>
         <input type="text" id="fKw" placeholder="搜索客户 / 路线 / 司机" oninput="renderOrders()" style="min-width:180px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#d4380d;cursor:pointer;white-space:nowrap"><input type="checkbox" id="fNoDriver" onchange="renderOrders()">只看未派司机</label>
         <span class="spacer"></span>
         <button class="btn ghost" onclick="clearFilters()">重置</button>
       </div>
@@ -1279,7 +1280,14 @@ function renderToday(){
   const list = ordersOn(viewDate);
   // 显示/隐藏视图切换
   $('todayViewSeg').style.display = scheduleMode==='today' ? 'flex' : 'none';
-  $('schedSub').textContent = '共 '+list.length+' 个任务 · 点击卡片编辑' + (todayView==='timeline'?' · 时间重叠自动分列':' · 按时间排序');
+  // 未派司机警告
+  const unassigned = list.filter(o=>!o.driver);
+  if(unassigned.length && viewDate>=todayStr()){
+    const names = unassigned.map(o=>o.time+' '+escapeHtml(o.guest||'客户')).join('、');
+    $('schedSub').innerHTML = '共 '+list.length+' 个任务 · <span style="color:#d4380d;font-weight:600">'+unassigned.length+' 单未派司机：'+names+'</span>';
+  } else {
+    $('schedSub').textContent = '共 '+list.length+' 个任务 · 点击卡片编辑' + (todayView==='timeline'?' · 时间重叠自动分列':' · 按时间排序');
+  }
 
   if(todayView==='list'){
     // ===== 列表视图：竖排卡片，永不遮挡 =====
@@ -1359,7 +1367,7 @@ function taskCardInner(o){
     +'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>'+escapeHtml(o.guest||'未填客户')+'</span>'
     +(o.flight?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.5c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'+o.flight+'</span>':'')
     +(o.vehicle?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/></svg>'+o.vehicle+(o.pax?' · '+o.pax+'人':'')+'</span>':'')
-    +(o.driver?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'+o.driver+'</span>':'<span style="color:var(--text-3)">未指派</span>')
+    +(o.driver?'<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'+o.driver+'</span>':'<span style="color:#d4380d;font-weight:600">未派司机</span>')
     +(o.plate?'<span>'+o.plate+'</span>':'')
     +'<span class="tag" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span>'
     +'</div>'
@@ -1426,13 +1434,14 @@ function goThisWeek(){ weekOffset=0; renderWeek(); }
    订单管理
    ========================================================= */
 function renderOrders(){
-  const fFrom=$('fFrom').value, fTo=$('fTo').value, fType=$('fType').value, fStatus=$('fStatus').value, fCity=$('fCity').value, fKw=($('fKw').value||'').trim().toLowerCase();
+  const fFrom=$('fFrom').value, fTo=$('fTo').value, fType=$('fType').value, fStatus=$('fStatus').value, fCity=$('fCity').value, fKw=($('fKw').value||'').trim().toLowerCase(), fNoDriver=$('fNoDriver').checked;
   let list=getOrders().filter(o=>{
     if(fFrom && o.date<fFrom) return false;
     if(fTo && o.date>fTo) return false;
     if(fType && o.type!==fType) return false;
     if(fStatus && o.status!==fStatus) return false;
     if(fCity && cityOf(o)!==fCity) return false;
+    if(fNoDriver && o.driver) return false;
     if(fKw){ const h=[o.guest,o.route,o.driver,o.contact,o.flight,o.plate].join(' ').toLowerCase(); if(!h.includes(fKw)) return false; }
     return true;
   });
@@ -1473,7 +1482,7 @@ function renderOrders(){
   html+='</tbody></table>';
   $('ordersWrap').innerHTML=html;
 }
-function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach(id=>{ if($(id)) $(id).value=''; }); renderOrders(); }
+function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach(id=>{ if($(id)) $(id).value=''; }); if($('fNoDriver')) $('fNoDriver').checked=false; renderOrders(); }
 function delOrder(id){
   if(!confirm('确定删除该订单？')) return;
   S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderGuests(); renderKpis();
