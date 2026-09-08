@@ -433,7 +433,8 @@
       "plate": "陕AHC1830",
       "seats": "七座",
       "fleet": "",
-      "note": ""
+      "note": "",
+      "carType": "岚图梦想家"
     }
   ],
   "fleets": [
@@ -1554,12 +1555,13 @@
       "source": "WhatsApp",
       "city": "",
       "createdAt": "2026-09-09",
-      "updatedAt": "2026-09-09"
+      "updatedAt": "2026-09-09",
+      "nationality": "新西兰"
     }
   ],
   "_meta": {
     "built": "2026-09-07T07:22:57.751Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1788842105978.4802
+  "_lastModified": 1788842123869.4229
 }
