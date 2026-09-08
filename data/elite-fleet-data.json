@@ -1438,12 +1438,13 @@
       "phone": "+49 1512 0135851",
       "wechat": "",
       "contact": "+49 1512 0135851",
-      "country": "",
+      "country": "德国",
       "city": "",
       "source": "",
       "note": "",
       "createdAt": "",
-      "updatedAt": ""
+      "updatedAt": "",
+      "nationality": "德国"
     },
     {
       "id": "gcharmaine",
@@ -1451,12 +1452,13 @@
       "phone": "+61 406 304 639",
       "wechat": "",
       "contact": "+61 406 304 639",
-      "country": "",
+      "country": "澳大利亚",
       "city": "",
       "source": "",
       "note": "",
       "createdAt": "",
-      "updatedAt": ""
+      "updatedAt": "",
+      "nationality": "澳大利亚"
     },
     {
       "id": "gellice",
@@ -1464,12 +1466,13 @@
       "phone": "+447966235582",
       "wechat": "",
       "contact": "+447966235582",
-      "country": "",
+      "country": "英国",
       "city": "",
       "source": "",
       "note": "",
       "createdAt": "",
-      "updatedAt": ""
+      "updatedAt": "",
+      "nationality": "英国"
     },
     {
       "id": "gstefaniekrug",
@@ -1477,12 +1480,13 @@
       "phone": "",
       "wechat": "",
       "contact": "",
-      "country": "",
+      "country": "德国",
       "city": "",
       "source": "",
       "note": "",
       "createdAt": "",
-      "updatedAt": ""
+      "updatedAt": "",
+      "nationality": "德国"
     },
     {
       "id": "geszeklenczyk",
@@ -1490,12 +1494,13 @@
       "phone": "",
       "wechat": "",
       "contact": "",
-      "country": "",
+      "country": "波兰",
       "city": "",
       "source": "",
       "note": "",
       "createdAt": "",
-      "updatedAt": ""
+      "updatedAt": "",
+      "nationality": "波兰"
     },
     {
       "id": "gbyhamre",
@@ -1503,12 +1508,13 @@
       "phone": "+46 72 237 12 45",
       "wechat": "",
       "contact": "+46 72 237 12 45",
-      "country": "",
+      "country": "瑞典",
       "city": "",
       "source": "",
       "note": "",
       "createdAt": "",
-      "updatedAt": ""
+      "updatedAt": "",
+      "nationality": "瑞典"
     },
     {
       "id": "gaudvercammen",
@@ -1516,12 +1522,13 @@
       "phone": "+32 477 23 78 25",
       "wechat": "",
       "contact": "+32 477 23 78 25",
-      "country": "",
+      "country": "比利时",
       "city": "",
       "source": "",
       "note": "",
       "createdAt": "",
-      "updatedAt": ""
+      "updatedAt": "",
+      "nationality": "比利时"
     },
     {
       "id": "gsdihdciparty",
@@ -1554,5 +1561,5 @@
     "built": "2026-09-07T07:22:57.751Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1788838718505.3147
+  "_lastModified": 1788842105978.4802
 }
