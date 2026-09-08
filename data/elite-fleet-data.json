@@ -447,6 +447,13 @@
       "contact": "",
       "phone": "",
       "note": "北京车队，日租区间800-2500（Travel KB 参考）"
+    },
+    {
+      "name": "陕西星成通达汽车服务有限公司",
+      "city": "西安",
+      "contact": "",
+      "phone": "",
+      "note": "Shaanxi Xingcheng Tongda Automobile Service Co., Ltd."
     }
   ],
   "prices": [
@@ -1533,5 +1540,6 @@
   "_meta": {
     "built": "2026-09-07T07:22:57.751Z",
     "source": "workbench-upload"
-  }
+  },
+  "_lastModified": 1788826947171.9016
 }
