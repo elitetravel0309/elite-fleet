@@ -408,6 +408,7 @@ textarea{resize:vertical;line-height:1.5}
         </select>
         <input type="text" id="fKw" placeholder="搜索客户 / 路线 / 司机" oninput="renderOrders()" style="min-width:180px">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#d4380d;cursor:pointer;white-space:nowrap"><input type="checkbox" id="fNoDriver" onchange="renderOrders()">只看未派司机</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#d48806;cursor:pointer;white-space:nowrap"><input type="checkbox" id="fInquiry" onchange="renderOrders()">只看询盘</label>
         <span class="spacer"></span>
         <button class="btn ghost" onclick="clearFilters()">重置</button>
       </div>
@@ -495,6 +496,10 @@ textarea{resize:vertical;line-height:1.5}
           <div class="stack">
             <button class="btn" onclick="exportData()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出全部数据（JSON 备份）</button>
             <label class="btn ghost" style="justify-content:center">导入备份文件<input type="file" accept=".json" style="display:none" onchange="importBackup(event)"></label>
+            <div style="display:flex;gap:8px">
+              <button class="btn ghost" onclick="undo()" style="flex:1">撤销 (Ctrl+Z)</button>
+              <button class="btn ghost" onclick="redo()" style="flex:1">重做 (Ctrl+Y)</button>
+            </div>
             <button class="btn ghost" onclick="refreshFromCloud()">从云端刷新（拉取线上最新数据）</button>
             <button class="btn danger" onclick="resetData()">清空全部数据（含订单与名册）</button>
           </div>
@@ -1099,7 +1104,53 @@ function loadState(){
   try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; return s; } } }catch(e){}
   const s = seedState(); saveState(s); return s;
 }
-function saveState(s){ try{ s._lastModified=Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} if(appReady) scheduleAutoSync(); }
+/* ===== 撤销/重做 ===== */
+const UNDO_MAX = 20;
+let undoStack = [];
+let redoStack = [];
+let suppressUndo = false;
+function pushUndo(label){
+  if(suppressUndo || !appReady) return;
+  try{
+    undoStack.push({label: label||'操作', state: JSON.parse(JSON.stringify(S)), time: Date.now()});
+    if(undoStack.length>UNDO_MAX) undoStack.shift();
+    redoStack = [];
+  }catch(e){}
+}
+function undo(){
+  if(!undoStack.length){ toast('没有可撤销的操作'); return; }
+  const prev = undoStack.pop();
+  redoStack.push({label: prev.label, state: JSON.parse(JSON.stringify(S)), time: Date.now()});
+  suppressUndo = true;
+  S = prev.state;
+  saveState(S);
+  suppressUndo = false;
+  renderAll();
+  toast('已撤销：'+prev.label);
+}
+function redo(){
+  if(!redoStack.length){ toast('没有可重做的操作'); return; }
+  const next = redoStack.pop();
+  undoStack.push({label: next.label, state: JSON.parse(JSON.stringify(S)), time: Date.now()});
+  suppressUndo = true;
+  S = next.state;
+  saveState(S);
+  suppressUndo = false;
+  renderAll();
+  toast('已重做：'+next.label);
+}
+function renderAll(){ renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis(); }
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='z' && !e.shiftKey){ e.preventDefault(); undo(); }
+  if((e.ctrlKey||e.metaKey) && (e.key==='y' || (e.key==='z' && e.shiftKey))){ e.preventDefault(); redo(); }
+});
+
+function saveState(s){
+  if(!suppressUndo && appReady){
+    try{ undoStack.push({label:'数据修改', state: JSON.parse(JSON.stringify(S)), time: Date.now()}); if(undoStack.length>UNDO_MAX) undoStack.shift(); redoStack = []; }catch(e){}
+  }
+  try{ s._lastModified=Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} if(appReady) scheduleAutoSync();
+}
 let appReady = false;
 let autoSyncTimer = null;
 let cloudLastModified = 0;
@@ -1434,7 +1485,7 @@ function goThisWeek(){ weekOffset=0; renderWeek(); }
    订单管理
    ========================================================= */
 function renderOrders(){
-  const fFrom=$('fFrom').value, fTo=$('fTo').value, fType=$('fType').value, fStatus=$('fStatus').value, fCity=$('fCity').value, fKw=($('fKw').value||'').trim().toLowerCase(), fNoDriver=$('fNoDriver').checked;
+  const fFrom=$('fFrom').value, fTo=$('fTo').value, fType=$('fType').value, fStatus=$('fStatus').value, fCity=$('fCity').value, fKw=($('fKw').value||'').trim().toLowerCase(), fNoDriver=$('fNoDriver').checked, fInquiry=$('fInquiry').checked;
   let list=getOrders().filter(o=>{
     if(fFrom && o.date<fFrom) return false;
     if(fTo && o.date>fTo) return false;
@@ -1442,6 +1493,7 @@ function renderOrders(){
     if(fStatus && o.status!==fStatus) return false;
     if(fCity && cityOf(o)!==fCity) return false;
     if(fNoDriver && o.driver) return false;
+    if(fInquiry && !['inquiry','quoted','pending'].includes(o.status)) return false;
     if(fKw){ const h=[o.guest,o.route,o.driver,o.contact,o.flight,o.plate].join(' ').toLowerCase(); if(!h.includes(fKw)) return false; }
     return true;
   });
@@ -1482,7 +1534,7 @@ function renderOrders(){
   html+='</tbody></table>';
   $('ordersWrap').innerHTML=html;
 }
-function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach(id=>{ if($(id)) $(id).value=''; }); if($('fNoDriver')) $('fNoDriver').checked=false; renderOrders(); }
+function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach(id=>{ if($(id)) $(id).value=''; }); if($('fNoDriver')) $('fNoDriver').checked=false; if($('fInquiry')) $('fInquiry').checked=false; renderOrders(); }
 function delOrder(id){
   if(!confirm('确定删除该订单？')) return;
   S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderGuests(); renderKpis();
