@@ -347,6 +347,9 @@ textarea{resize:vertical;line-height:1.5}
         </div>
         <div class="seg" id="todayViewSeg" style="margin-left:8px">
           <button class="seg-btn active" id="segTimeline" onclick="setTodayView('timeline')">时间轴</button>
+        </div>
+        <div id="todayAlerts" style="display:none;background:#fff5f5;border:1px solid #ffccc7;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:12px;color:#c0392b;line-height:1.6"></div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
           <button class="seg-btn" id="segList" onclick="setTodayView('list')">列表</button>
         </div>
         <div class="date-nav" id="dayNav">
@@ -410,6 +413,7 @@ textarea{resize:vertical;line-height:1.5}
         <input type="text" id="fKw" placeholder="搜索客户 / 路线 / 司机" oninput="renderOrders()" style="min-width:180px">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#d4380d;cursor:pointer;white-space:nowrap"><input type="checkbox" id="fNoDriver" onchange="renderOrders()">只看未派司机</label>
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#d48806;cursor:pointer;white-space:nowrap"><input type="checkbox" id="fInquiry" onchange="renderOrders()">只看询盘</label>
+        <button class="btn ghost small" onclick="exportOrdersCSV()" style="margin-left:auto" title="导出当前筛选的订单为CSV">导出CSV</button>
         <span class="spacer"></span>
         <button class="btn ghost" onclick="clearFilters()">重置</button>
       </div>
@@ -496,6 +500,7 @@ textarea{resize:vertical;line-height:1.5}
           <p class="desc">全部数据保存在本机浏览器。建议定期导出备份，或换设备时导入迁移。</p>
           <div class="stack">
             <button class="btn" onclick="exportData()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出全部数据（JSON 备份）</button>
+            <button class="btn ghost" onclick="openTemplateSettings()">服务信息模板设置</button>
             <label class="btn ghost" style="justify-content:center">导入备份文件<input type="file" accept=".json" style="display:none" onchange="importBackup(event)"></label>
             <div style="display:flex;gap:8px">
               <button class="btn ghost" onclick="undo()" style="flex:1">撤销 (Ctrl+Z)</button>
@@ -627,6 +632,7 @@ textarea{resize:vertical;line-height:1.5}
       <div class="fgroup"><label>车牌</label><input type="text" id="oPlate" list="plateList" placeholder="选司机自动带出"><datalist id="plateList"></datalist><div id="oDriverHint" style="font-size:11px;color:var(--text-3);min-height:14px;margin-top:2px"></div></div>
       <div class="fgroup"><label>对外报价（元）</label><input type="number" id="oQuote" min="0" placeholder="给客户的价"></div>
       <div class="fgroup"><label>成本价（元）</label><input type="number" id="oCost" min="0" placeholder="车队报价"></div>
+      <div class="fgroup"><label>司机代收（元）</label><input type="number" id="oCollect" min="0" placeholder="司机向客人收的车费"></div>
       <div class="fgroup" style="align-self:flex-end"><button class="btn ghost small" type="button" onclick="autoPrice()" title="按线路/车型从参考价库自动带出报价与成本">自动计价</button></div>
       <div class="fgroup"><label>状态</label>
         <select id="oStatus">
@@ -1325,6 +1331,15 @@ function renderKpis(){
    今日排班（时间轴）
    ========================================================= */
 function renderToday(){
+  // 临近订单预警横幅
+  const alerts=getUpcomingAlerts();
+  const alertEl=$('todayAlerts');
+  if(alertEl){
+    if(alerts.length){
+      alertEl.style.display='block';
+      alertEl.innerHTML='<b style="color:#e53935">预警：</b>'+alerts.map(a=>'<span style="margin-right:12px">'+a.date+' '+a.guest+' '+a.route.slice(0,20)+'（'+a.reason+'）</span>').join('');
+    } else { alertEl.style.display='none'; }
+  }
   const d = parseDate(viewDate);
   $('dateB').textContent = viewDate;
   $('dateS').textContent = weekdayCN(d);
@@ -1432,6 +1447,16 @@ function renderUpcoming(){
   } else {
     upEl.style.display='none';
   }
+}
+/* 连单检测：同一客人在相邻日期有订单 */
+function isLinkedOrder(o){
+  if(!o.guest) return false;
+  const guest=o.guest.trim().toLowerCase();
+  const dates=S.orders.filter(x=>x.guest && x.guest.trim().toLowerCase()===guest).map(x=>x.date).sort();
+  const idx=dates.indexOf(o.date);
+  if(idx<=0) return false;
+  const prev=dates[idx-1];
+  return Math.abs((new Date(o.date)-new Date(prev))/86400000)<=2;
 }
 /* 任务卡片内部HTML（时间轴和列表共用） */
 function taskCardInner(o){
@@ -1541,8 +1566,10 @@ function renderOrders(){
     if(q!=null) pxCell+='<div>报 <b>¥'+q+'</b></div>';
     if(c!=null) pxCell+='<div style="color:var(--text-2)">成 ¥'+c+'</div>';
     if(pr!=null) pxCell+='<div style="color:'+(pr>=0?'var(--done)':'var(--cancel)')+';font-weight:600">利 ¥'+pr+(m!=null?' ('+m.toFixed(1)+'%)':'')+'</div>';
+    if(o.collectAmount) pxCell+='<div style="font-size:10.5px;color:#d48806">代收 ¥'+o.collectAmount+'</div>';
     if(!pxCell && px!=null) pxCell='¥'+px;
-    html+='<tr onclick="openOrder(\''+o.id+'\')" style="cursor:pointer">'
+    const isUrgent = !o.driver && o.date>=todayStr() && o.date<=addDays(todayStr(),3);
+    html+='<tr onclick="openOrder(\''+o.id+'\')" style="cursor:pointer'+(isUrgent?';border-left:3px solid #e53935':'')+'">'
       +'<td>'+o.date+'</td><td><b>'+o.time+'</b></td>'
       +'<td><span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span>'+(cityOf(o)?' <span style="font-size:11px;color:var(--text-3)">'+cityOf(o)+'</span>':'')+'</td>'
       +'<td>'+escapeHtml(o.route||'')+(o.airport?' <span style="color:var(--text-3)">· '+airportName(o.airport)+'</span>':'')+'</td>'
@@ -1592,7 +1619,11 @@ function confirmQa(){
   const o=S.orders.find(x=>x.id===qaOrderId); if(!o){ closeQa(); return; }
   const d=S.drivers.find(x=>x.name===$('qaDriver').value);
   if(!d){ toast('请选择司机'); return; }
+  // 司机冲突检测
+  const conflict = checkDriverConflict(d.name, o.date, o.id);
+  if(conflict && !confirm('司机 '+d.name+' 在 '+o.date+' 已有订单：\n'+conflict+'\n\n确定还要指派吗？')){ return; }
   o.driver=d.name; o.plate=d.plate||'';
+  if(d){ d.lastUsed=Date.now(); }
   saveState(S); renderOrders(); renderKpis(); closeQa();
   toast('已指派 '+d.name+(d.carType?' · '+d.carType:'')+(d.plate?' · '+d.plate:''));
 }
@@ -1649,6 +1680,8 @@ function guestOrders(g){
 }
 function renderGuests(){
   ensureGuests();
+  // 客人名字点击查看档案（通过事件委托）
+  setTimeout(()=>{ const gw=$('guestsWrap'); if(gw && !gw._detailBound){ gw.addEventListener('click',e=>{ const t=e.target.closest('[data-guest-name]'); if(t){ e.stopPropagation(); showGuestDetail(t.dataset.guestName); } }); gw._detailBound=true; } },0);
   const kw=($('guestKw')?$('guestKw').value:'').trim().toLowerCase();
   let list=(S.guests||[]).filter(g=>{
     if(!kw) return true;
@@ -1905,13 +1938,9 @@ function removeDriver(id){ if(!confirm('删除该司机？')) return; S.drivers=
 /* ---- 司机服务信息：一键复制发客人 ---- */
 function copyDriverCard(id){
   const d=S.drivers.find(x=>x.id===id); if(!d) return;
-  const lines=['服务信息'];
-  if(d.carType) lines.push('车型：'+d.carType);
-  if(d.plate) lines.push('车牌：'+d.plate);
-  if(d.color) lines.push('配置：'+d.color);
-  lines.push('司机：'+d.name);
-  if(d.phone) lines.push('电话：'+d.phone);
-  copyText(lines.join('\n'));
+  const tpl=(S.templates&&S.templates.serviceZh)||'服务信息\n车型：{车型}\n车牌：{车牌}\n配置：{颜色}\n司机：{司机}\n电话：{电话}';
+  const text=tpl.replace('{车型}',d.carType||'').replace('{车牌}',d.plate||'').replace('{颜色}',d.color||'').replace('{司机}',d.name||'').replace('{电话}',d.phone||'').replace(/\n+/g,'\n').trim();
+  copyText(text);
   toast('服务信息已复制，可直接粘贴给客人');
 }
 function copyText(t){
@@ -2267,6 +2296,7 @@ function openOrder(id){
   $('oPlate').value = o? (o.plate||'') : '';
   $('oQuote').value = o? (o.quote || o.price || '') : '';
   $('oCost').value = o? (o.cost||'') : '';
+  $('oCollect').value = o? (o.collectAmount||'') : '';
   $('oStatus').value = o? o.status : 'confirmed';
   $('oNote').value = o? (o.note||'') : '';
   // 路线 datalist
@@ -2372,11 +2402,17 @@ function saveOrder(){
     price:+$('oQuote').value||0,
     quote:+$('oQuote').value||0,
     cost:+$('oCost').value||0,
+    collectAmount:+$('oCollect').value||0,
     status:$('oStatus').value,
     note:$('oNote').value.trim()
   };
   if(editingId){ const i=S.orders.findIndex(x=>x.id===editingId); if(i>=0) S.orders[i]=obj; }
   else S.orders.push(obj);
+  // 司机冲突检测
+  if(obj.driver){
+    const conflict = checkDriverConflict(obj.driver, obj.date, editingId);
+    if(conflict && !confirm('司机 '+obj.driver+' 在 '+obj.date+' 已有订单：\n'+conflict+'\n\n确定还要指派吗？')){ return; }
+  }
   // 记录司机最近使用时间（用于智能推荐排序）
   if(obj.driver){ const drv=S.drivers.find(x=>x.name===obj.driver); if(drv){ drv.lastUsed=Date.now(); } }
   saveState(S);
@@ -2643,7 +2679,42 @@ function printTripMsg(){
   const t=$('tripMsgBox').value;
   const w=window.open('','_blank');
   if(!w){ toast('浏览器拦截了新窗口，请允许弹窗或改用复制'); return; }
-  w.document.write('<html><head><meta charset="utf-8"><title>出车单</title><style>body{font-family:system-ui,-apple-system,sans-serif;padding:36px;font-size:14px;line-height:1.9;color:#222}pre{white-space:pre-wrap;font-family:inherit;margin:0}.box{border:1.5px dashed #999;padding:22px;border-radius:10px}</style></head><body><div class="box"><pre>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre></div><script>window.onload=function(){window.print()}<\/script></body></html>');
+  w.document.write('<html><head><meta charset="utf-8"><title>出车单</title><style>body{font-family:system-ui,-apple-system,sans-serif;padding:36px;font-size:14px;line-height:1.9;color:#222}pre{white-space:pre-wrap;font-family:inherit;margin:0}.box{border:1.5px dashed #999;padding:22px;border-radius:10px}</style></head><body><div class="box"><pre>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre></div><script>window.onload=function(){window.print()}<\/script>
+<!-- 客人档案弹窗 -->
+<div class="overlay" id="guestDetailOverlay">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head"><h3 id="gdTitle">客人档案</h3><button class="iconbtn" onclick="closeGuestDetail()">&times;</button></div>
+    <div class="modal-body" id="gdBody" style="max-height:70vh;overflow-y:auto"></div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeGuestDetail()">关闭</button></div>
+  </div>
+</div>
+
+<!-- 模板设置弹窗 -->
+<div class="overlay" id="templateOverlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head"><h3>服务信息模板设置</h3><button class="iconbtn" onclick="document.getElementById('templateOverlay').classList.remove('open')">&times;</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">自定义给客人的服务信息格式。可用变量：{车型} {车牌} {颜色} {司机} {电话} {日期} {线路}</p>
+      <div class="fgroup full"><label>中文模板</label><textarea id="tplZh" style="min-height:100px">服务信息
+车型：{车型}
+车牌：{车牌}
+配置：{颜色}
+司机：{司机}
+电话：{电话}</textarea></div>
+      <div class="fgroup full"><label>英文模板</label><textarea id="tplEn" style="min-height:100px">Service Information
+Vehicle: {车型}
+Plate No.: {车牌}
+Color: {颜色}
+Driver: {司机}
+Phone: +86 {电话}</textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="document.getElementById('templateOverlay').classList.remove('open')">取消</button>
+      <button class="btn primary" onclick="saveTemplate()">保存模板</button>
+    </div>
+  </div>
+</div>
+</body></html>');
   w.document.close();
 }
 document.getElementById('tripOverlay').addEventListener('click', e=>{ if(e.target.id==='tripOverlay') closeTripMsg(); });
@@ -2860,14 +2931,14 @@ function renderReport(){
   });
   function tbl(title,map){
     let html='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">'+title+'</b>';
-    html+='<table class="order-table" style="margin-top:10px"><thead><tr><th>维度</th><th>订单数</th><th>营业额</th><th>成本</th><th>利润</th><th>利润率</th></tr></thead><tbody>';
+    html+='<table class="order-table" style="margin-top:10px"><thead><tr><th>维度</th><th>订单数</th><th>营业额</th><th>成本</th><th>利润</th><th>利润率</th><th>司机代收</th></tr></thead><tbody>';
     let to=0,tm=0,tc=0,tp=0;
     Object.keys(map).sort().forEach(k=>{
       const os=map[k], m=money(os), c=cost(os), p=profit(os);
       to+=os.length; tm+=m; tc+=c; tp+=p;
-      html+='<tr><td>'+escapeHtml(k)+'</td><td>'+os.length+'</td><td>'+fmtMoney(m)+'</td><td>'+fmtMoney(c)+'</td><td style="color:'+(p>=0?'var(--confirmed)':'#e53935')+';font-weight:700">'+fmtMoney(p)+'</td><td>'+rate(p,m)+'</td></tr>';
+      html+='<tr><td>'+escapeHtml(k)+'</td><td>'+os.length+'</td><td>'+fmtMoney(m)+'</td><td>'+fmtMoney(c)+'</td><td style="color:'+(p>=0?'var(--confirmed)':'#e53935')+';font-weight:700">'+fmtMoney(p)+'</td><td>'+rate(p,m)+'</td><td>'+fmtMoney(sum(os,'collectAmount'))+'</td></tr>';
     });
-    html+='<tr style="background:var(--ink);color:#fff;font-weight:700"><td>合计</td><td>'+to+'</td><td>'+fmtMoney(tm)+'</td><td>'+fmtMoney(tc)+'</td><td>'+fmtMoney(tp)+'</td><td>'+rate(tp,tm)+'</td></tr>';
+    html+='<tr style="background:var(--ink);color:#fff;font-weight:700"><td>合计</td><td>'+to+'</td><td>'+fmtMoney(tm)+'</td><td>'+fmtMoney(tc)+'</td><td>'+fmtMoney(tp)+'</td><td>'+rate(tp,tm)+'</td><td>'+fmtMoney(sum(orders,'collectAmount'))+'</td></tr>';
     return html+'</tbody></table></div>';
   }
   function kpi(name,val){ return '<div style="flex:1 1 130px;min-width:110px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)"><div style="font-size:12px;color:var(--text-3)">'+name+'</div><div style="font-size:19px;font-weight:700;color:var(--ink);margin-top:4px">'+val+'</div></div>'; }
@@ -2875,10 +2946,12 @@ function renderReport(){
     '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">'
     +kpi('订单数', orders.length)+kpi('营业额', fmtMoney(money(orders)))+kpi('成本', fmtMoney(cost(orders)))
     +kpi('利润', fmtMoney(profit(orders)))+kpi('利润率', rate(profit(orders),money(orders)))
+    +kpi('司机代收', fmtMoney(sum(orders,'collectAmount')))
     +'</div>'
     +tbl('按城市汇总', cityMap)
     +tbl('按对接车队汇总', fleetMap)
-    +tbl('按客人汇总', guestMap);
+    +tbl('按客人汇总', guestMap)
+    +renderFleetSettlement(orders);
 }
 
 /* =========================================================
@@ -2958,8 +3031,11 @@ function parseOneOrder(seg){
   let cm=seg.match(/(?:Whats\s*App|whatsapp|微信|电话|Phone|联系)[^0-9]{0,6}?([+\d][\d\s\-()]{5,20})/i);
   if(cm) contact=cm[1].replace(/[\s\-()]/g,'').trim();
   if(!contact){ cm=seg.match(/^\+?[\d][\d\s\-()]{6,22}$/m); if(cm) contact=cm[0].replace(/[\s\-()]/g,'').trim(); }
+  let collectAmount=0;
+  let cm3=seg.match(/司机代收\s*[:：]?\s*(\d+)/);
+  if(cm3) collectAmount=+cm3[1];
   let quote=0;
-  let qm=seg.match(/(?:司机代收|代收|报价|价格|收费)\s*[:：]?\s*(\d+)/);
+  let qm=seg.match(/(?:报价|价格|收费|对外报价)\s*[:：]?\s*(\d+)/);
   if(qm) quote=+qm[1];
   let cost=0;
   let cm2=seg.match(/(?:成本价?)\s*[:：]?\s*(\d+)/);
@@ -2996,7 +3072,7 @@ function parseOneOrder(seg){
   let fleet='';
   const fm=seg.match(/车队\s*[:：]?\s*([^\n]+)/); if(fm) fleet=fm[1].trim();
   return {date:date, time:time||'00:00', type:type, airport:airport, flight:flight, vehicle:vehicle,
-    pax:pax, guest:guest, contact:contact, quote:quote, cost:cost, route:route, note:note.join('；'), driver:driver, plate:plate, fleet:fleet, status:'inquiry'};
+    pax:pax, guest:guest, contact:contact, quote:quote, cost:cost, collectAmount:collectAmount, route:route, note:note.join('；'), driver:driver, plate:plate, fleet:fleet, status:'inquiry'};
 }
 function runSmartParse(){
   smartOrders=parseOrdersFromText($('smartInput').value);
@@ -3060,6 +3136,7 @@ function runPasteImport(){
       price: +o.price||0,
       quote: (+o.quote)|| (+o.price)||0,
       cost: (+o.cost)||0,
+      collectAmount: (+o.collectAmount)||0,
       status: sts.includes(o.status)? o.status : 'pending',
       note: o.note||''
     });
@@ -3072,6 +3149,157 @@ function runPasteImport(){
   toast('已导入 '+n+' 条订单'+(skip? '，跳过 '+skip+' 条缺必填':''));
 }
 document.getElementById('pasteOverlay').addEventListener('click', e=>{ if(e.target.id==='pasteOverlay') closePasteModal(); });
+
+
+/* ============================================================
+   功能完善：新增核心函数
+   ============================================================ */
+
+/* 司机冲突检测：返回冲突订单描述，无冲突返回null */
+function checkDriverConflict(driverName, date, excludeId){
+  if(!driverName || !date) return null;
+  const conflicts = S.orders.filter(o=>o.driver===driverName && o.date===date && o.id!==excludeId && o.status!=='cancelled');
+  if(!conflicts.length) return null;
+  return conflicts.map(o=>(o.time||'')+' '+o.guest+' '+o.route.slice(0,30)).join('\n');
+}
+
+/* 临近订单预警：未来3天内未派司机或未确认的订单 */
+function getUpcomingAlerts(){
+  const today=todayStr();
+  const alerts=[];
+  S.orders.forEach(o=>{
+    if(o.status==='cancelled' || o.status==='done') return;
+    if(o.date<today || o.date>addDays(today,3)) return;
+    if(!o.driver) alerts.push({date:o.date,guest:o.guest||'未命名',route:o.route||'',reason:'未派司机'});
+    else if(o.status==='inquiry' || o.status==='pending') alerts.push({date:o.date,guest:o.guest||'未命名',route:o.route||'',reason:'未确认'});
+  });
+  return alerts.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+}
+
+/* 日期加减工具 */
+function addDays(dateStr, n){
+  const d=new Date(dateStr); d.setDate(d.getDate()+n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+/* 客人档案：查看客人所有历史订单 */
+function showGuestDetail(name){
+  const g=(S.guests||[]).find(x=>x.name===name);
+  const orders=guestOrders(g||{name:name});
+  const totalSpend=orders.reduce((t,o)=>t+(+o.quote||0),0);
+  const totalCost=orders.reduce((t,o)=>t+(+o.cost||0),0);
+  const totalProfit=totalSpend-totalCost;
+  const cities=[...new Set(orders.map(o=>cityOf(o)||'其他').filter(Boolean))];
+  const vehicles=[...new Set(orders.map(o=>o.vehicle).filter(Boolean))];
+  const drivers=[...new Set(orders.map(o=>o.driver).filter(Boolean))];
+  $('gdTitle').textContent='客人档案 · '+(name||'未命名');
+  let html='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">';
+  html+='<div style="flex:1 1 120px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text-3)">订单数</div><div style="font-size:20px;font-weight:700">'+orders.length+'</div></div>';
+  html+='<div style="flex:1 1 120px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text-3)">累计消费</div><div style="font-size:20px;font-weight:700;color:var(--accent-dark)">¥'+totalSpend.toLocaleString()+'</div></div>';
+  html+='<div style="flex:1 1 120px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text-3)">累计利润</div><div style="font-size:20px;font-weight:700;color:'+(totalProfit>=0?'#52c41a':'#e53935')+'">¥'+totalProfit.toLocaleString()+'</div></div>';
+  html+='</div>';
+  if(g){
+    html+='<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;line-height:1.8">';
+    if(g.country) html+='<div><b>国籍：</b>'+escapeHtml(g.country)+'</div>';
+    if(g.phone||g.contact) html+='<div><b>电话：</b>'+escapeHtml(g.phone||g.contact)+'</div>';
+    if(g.wechat) html+='<div><b>微信：</b>'+escapeHtml(g.wechat)+'</div>';
+    if(g.city) html+='<div><b>城市：</b>'+escapeHtml(g.city)+'</div>';
+    if(g.source) html+='<div><b>来源：</b>'+escapeHtml(g.source)+'</div>';
+    if(g.note) html+='<div><b>备注：</b>'+escapeHtml(g.note)+'</div>';
+    html+='</div>';
+  }
+  if(cities.length||vehicles.length||drivers.length){
+    html+='<div style="font-size:12px;color:var(--text-2);margin-bottom:10px;line-height:1.8">';
+    if(cities.length) html+='<b>常用城市：</b>'+cities.join('、')+'　';
+    if(vehicles.length) html+='<b>常用车型：</b>'+vehicles.join('、')+'　';
+    if(drivers.length) html+='<b>用过司机：</b>'+drivers.join('、');
+    html+='</div>';
+  }
+  html+='<div style="font-size:13px;font-weight:600;margin-bottom:8px">历史订单（'+orders.length+'单）</div>';
+  if(!orders.length){ html+='<div style="color:var(--text-3);font-size:13px;padding:20px 0;text-align:center">暂无历史订单</div>'; }
+  else {
+    html+='<table class="order-table"><thead><tr><th>日期</th><th>线路</th><th>车型</th><th>司机</th><th>报价</th><th>状态</th></tr></thead><tbody>';
+    orders.forEach(o=>{
+      const st=STATUS_META[o.status]||{label:o.status,color:'#999'};
+      html+='<tr onclick="openOrder(\''+o.id+'\');closeGuestDetail()" style="cursor:pointer"><td>'+o.date+'</td><td style="max-width:200px;font-size:12px">'+escapeHtml(o.route||'')+'</td><td>'+escapeHtml(o.vehicle||'')+'</td><td>'+escapeHtml(o.driver||'—')+'</td><td>'+(o.quote?'¥'+o.quote:'—')+'</td><td><span class="st" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span></td></tr>';
+    });
+    html+='</tbody></table>';
+  }
+  $('gdBody').innerHTML=html;
+  $('guestDetailOverlay').classList.add('open');
+}
+function closeGuestDetail(){ $('guestDetailOverlay').classList.remove('open'); }
+document.getElementById('guestDetailOverlay').addEventListener('click',e=>{ if(e.target.id==='guestDetailOverlay') closeGuestDetail(); });
+
+/* 车队对账：按车队汇总应付金额 */
+function renderFleetSettlement(orders){
+  const fleetMap={};
+  orders.forEach(o=>{
+    const f=o.fleet||'未指定';
+    (fleetMap[f]=fleetMap[f]||[]).push(o);
+  });
+  let html='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">车队对账（应付车队=成本价合计）</b>';
+  html+='<table class="order-table" style="margin-top:10px"><thead><tr><th>车队</th><th>订单数</th><th>应付金额（成本）</th><th>已代收</th><th>待结算</th></tr></thead><tbody>';
+  let totalCost=0,totalCollect=0;
+  Object.keys(fleetMap).sort().forEach(k=>{
+    const os=fleetMap[k];
+    const cost=os.reduce((t,o)=>t+(+o.cost||0),0);
+    const collect=os.reduce((t,o)=>t+(+o.collectAmount||0),0);
+    totalCost+=cost; totalCollect+=collect;
+    html+='<tr><td>'+escapeHtml(k)+'</td><td>'+os.length+'</td><td style="font-weight:600">¥'+cost.toLocaleString()+'</td><td>¥'+collect.toLocaleString()+'</td><td style="color:'+(cost-collect>0?'#d48806':'#52c41a')+';font-weight:700">¥'+(cost-collect).toLocaleString()+'</td></tr>';
+  });
+  html+='<tr style="background:var(--ink);color:#fff;font-weight:700"><td>合计</td><td>'+orders.length+'</td><td>¥'+totalCost.toLocaleString()+'</td><td>¥'+totalCollect.toLocaleString()+'</td><td>¥'+(totalCost-totalCollect).toLocaleString()+'</td></tr>';
+  return html+'</tbody></table></div>';
+}
+
+/* 导出订单CSV */
+function exportOrdersCSV(){
+  const fFrom=$('fFrom').value, fTo=$('fTo').value, fType=$('fType').value, fStatus=$('fStatus').value, fCity=$('fCity').value, fKw=($('fKw').value||'').trim().toLowerCase(), fNoDriver=$('fNoDriver').checked, fInquiry=$('fInquiry').checked;
+  let list=getOrders().filter(o=>{
+    if(fFrom && o.date<fFrom) return false;
+    if(fTo && o.date>fTo) return false;
+    if(fType && o.type!==fType) return false;
+    if(fStatus && o.status!==fStatus) return false;
+    if(fCity && cityOf(o)!==fCity) return false;
+    if(fNoDriver && o.driver) return false;
+    if(fInquiry && !['inquiry','quoted','pending'].includes(o.status)) return false;
+    if(fKw){ const h=[o.guest,o.route,o.driver,o.contact,o.flight,o.plate].join(' ').toLowerCase(); if(!h.includes(fKw)) return false; }
+    return true;
+  });
+  if(!list.length){ toast('没有可导出的订单'); return; }
+  const headers=['日期','时间','类型','城市','机场','航班','线路','客人','联系方式','车型','人数','司机','车牌','对接车队','对外报价','成本价','司机代收','利润','状态','备注'];
+  const rows=list.map(o=>{
+    const tm=TYPE_META[o.type]||{label:o.type};
+    const st=STATUS_META[o.status]||{label:o.status};
+    const profit=(+o.quote||0)-(+o.cost||0);
+    return [o.date,o.time,tm.label,cityOf(o)||'',airportName(o.airport)||'',o.flight||'',(o.route||'').replace(/[\n,]/g,' '),o.guest||'',(o.contact||'').replace(/,/g,' '),o.vehicle||'',o.pax||0,o.driver||'',o.plate||'',o.fleet||'',o.quote||0,o.cost||0,o.collectAmount||0,profit,st.label,(o.note||'').replace(/[\n,]/g,' ')];
+  });
+  const csv='\uFEFF'+headers.join(',')+'\n'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='订单导出_'+todayStr()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('已导出 '+list.length+' 条订单为CSV');
+}
+
+/* 模板设置：保存自定义服务信息模板 */
+function saveTemplate(){
+  const zh=$('tplZh').value.trim();
+  const en=$('tplEn').value.trim();
+  if(!S.templates) S.templates={};
+  S.templates.serviceZh=zh; S.templates.serviceEn=en;
+  saveState(S);
+  document.getElementById('templateOverlay').classList.remove('open');
+  toast('模板已保存');
+}
+function openTemplateSettings(){
+  if(!S.templates) S.templates={};
+  $('tplZh').value=S.templates.serviceZh||'服务信息\n车型：{车型}\n车牌：{车牌}\n配置：{颜色}\n司机：{司机}\n电话：{电话}';
+  $('tplEn').value=S.templates.serviceEn||'Service Information\nVehicle: {车型}\nPlate No.: {车牌}\nColor: {颜色}\nDriver: {司机}\nPhone: +86 {电话}';
+  document.getElementById('templateOverlay').classList.add('open');
+}
 
 /* =========================================================
    初始化
