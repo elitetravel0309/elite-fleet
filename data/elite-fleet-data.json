@@ -1883,6 +1883,46 @@
       "cost": 800,
       "quote": "",
       "note": "转机Layover，首都进大兴出"
+    },
+    {
+      "city": "上海",
+      "route": "单接送（机场/车站/点对点）",
+      "vehicle": "38座大巴",
+      "duration": "单程",
+      "distance": "",
+      "cost": 700,
+      "quote": "",
+      "note": "38座大巴单接送，含司机燃油路桥"
+    },
+    {
+      "city": "上海",
+      "route": "市内包车一天（8小时/100公里）",
+      "vehicle": "38座大巴",
+      "duration": "8小时",
+      "distance": "100公里",
+      "cost": 1100,
+      "quote": "",
+      "note": "38座大巴市内日租，超时超公里另计"
+    },
+    {
+      "city": "上海",
+      "route": "单接送（机场/车站/点对点）",
+      "vehicle": "51座大巴",
+      "duration": "单程",
+      "distance": "",
+      "cost": 800,
+      "quote": "",
+      "note": "51座大巴单接送，含司机燃油路桥"
+    },
+    {
+      "city": "上海",
+      "route": "市内包车一天（8小时/100公里）",
+      "vehicle": "51座大巴",
+      "duration": "8小时",
+      "distance": "100公里",
+      "cost": 1300,
+      "quote": "",
+      "note": "51座大巴市内日租，超时超公里另计"
     }
   ],
   "guests": [
@@ -2016,5 +2056,5 @@
     "built": "2026-09-07T07:22:57.751Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1788868529016.6362
+  "_lastModified": 1788925387962.1462
 }
