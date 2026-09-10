@@ -2773,7 +2773,7 @@ function importBackup(ev){
   rd.readAsText(f);
   ev.target.value='';
 }
-function cloudUrl(){ return location.protocol==='file:'? null : ('data/elite-fleet-data.json'); }
+function cloudUrl(){ return location.protocol==='file:'? null : ('data/elite-fleet-data.json?t='+Date.now()); }
 function mergeCloud(d){
   // 以 id 为优先去重键，避免修改姓名/车牌后生成重复条目
   const local=S||{orders:[],drivers:[],prices:[],vehicles:[],guests:[],fleets:[]};
@@ -2792,18 +2792,38 @@ function mergeCloud(d){
   });
 }
 function fetchCloudData(){
-  const u=cloudUrl(); if(!u) return;
+  const u=cloudUrl(); if(!u){ appReady=true; return; }
+  const localEmpty = !(S.orders||[]).length && !(S.drivers||[]).length && !(S.guests||[]).length;
+  if(localEmpty){
+    // 本地无数据，显示加载状态，优先等云端
+    const loading = document.createElement('div');
+    loading.id='cloudLoading';
+    loading.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:24px 32px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:9999;text-align:center;font-size:14px;color:#333;';
+    loading.innerHTML='<div style="font-size:16px;font-weight:600;margin-bottom:8px;">正在加载云端数据...</div><div style="color:#888;font-size:12px;">首次打开请稍候</div>';
+    document.body.appendChild(loading);
+  }
   fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
     .then(d=>{
       if(!d || !d.orders) throw 0;
       if(d._lastModified) cloudLastModified = d._lastModified;
-      mergeCloud(d);
+      if(localEmpty && (d.orders||[]).length){
+        // 本地为空且云端有数据，直接用云端覆盖
+        S=d;
+      } else {
+        mergeCloud(d);
+      }
       saveState(S);
       if(cloudLastModified) S._lastModified = cloudLastModified;
       renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       appReady = true;
-      toast('已加载并合并云端数据（订单 '+(S.orders||[]).length+' 条）');
-    }).catch(()=>{ appReady = true; if(cloudUrl()) toast('云端数据拉取失败，显示本地数据'); });
+      const ld=document.getElementById('cloudLoading'); if(ld) ld.remove();
+      if(!localEmpty) toast('已同步云端数据（订单 '+(S.orders||[]).length+' 条）');
+    }).catch(()=>{
+      appReady = true;
+      const ld=document.getElementById('cloudLoading'); if(ld) ld.remove();
+      if(localEmpty) toast('云端数据拉取失败，当前无数据，请检查网络后刷新');
+      else if(cloudUrl()) toast('云端数据拉取失败，显示本地数据');
+    });
 }
 function refreshFromCloud(){
   const u=cloudUrl();
@@ -3311,6 +3331,37 @@ showSchedule('today');
 renderKpis();
 fetchCloudData();
 setTimeout(()=>{ appReady = true; }, 3000);
+
+/* ============================================================
+   只读视图（司机/车队分享链接）
+   URL参数: ?view=driver&name=刘洋  只显示该司机的订单，不可编辑
+           ?view=fleet&name=北京首汽  只显示该车对的订单，不可编辑
+   ============================================================ */
+(function initReadOnlyView(){
+  try{
+    const params = new URLSearchParams(location.search);
+    const view = params.get('view');
+    const name = params.get('name');
+    if(!view || !name) return;
+    // 隐藏编辑按钮，禁用编辑功能
+    setTimeout(()=>{
+      document.querySelectorAll('.btn.primary, #addOrderBtn, #addDriverBtn, #addFleetBtn, #addGuestBtn, #addPriceBtn').forEach(b=>{ if(b) b.style.display='none'; });
+      // 显示只读提示
+      const tip = document.createElement('div');
+      tip.style.cssText='position:fixed;top:0;left:0;right:0;background:#E8833A;color:#fff;padding:8px 16px;text-align:center;font-size:13px;z-index:9998;';
+      tip.textContent = '只读视图 - '+ (view==='driver'?'司机':'车队') +': '+name+'（仅查看，不可编辑）';
+      document.body.appendChild(tip);
+      document.body.style.paddingTop = '36px';
+      // 过滤只显示相关订单
+      if(view==='driver'){
+        S.orders = (S.orders||[]).filter(o=> (o.driver||'').indexOf(name)>=0);
+      } else if(view==='fleet'){
+        S.orders = (S.orders||[]).filter(o=> (o.fleet||'').indexOf(name)>=0);
+      }
+      renderToday(); renderOrders(); renderKpis();
+    }, 1500);
+  }catch(e){}
+})();
 
 /* 定时云端同步：每30秒检查云端是否有更新，有则自动合并 */
 let cloudPollTimer = null;
