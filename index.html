@@ -342,6 +342,27 @@ textarea{resize:vertical;line-height:1.5}
 .kpi-card.hl .kpi-value{color:var(--accent-dark)}
 .btn.small{padding:6px 12px;font-size:12px}
 .btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--line-2)}
+
+/* ===== 报价单 ===== */
+.quote-doc{background:#fff;padding:32px;border:1px solid var(--line);border-radius:8px;font-size:14px;line-height:1.7}
+.quote-doc .quote-header{text-align:center;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid var(--accent)}
+.quote-doc .quote-company{font-family:var(--serif);font-size:24px;font-weight:900;color:var(--ink);letter-spacing:1px}
+.quote-doc .quote-company-en{font-size:13px;color:var(--text-2);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.quote-doc .quote-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--accent-dark);margin:16px 0;letter-spacing:2px}
+.quote-doc .quote-meta{display:flex;justify-content:space-between;margin-bottom:20px;font-size:13px;color:var(--text-2)}
+.quote-doc .quote-section{margin-bottom:18px}
+.quote-doc .quote-section h4{font-size:14px;font-weight:700;color:var(--ink);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.quote-doc .quote-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:13px}
+.quote-doc .quote-info-grid .label{color:var(--text-2);min-width:80px;display:inline-block}
+.quote-doc .quote-itinerary{background:var(--bg);padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.8}
+.quote-doc .quote-price-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+.quote-doc .quote-price-table th{background:var(--ink);color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+.quote-doc .quote-price-table td{padding:10px 12px;border-bottom:1px solid var(--line)}
+.quote-doc .quote-price-table .total-row{background:var(--accent-soft);font-weight:700}
+.quote-doc .quote-price-table .total-row td{color:var(--accent-dark);font-size:15px}
+.quote-doc .quote-terms{font-size:12px;color:var(--text-2);line-height:1.8;margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)}
+.quote-doc .quote-footer{text-align:center;margin-top:24px;font-size:12px;color:var(--text-3)}
+.quote-doc .quote-contact{display:flex;justify-content:center;gap:24px;margin-top:12px;font-size:12px;color:var(--text-2)}
 </style>
 </head>
 <body>
@@ -671,6 +692,139 @@ textarea{resize:vertical;line-height:1.5}
     <div class="print-sheet" id="printSheet"></div>
   </div>
 </div>
+</div>
+
+<!-- 询价单弹窗 -->
+<div class="overlay" id="inquiryOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="inquiryModalTitle">新增询价</h3>
+      <button class="close" onclick="closeInquiry()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>客人姓名</label><input type="text" id="iqGuest"></div>
+        <div class="field"><label>联系方式</label><input type="text" id="iqContact" placeholder="WhatsApp/微信/电话"></div>
+        <div class="field"><label>询价日期</label><input type="date" id="iqDate"></div>
+        <div class="field"><label>用车日期</label><input type="date" id="iqServiceDate"></div>
+        <div class="field"><label>城市</label><input type="text" id="iqCity" placeholder="如：北京"></div>
+        <div class="field"><label>人数</label><input type="number" id="iqPax" value="1" min="1"></div>
+        <div class="field"><label>车型</label>
+          <select id="iqVehicle">
+            <option value="">请选择</option>
+            <option value="五座">五座</option>
+            <option value="七座">七座</option>
+            <option value="九座">九座</option>
+            <option value="考斯特">考斯特</option>
+            <option value="大巴">大巴</option>
+          </select>
+        </div>
+        <div class="field"><label>状态</label>
+          <select id="iqStatus">
+            <option value="new">新询价</option>
+            <option value="quoted">已报价</option>
+            <option value="following">跟进中</option>
+            <option value="won">已成交</option>
+            <option value="lost">已流失</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>线路/需求</label><textarea id="iqRoute" rows="2" placeholder="如：首都机场接→慕田峪长城→市区酒店送"></textarea></div>
+      <div class="field"><label>给客人报价</label><input type="number" id="iqQuote" placeholder="对外报价（元）"></div>
+      <div class="field"><label>预估成本</label><input type="number" id="iqCost" placeholder="预估成本（元）"></div>
+      <div class="field"><label>下次跟进时间</label><input type="datetime-local" id="iqFollowUp"></div>
+      <div class="field"><label>备注</label><textarea id="iqNote" rows="2"></textarea></div>
+      <div class="section-divider"><span>跟进记录</span></div>
+      <div id="inquiryFollowUps" class="followup-list"></div>
+      <div class="followup-input">
+        <textarea id="newFollowUp" rows="2" placeholder="添加跟进记录..."></textarea>
+        <button class="btn small" onclick="addFollowUp()">添加</button>
+      </div>
+      <div class="section-divider"><span>车队报价对比</span></div>
+      <div id="inquiryFleetQuotes" class="fleet-quote-list"></div>
+      <button class="btn small ghost" onclick="addFleetQuoteToInquiry()">+ 添加车队报价</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeInquiry()">取消</button>
+      <button class="btn" onclick="generateQuoteFromInquiry()" style="margin-right:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>智能生成报价单</button>
+        <button class="btn primary" onclick="saveInquiry()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 收付款弹窗 -->
+<div class="overlay" id="paymentOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="paymentModalTitle">登记收款</h3>
+      <button class="close" onclick="closePayment()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>类型</label>
+          <select id="payType">
+            <option value="receive">收款</option>
+            <option value="pay">付款</option>
+          </select>
+        </div>
+        <div class="field"><label>日期</label><input type="date" id="payDate"></div>
+        <div class="field"><label>金额（元）</label><input type="number" id="payAmount" step="0.01"></div>
+        <div class="field"><label>关联订单</label>
+          <select id="payOrderId">
+            <option value="">不关联订单</option>
+          </select>
+        </div>
+        <div class="field"><label>关联客人</label><input type="text" id="payGuest" placeholder="客人姓名"></div>
+        <div class="field"><label>关联车队</label><input type="text" id="payFleet" placeholder="车队名称"></div>
+        <div class="field"><label>付款方式</label>
+          <select id="payMethod">
+            <option value="cash">现金</option>
+            <option value="wechat">微信</option>
+            <option value="alipay">支付宝</option>
+            <option value="bank">银行转账</option>
+            <option value="card">刷卡</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        <div class="field"><label>状态</label>
+          <select id="payStatus">
+            <option value="completed">已完成</option>
+            <option value="pending">待确认</option>
+            <option value="failed">失败</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>备注</label><textarea id="payNote" rows="2"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closePayment()">取消</button>
+      <button class="btn primary" onclick="savePayment()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 报价单弹窗 -->
+<div class="overlay" id="smartQuoteOverlay">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-head">
+      <h3>服务报价单</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn small ghost" onclick="switchQuoteLang()" id="quoteLangBtn">English</button>
+        <button class="btn small ghost" onclick="copyQuote()">复制</button>
+        <button class="close" onclick="closeSmartQuote()">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body" id="smartQuoteContent" style="max-height:70vh;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <div style="display:flex;gap:12px;align-items:center;margin-right:auto">
+        <label style="font-size:13px;color:var(--text-2)">利润率</label>
+        <input type="number" id="quoteProfitRate" value="35" min="0" max="100" style="width:70px" onchange="recalcQuote()">
+        <span style="font-size:13px;color:var(--text-2)">%</span>
+      </div>
+      <button class="btn ghost" onclick="closeSmartQuote()">关闭</button>
+      <button class="btn primary" onclick="saveQuoteToInquiry()">保存报价到询价单</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== 订单弹窗 ===== -->
@@ -3963,6 +4117,243 @@ function advanceOrderStatus(orderId){
   else if(info.next==='confirmed') toast('订单已确认，请安排司机和车辆');
   else if(info.next==='done') toast('订单已完成，记得结算收款');
   else toast('状态已更新为：'+info.nextLabel);
+}
+
+
+
+/* ============================================================
+   智能报价单生成
+   ============================================================ */
+let currentQuoteData = null;
+let quoteLang = 'zh';
+
+function smartMatchPrice(city, route, vehicle){
+  // 智能匹配价格：根据城市、线路、车型从价库找最接近的成本价
+  const prices = S.prices || [];
+  const cityLower = (city||'').toLowerCase();
+  const routeLower = (route||'').toLowerCase();
+  const vehicleLower = (vehicle||'').toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+  for(const p of prices){
+    if(!p.cost || p.cost<=0) continue;
+    let score = 0;
+    // 城市匹配
+    if(p.city && cityLower && p.city.toLowerCase()===cityLower) score += 40;
+    else if(p.city && cityLower && p.city.toLowerCase().includes(cityLower)) score += 20;
+    // 线路匹配（关键词）
+    if(p.route && routeLower){
+      const routeKeywords = routeLower.split(/[\s\-→，,、]+/).filter(k=>k.length>=2);
+      let routeMatch = 0;
+      for(const kw of routeKeywords){
+        if(p.route.toLowerCase().includes(kw)) routeMatch += 8;
+      }
+      score += Math.min(routeMatch, 40);
+    }
+    // 车型匹配
+    if(p.vehicle && vehicleLower){
+      if(p.vehicle.toLowerCase().includes(vehicleLower) || vehicleLower.includes(p.vehicle.toLowerCase())) score += 20;
+      // 座位数匹配
+      const seatMatch = p.vehicle.match(/(\d+)座/);
+      const reqSeat = vehicle.match(/(\d+)座/);
+      if(seatMatch && reqSeat && seatMatch[1]===reqSeat[1]) score += 15;
+    }
+    if(score > bestScore){
+      bestScore = score;
+      bestMatch = p;
+    }
+  }
+  return bestMatch ? {price:bestMatch, score:bestScore} : null;
+}
+
+function generateQuoteFromInquiry(){
+  // 从询价单生成报价单
+  const guest = $('iqGuest').value.trim();
+  const contact = $('iqContact').value.trim();
+  const city = $('iqCity').value.trim();
+  const route = $('iqRoute').value.trim();
+  const vehicle = $('iqVehicle').value;
+  const pax = parseInt($('iqPax').value)||1;
+  const serviceDate = $('iqServiceDate').value;
+  const manualQuote = parseFloat($('iqQuote').value)||0;
+  const manualCost = parseFloat($('iqCost').value)||0;
+  if(!guest){ toast('请先填写客人姓名'); return; }
+  if(!route){ toast('请先填写线路/需求'); return; }
+  // 智能匹配价格
+  let matchedCost = manualCost;
+  let matchedPrice = manualQuote;
+  let matchInfo = '';
+  if(!matchedCost){
+    const match = smartMatchPrice(city, route, vehicle);
+    if(match){
+      matchedCost = match.price.cost;
+      matchInfo = `匹配到价库：${match.price.city} ${match.price.route.slice(0,20)}... (匹配度${match.score}%)`;
+    }
+  }
+  if(!matchedPrice && matchedCost){
+    const rate = parseFloat($('quoteProfitRate')?.value)||35;
+    matchedPrice = Math.round(matchedCost * (1 + rate/100) / 10) * 10;
+  }
+  currentQuoteData = {
+    guest: guest, contact: contact, city: city, route: route,
+    vehicle: vehicle, pax: pax, serviceDate: serviceDate,
+    cost: matchedCost, quote: matchedPrice, matchInfo: matchInfo,
+    quoteNo: 'QT' + Date.now().toString().slice(-8),
+    quoteDate: todayStr()
+  };
+  renderQuoteDoc();
+  $('quoteOverlay').classList.add('show');
+  if(matchInfo) toast('已智能匹配价格：' + matchInfo);
+}
+
+function renderQuoteDoc(){
+  if(!currentQuoteData) return;
+  const d = currentQuoteData;
+  const profit = d.quote - d.cost;
+  const profitRate = d.quote>0 ? Math.round(profit/d.quote*100) : 0;
+  if(quoteLang==='zh'){
+    $('quoteContent').innerHTML = `
+      <div class="quote-doc">
+        <div class="quote-header">
+          <div class="quote-company">Elite Travel 曦驰旅游</div>
+          <div class="quote-company-en">China Wonder Tours</div>
+          <div class="quote-title">服务报价单</div>
+        </div>
+        <div class="quote-meta">
+          <span>报价单号：${d.quoteNo}</span>
+          <span>报价日期：${d.quoteDate}</span>
+        </div>
+        <div class="quote-section">
+          <h4>客人信息</h4>
+          <div class="quote-info-grid">
+            <div><span class="label">客人姓名：</span>${escapeHtml(d.guest)}</div>
+            <div><span class="label">联系方式：</span>${escapeHtml(d.contact||'—')}</div>
+            <div><span class="label">人数：</span>${d.pax}人</div>
+            <div><span class="label">用车日期：</span>${d.serviceDate||'待定'}</div>
+          </div>
+        </div>
+        <div class="quote-section">
+          <h4>行程详情</h4>
+          <div class="quote-itinerary">
+            <div><b>城市：</b>${escapeHtml(d.city||'—')}</div>
+            <div><b>车型：</b>${escapeHtml(d.vehicle||'—')}</div>
+            <div style="margin-top:8px"><b>线路：</b>${escapeHtml(d.route)}</div>
+          </div>
+        </div>
+        <div class="quote-section">
+          <h4>价格明细</h4>
+          <table class="quote-price-table">
+            <thead><tr><th>项目</th><th>说明</th><th style="text-align:right">金额（人民币）</th></tr></thead>
+            <tbody>
+              <tr><td>用车服务</td><td>${escapeHtml(d.vehicle||'包车')}，${d.pax}人</td><td style="text-align:right">${d.quote?d.quote.toLocaleString():'待确认'}</td></tr>
+              <tr class="total-row"><td colspan="2">合计</td><td style="text-align:right">${d.quote?'¥ '+d.quote.toLocaleString():'待确认'}</td></tr>
+            </tbody>
+          </table>
+          ${d.matchInfo?`<div style="margin-top:8px;font-size:11px;color:var(--text-3)">${d.matchInfo}</div>`:''}
+        </div>
+        <div class="quote-terms">
+          <b>服务条款：</b><br>
+          1. 以上报价含车辆使用费、司机服务费、燃油费、过路过桥费、停车费；<br>
+          2. 每日服务时长为10小时，超时费50元/小时；<br>
+          3. 如需司机食宿，由客人承担或按150元/天补贴；<br>
+          4. 报价有效期7天，确认后需支付30%定金；<br>
+          5. 最终行程以双方确认为准。
+        </div>
+        <div class="quote-footer">
+          <div>Elite Travel 曦驰旅游 · China Wonder Tours</div>
+          <div class="quote-contact">
+            <span>微信/WhatsApp：+86 138 0000 0000</span>
+            <span>邮箱：info@elitetravel.com</span>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    $('quoteContent').innerHTML = `
+      <div class="quote-doc">
+        <div class="quote-header">
+          <div class="quote-company">Elite Travel</div>
+          <div class="quote-company-en">China Wonder Tours</div>
+          <div class="quote-title">Service Quotation</div>
+        </div>
+        <div class="quote-meta">
+          <span>Quote No: ${d.quoteNo}</span>
+          <span>Date: ${d.quoteDate}</span>
+        </div>
+        <div class="quote-section">
+          <h4>Guest Information</h4>
+          <div class="quote-info-grid">
+            <div><span class="label">Name:</span> ${escapeHtml(d.guest)}</div>
+            <div><span class="label">Contact:</span> ${escapeHtml(d.contact||'—')}</div>
+            <div><span class="label">Pax:</span> ${d.pax} pax</div>
+            <div><span class="label">Service Date:</span> ${d.serviceDate||'TBD'}</div>
+          </div>
+        </div>
+        <div class="quote-section">
+          <h4>Itinerary Details</h4>
+          <div class="quote-itinerary">
+            <div><b>City:</b> ${escapeHtml(d.city||'—')}</div>
+            <div><b>Vehicle:</b> ${escapeHtml(d.vehicle||'—')}</div>
+            <div style="margin-top:8px"><b>Route:</b> ${escapeHtml(d.route)}</div>
+          </div>
+        </div>
+        <div class="quote-section">
+          <h4>Price Details</h4>
+          <table class="quote-price-table">
+            <thead><tr><th>Item</th><th>Description</th><th style="text-align:right">Amount (CNY)</th></tr></thead>
+            <tbody>
+              <tr><td>Car Service</td><td>${escapeHtml(d.vehicle||'Private Car')}, ${d.pax} pax</td><td style="text-align:right">${d.quote?d.quote.toLocaleString():'TBD'}</td></tr>
+              <tr class="total-row"><td colspan="2">Total</td><td style="text-align:right">${d.quote?'¥ '+d.quote.toLocaleString():'TBD'}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="quote-terms">
+          <b>Terms & Conditions:</b><br>
+          1. Price includes vehicle, driver, fuel, tolls and parking fees;<br>
+          2. Service duration: 10 hours/day, overtime 50 CNY/hour;<br>
+          3. Driver accommodation: guest covers or 150 CNY/day allowance;<br>
+          4. Quote valid for 7 days, 30% deposit required upon confirmation;<br>
+          5. Final itinerary subject to mutual confirmation.
+        </div>
+        <div class="quote-footer">
+          <div>Elite Travel · China Wonder Tours</div>
+          <div class="quote-contact">
+            <span>WeChat/WhatsApp: +86 138 0000 0000</span>
+            <span>Email: info@elitetravel.com</span>
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
+function switchQuoteLang(){
+  quoteLang = quoteLang==='zh' ? 'en' : 'zh';
+  $('quoteLangBtn').textContent = quoteLang==='zh' ? 'English' : '中文';
+  renderQuoteDoc();
+}
+
+function recalcQuote(){
+  if(!currentQuoteData) return;
+  const rate = parseFloat($('quoteProfitRate').value)||35;
+  if(currentQuoteData.cost){
+    currentQuoteData.quote = Math.round(currentQuoteData.cost * (1 + rate/100) / 10) * 10;
+    renderQuoteDoc();
+  }
+}
+
+function copyQuote(){
+  const doc = $('quoteContent').innerText;
+  navigator.clipboard.writeText(doc).then(()=>toast('报价单已复制到剪贴板')).catch(()=>toast('复制失败，请手动选择复制'));
+}
+
+function closeQuote(){ $('quoteOverlay').classList.remove('show'); }
+
+function saveQuoteToInquiry(){
+  if(!currentQuoteData) return;
+  $('iqQuote').value = currentQuoteData.quote;
+  $('iqCost').value = currentQuoteData.cost;
+  $('iqStatus').value = 'quoted';
+  closeQuote();
+  toast('报价已保存到询价单，状态已更新为"已报价"');
 }
 
 </script>
