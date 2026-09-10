@@ -2053,6 +2053,19 @@
       "quote": 0,
       "note": "有按摩座椅",
       "distance": ""
+    },
+    {
+      "id": "price_bj_daxing_lantu_1789042170",
+      "city": "北京",
+      "route": "大兴机场单接送市区酒店（接机）",
+      "vehicle": "岚图梦想家",
+      "seatType": "七座",
+      "duration": "单接送",
+      "distance": "",
+      "cost": 330,
+      "quote": 0,
+      "note": "指定岚图梦想家接机，大兴机场单接送市区酒店，成本价330元",
+      "_lastModified": 1789042170128
     }
   ],
   "guests": [
@@ -2330,5 +2343,5 @@
     "built": "2026-09-10T11:46:53.028Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789040808733
+  "_lastModified": 1789042170128
 }
