@@ -501,14 +501,13 @@
       "id": "d2",
       "city": "北京",
       "name": "张师傅",
-      "phone": "18611408806",
-      "plate": "京AGF9775",
-      "carType": "岚图梦想家",
-      "color": "黑色",
-      "seatType": "七座",
+      "phone": "13800000001",
+      "plate": "京A·88001",
+      "carType": "",
+      "color": "",
+      "seatType": "五座",
       "note": "轿车",
-      "fleet": "",
-      "lastUsed": 1789039638230
+      "fleet": ""
     },
     {
       "id": "d3",
@@ -2278,12 +2277,15 @@
       "phone": "",
       "nationality": "",
       "note": "微信联系，司机确定后建群",
-      "_lastModified": 1789039638230
+      "_lastModified": 1789039638230,
+      "wechat": "微信",
+      "contact": "微信（司机确定后建群）",
+      "updatedAt": "2026-09-10"
     }
   ],
   "_meta": {
-    "built": "2026-09-10T08:09:59.356Z",
+    "built": "2026-09-10T11:33:23.285Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789039638230
+  "_lastModified": 1789039998820
 }
