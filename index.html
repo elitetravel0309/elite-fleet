@@ -442,6 +442,13 @@ textarea{resize:vertical;line-height:1.5}
       </div>
       <div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)">
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:15px">合作车队</b><span style="font-size:12px;color:var(--text-3)">车队给你的报价＝成本价，录入「参考价库」的 cost 列</span><button class="btn ghost small" style="margin-left:auto" onclick="addFleet()">+ 添加车队</button></div>
+        <!-- 车队筛选 -->
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;margin-bottom:10px;flex-wrap:wrap;padding:10px 12px;background:var(--bg);border-radius:8px">
+          <input type="text" id="fleetKw" placeholder="搜索车队/联系人/电话" oninput="renderFleet()" style="min-width:180px;flex:1;min-width:150px">
+          <select id="fleetCityFilter" onchange="renderFleet()" style="min-width:100px"><option value="">全部城市</option></select>
+          <button class="btn ghost small" onclick="resetFleetFilter()">重置</button>
+          <span id="fleetFilterCount" style="font-size:12px;color:var(--text-3);margin-left:auto"></span>
+        </div>
         <div id="fleetList" style="margin-top:10px"></div>
       </div>
       <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px"><b style="font-size:15px">车队司机</b><span style="font-size:12px;color:var(--text-3)">司机与车辆信息配对录入；点击编辑可修改</span><button class="btn ghost small" style="margin-left:auto" onclick="openDriverPaste()">粘贴导入司机</button></div>
@@ -1910,6 +1917,22 @@ function buildDriverFilters(){
   seatSel.innerHTML = '<option value="">全部座位</option>' + seats.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
   citySel.value = curCity; carSel.value = curCar; seatSel.value = curSeat;
 }
+// 车队筛选：构建下拉选项
+function buildFleetFilters(){
+  const citySel = $('fleetCityFilter');
+  if(!citySel) return;
+  const cities = [...new Set((S.fleets||[]).map(f=>f.city).filter(Boolean))].sort();
+  const curCity = citySel.value;
+  citySel.innerHTML = '<option value="">全部城市</option>' + cities.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+  citySel.value = curCity;
+}
+// 重置车队筛选
+function resetFleetFilter(){
+  if($('fleetKw')) $('fleetKw').value = '';
+  if($('fleetCityFilter')) $('fleetCityFilter').value = '';
+  renderFleet();
+}
+
 // 重置司机筛选
 function resetDriverFilter(){
   if($('driverKw')) $('driverKw').value = '';
@@ -1921,16 +1944,29 @@ function resetDriverFilter(){
 
 function renderFleet(){
   normDrivers();
-  // 构建司机筛选下拉选项
+  // 构建筛选下拉选项
+  buildFleetFilters();
   buildDriverFilters();
-  $('fleetList').innerHTML = S.fleets.length? S.fleets.map(f=>
+  // 车队筛选
+  const fkw = ($('fleetKw')?.value || '').toLowerCase().trim();
+  const fcityF = $('fleetCityFilter')?.value || '';
+  let filteredFleets = S.fleets.filter(f=>{
+    if(fcityF && (f.city||'') !== fcityF) return false;
+    if(fkw){
+      const hay = ((f.name||'')+' '+(f.contact||'')+' '+(f.phone||'')+' '+(f.city||'')+' '+(f.note||'')).toLowerCase();
+      if(hay.indexOf(fkw) < 0) return false;
+    }
+    return true;
+  });
+  if($('fleetFilterCount')) $('fleetFilterCount').textContent = '显示 '+filteredFleets.length+' / '+S.fleets.length+' 家车队';
+  $('fleetList').innerHTML = filteredFleets.length? filteredFleets.map(f=>
     '<div class="fleet-row"><div class="avatar" style="background:var(--accent);color:#fff">'+escapeHtml((f.name||'车').slice(0,1))+'</div>'
     +'<div class="info"><b>'+escapeHtml(f.name)+'</b>'
     +'<span>'+(f.city?'<span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(f.city)+'</span> · ':'')+(f.contact?('联系人 '+escapeHtml(f.contact)+' · '):'')+(f.phone?'电话 '+escapeHtml(f.phone):'')+(f.note?' · '+escapeHtml(f.note):'')+'</span></div>'
     +'<span class="type-pill">'+(S.drivers.filter(d=>d.fleet===f.name).length)+' 位司机</span>'
     +'<button class="iconbtn" onclick="editFleet(\''+f.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
     +'<button class="iconbtn" onclick="removeFleet(\''+f.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'
-  ).join('') : '<div style="color:var(--text-3);font-size:13px;text-align:center;padding:12px 0">还没有车队，点「添加车队」录入合作车队（名称/联系人/电话）</div>';
+  ).join('') : '<div style="color:var(--text-3);font-size:13px;text-align:center;padding:12px 0">'+(fkw||fcityF ? '没有匹配的车队，试试调整筛选条件' : '还没有车队，点「添加车队」录入合作车队（名称/联系人/电话）')+'</div>';
   // 司机筛选
   const kw = ($('driverKw')?.value || '').toLowerCase().trim();
   const cityF = $('driverCityFilter')?.value || '';
