@@ -383,7 +383,8 @@ textarea{resize:vertical;line-height:1.5}
     <div class="nav-label">业务</div>
     <button data-route="inquiries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>询价管理<span class="count" id="inquiryCount"></span></button>
     <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
-    <button data-route="guests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
+    <button data-route="guests">    <button data-route="hotels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>酒店库</button>
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
     <button data-route="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>报表中心</button>
     <div class="nav-label">资源</div>
     <button data-route="fleet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆与司机</button>
@@ -524,6 +525,17 @@ textarea{resize:vertical;line-height:1.5}
     </section>
 
     <!-- 车队与司机 -->
+    <section class="view" data-route="hotels">
+      <h2 class="section">酒店库</h2>
+      <p class="sub">管理常用酒店信息，订单可快速关联</p>
+      <div class="toolbar">
+        <button class="btn primary" onclick="openHotel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增酒店</button>
+        <div class="spacer"></div>
+        <input type="text" id="hotelSearch" placeholder="搜索酒店名/城市/地址..." oninput="renderHotels()" style="width:240px">
+      </div>
+      <div id="hotelList" class="card-list"></div>
+    </section>
+
     <section class="view" data-route="fleet">
       <div class="today-head">
         <div><h2 class="section">车队与司机</h2><p class="sub">合作车队档案 + 车队司机（司机与车辆配对）；订单指派司机即自动带出车辆</p></div>
@@ -823,6 +835,43 @@ textarea{resize:vertical;line-height:1.5}
       </div>
       <button class="btn ghost" onclick="closeSmartQuote()">关闭</button>
       <button class="btn primary" onclick="saveQuoteToInquiry()">保存报价到询价单</button>
+    </div>
+  </div>
+</div>
+
+<!-- 酒店弹窗 -->
+<div class="overlay" id="hotelOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="hotelModalTitle">新增酒店</h3>
+      <button class="close" onclick="closeHotel()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>酒店中文名</label><input type="text" id="hotelNameCn"></div>
+        <div class="field"><label>酒店英文名</label><input type="text" id="hotelNameEn"></div>
+        <div class="field"><label>城市</label><input type="text" id="hotelCity" placeholder="如：洛阳"></div>
+        <div class="field"><label>星级/档次</label>
+          <select id="hotelStar">
+            <option value="">请选择</option>
+            <option value="经济型">经济型</option>
+            <option value="三星">三星</option>
+            <option value="四星">四星</option>
+            <option value="五星">五星</option>
+            <option value="豪华">豪华</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>地址</label><input type="text" id="hotelAddress"></div>
+      <div class="form-grid">
+        <div class="field"><label>电话</label><input type="text" id="hotelPhone"></div>
+        <div class="field"><label>参考房价（元/晚）</label><input type="number" id="hotelPrice" placeholder="如：500"></div>
+      </div>
+      <div class="field"><label>备注</label><textarea id="hotelNote" rows="2"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeHotel()">取消</button>
+      <button class="btn primary" onclick="saveHotel()">保存</button>
     </div>
   </div>
 </div>
@@ -1404,7 +1453,7 @@ function seedState(){
   return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:JSON.parse(JSON.stringify(SEED_FLEETS)), guests:[]};
 }
 function loadState(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; if(!Array.isArray(s.inquiries)) s.inquiries=[]; if(!Array.isArray(s.payments)) s.payments=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; return s; } } }catch(e){}
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; if(!Array.isArray(s.inquiries)) s.inquiries=[]; if(!Array.isArray(s.payments)) s.payments=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; if(!Array.isArray(s.hotels)) s.hotels=[]; return s; } } }catch(e){}
   const s = seedState(); saveState(s); return s;
 }
 /* ===== 撤销/重做 ===== */
@@ -1442,7 +1491,7 @@ function redo(){
   renderAll();
   toast('已重做：'+next.label);
 }
-function renderAll(){ renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis(); renderInquiries(); renderFinance(); }
+function renderAll(){ renderToday(); renderOrders(); renderGuests(); renderHotels(); renderFleet(); renderPrices(); renderKpis(); renderInquiries(); renderFinance(); }
 document.addEventListener('keydown', e=>{
   if((e.ctrlKey||e.metaKey) && e.key==='z' && !e.shiftKey){ e.preventDefault(); undo(); }
   if((e.ctrlKey||e.metaKey) && (e.key==='y' || (e.key==='z' && e.shiftKey))){ e.preventDefault(); redo(); }
@@ -1598,6 +1647,9 @@ function showView(r){
   if(r==='fleet') renderFleet();
   if(r==='prices') renderPrices();
   if(r==='data') renderData();
+  if(r==='inquiries') renderInquiries();
+  if(r==='finance') renderFinance();
+  if(r==='hotels') renderHotels();
   renderKpis();
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click', ()=>showView(b.dataset.route)));
@@ -4354,6 +4406,85 @@ function saveQuoteToInquiry(){
   $('iqStatus').value = 'quoted';
   closeQuote();
   toast('报价已保存到询价单，状态已更新为"已报价"');
+}
+
+
+
+/* ============================================================
+   酒店库
+   ============================================================ */
+let currentHotelId = null;
+
+function renderHotels(){
+  const list = $('hotelList');
+  if(!list) return;
+  const search = ($('hotelSearch') ? $('hotelSearch').value : '').toLowerCase();
+  let hotels = [...(S.hotels||[])].sort((a,b)=>(a.city||'').localeCompare(b.city||''));
+  if(search) hotels = hotels.filter(h=>(h.nameCn||'').toLowerCase().includes(search)||(h.nameEn||'').toLowerCase().includes(search)||(h.city||'').toLowerCase().includes(search)||(h.address||'').toLowerCase().includes(search));
+  if(!hotels.length){ list.innerHTML = '<div class="empty">暂无酒店，点击"新增酒店"开始</div>'; return; }
+  list.innerHTML = hotels.map(h=>`
+    <div class="inquiry-card" onclick="openHotel('${h.id}')">
+      <div class="inquiry-head">
+        <span class="inquiry-guest">${escapeHtml(h.nameCn||'未命名')}</span>
+        ${h.star?`<span style="font-size:11px;padding:2px 10px;border-radius:20px;background:var(--accent-soft);color:var(--accent-dark);font-weight:600">${h.star}</span>`:''}
+        <span style="margin-left:auto;font-size:12px;color:var(--text-3)">${h.city||''}</span>
+      </div>
+      ${h.nameEn?`<div style="font-size:12px;color:var(--text-2);margin-bottom:4px">${escapeHtml(h.nameEn)}</div>`:''}
+      <div class="inquiry-meta">
+        <span>${escapeHtml(h.address||'')}</span>
+        ${h.phone?`<span>${h.phone}</span>`:''}
+        ${h.price?`<span>参考房价：${h.price}元/晚</span>`:''}
+      </div>
+      ${h.note?`<div style="margin-top:6px;font-size:12px;color:var(--text-2)">${escapeHtml(h.note)}</div>`:''}
+    </div>`).join('');
+}
+
+function openHotel(id){
+  currentHotelId = id || null;
+  $('hotelModalTitle').textContent = id ? '编辑酒店' : '新增酒店';
+  if(id){
+    const h = (S.hotels||[]).find(x=>x.id===id);
+    if(h){
+      $('hotelNameCn').value = h.nameCn||'';
+      $('hotelNameEn').value = h.nameEn||'';
+      $('hotelCity').value = h.city||'';
+      $('hotelStar').value = h.star||'';
+      $('hotelAddress').value = h.address||'';
+      $('hotelPhone').value = h.phone||'';
+      $('hotelPrice').value = h.price||'';
+      $('hotelNote').value = h.note||'';
+    }
+  } else {
+    $('hotelNameCn').value=''; $('hotelNameEn').value=''; $('hotelCity').value='';
+    $('hotelStar').value=''; $('hotelAddress').value=''; $('hotelPhone').value='';
+    $('hotelPrice').value=''; $('hotelNote').value='';
+  }
+  $('hotelOverlay').classList.add('show');
+}
+
+function closeHotel(){ $('hotelOverlay').classList.remove('show'); currentHotelId=null; }
+
+function saveHotel(){
+  const data = {
+    id: currentHotelId || ('hotel_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)),
+    nameCn: $('hotelNameCn').value.trim(),
+    nameEn: $('hotelNameEn').value.trim(),
+    city: $('hotelCity').value.trim(),
+    star: $('hotelStar').value,
+    address: $('hotelAddress').value.trim(),
+    phone: $('hotelPhone').value.trim(),
+    price: parseFloat($('hotelPrice').value)||0,
+    note: $('hotelNote').value.trim(),
+    _lastModified: Date.now()
+  };
+  if(!data.nameCn){ toast('请填写酒店名称'); return; }
+  if(!S.hotels) S.hotels = [];
+  const idx = S.hotels.findIndex(h=>h.id===data.id);
+  if(idx>=0) S.hotels[idx] = data; else S.hotels.push(data);
+  saveState(S);
+  renderHotels();
+  closeHotel();
+  toast(currentHotelId?'酒店已更新':'酒店已添加');
 }
 
 </script>
