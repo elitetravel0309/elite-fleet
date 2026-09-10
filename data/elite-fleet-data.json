@@ -2337,11 +2337,75 @@
       "passportNo": "RA2424953",
       "note": "2026-09-18与Marek Cibulka同行北京一日游",
       "_lastModified": 1789040746861
+    },
+    {
+      "id": "guest_ankemeckbach_1789056747",
+      "name": "ANKE MECKBACH",
+      "originalName": "Anke Meckbach (née Büttgenbach)",
+      "phone": "",
+      "nationality": "德国",
+      "passportNo": "C4V5JP1YZ",
+      "birthDate": "1977-01-31",
+      "gender": "女",
+      "birthPlace": "Bonn, Germany",
+      "passportIssueDate": "2021-02-25",
+      "passportExpiry": "2031-02-24",
+      "passportAuthority": "German Embassy in Athens",
+      "note": "娘家姓Büttgenbach；德国护照；Meckbach家庭",
+      "_lastModified": 1789056747365
+    },
+    {
+      "id": "guest_matthiasmeckbach_1789056748",
+      "name": "MATTHIAS HEINRICH MECKBACH",
+      "originalName": "Matthias Heinrich Meckbach",
+      "phone": "",
+      "nationality": "德国",
+      "passportNo": "C4JHCY6PV",
+      "birthDate": "1982-08-08",
+      "gender": "男",
+      "birthPlace": "Duisburg, Germany",
+      "passportIssueDate": "2025-12-15",
+      "passportExpiry": "2035-12-14",
+      "passportAuthority": "German Consulate General in Shanghai",
+      "note": "德国护照；Meckbach家庭；与Anke Meckbach同行",
+      "_lastModified": 1789056747365
+    },
+    {
+      "id": "guest_julianmeckbach_1789056749",
+      "name": "JULIAN MATTHIAS MECKBACH",
+      "originalName": "Julian Matthias Meckbach",
+      "phone": "",
+      "nationality": "德国",
+      "passportNo": "C4JHMGC2P",
+      "birthDate": "2012-05-01",
+      "gender": "男",
+      "birthPlace": "Frankfurt am Main, Germany",
+      "passportIssueDate": "2025-12-15",
+      "passportExpiry": "2031-12-14",
+      "passportAuthority": "German Consulate General in Shanghai",
+      "note": "德国护照；Meckbach家庭子女；与Anke/Matthias Meckbach同行",
+      "_lastModified": 1789056747365
+    },
+    {
+      "id": "guest_alexandermeckbach_1789056750",
+      "name": "ALEXANDER HENRY MECKBACH",
+      "originalName": "Alexander Henry Meckbach",
+      "phone": "",
+      "nationality": "德国",
+      "passportNo": "C4JH4NT36",
+      "birthDate": "2014-09-19",
+      "gender": "男",
+      "birthPlace": "Frankfurt am Main, Germany",
+      "passportIssueDate": "2025-12-15",
+      "passportExpiry": "2031-12-14",
+      "passportAuthority": "German Consulate General in Shanghai",
+      "note": "德国护照；Meckbach家庭子女；与Anke/Matthias Meckbach同行",
+      "_lastModified": 1789056747365
     }
   ],
   "_meta": {
     "built": "2026-09-10T12:10:23.288Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789042170128
+  "_lastModified": 1789056747365
 }
