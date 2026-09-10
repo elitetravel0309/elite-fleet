@@ -2105,6 +2105,136 @@
       "quote": 2500,
       "note": "埃尔法/威尔法等豪华七座车型；需粤澳两地牌车辆直达（免下车过关）；成本价参考1600-1900，对外报价参考2200-2800；夜间21:00-08:00出发加收200-300；周末/节假日加价200或更多",
       "_lastModified": 1789056778033
+    },
+    {
+      "id": "price_sh_pvg_disney_19_1789057275",
+      "city": "上海",
+      "route": "浦东机场 → 迪士尼乐园（单接送）",
+      "vehicle": "19座中巴",
+      "seatType": "19座",
+      "duration": "单接送",
+      "distance": "约30公里",
+      "cost": 400,
+      "quote": 0,
+      "note": "19座中巴成本价；询价补充单；7成人+4儿童（客人自备儿童座椅）",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_sh_pvg_disney_23_1789057276",
+      "city": "上海",
+      "route": "浦东机场 → 迪士尼乐园（单接送）",
+      "vehicle": "23座中巴",
+      "seatType": "23座",
+      "duration": "单接送",
+      "distance": "约30公里",
+      "cost": 500,
+      "quote": 0,
+      "note": "23座中巴成本价；询价补充单；7成人+4儿童（客人自备儿童座椅）",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_sh_disney_city_19_1789057277",
+      "city": "上海",
+      "route": "迪士尼乐园 → 上海市区（单接送）",
+      "vehicle": "19座中巴",
+      "seatType": "19座",
+      "duration": "单接送",
+      "distance": "约30公里",
+      "cost": 400,
+      "quote": 0,
+      "note": "19座中巴成本价；询价补充单",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_sh_disney_city_23_1789057278",
+      "city": "上海",
+      "route": "迪士尼乐园 → 上海市区（单接送）",
+      "vehicle": "23座中巴",
+      "seatType": "23座",
+      "duration": "单接送",
+      "distance": "约30公里",
+      "cost": 500,
+      "quote": 0,
+      "note": "23座中巴成本价；询价补充单",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_sh_nantong_19_1789057279",
+      "city": "上海",
+      "route": "上海 → 南通（跨城包车）",
+      "vehicle": "19座中巴",
+      "seatType": "19座",
+      "duration": "单程约2小时",
+      "distance": "约120公里",
+      "cost": 1400,
+      "quote": 0,
+      "note": "19座中巴成本价；询价补充单；跨城包车",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_sh_nantong_23_1789057280",
+      "city": "上海",
+      "route": "上海 → 南通（跨城包车）",
+      "vehicle": "23座中巴",
+      "seatType": "23座",
+      "duration": "单程约2小时",
+      "distance": "约120公里",
+      "cost": 1700,
+      "quote": 0,
+      "note": "23座中巴成本价；询价补充单；跨城包车",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_nt_suzhou_19_1789057281",
+      "city": "南通",
+      "route": "南通 → 苏州（跨城包车）",
+      "vehicle": "19座中巴",
+      "seatType": "19座",
+      "duration": "单程约1.5小时",
+      "distance": "约100公里",
+      "cost": 1400,
+      "quote": 0,
+      "note": "19座中巴成本价；询价补充单；跨城包车",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_nt_suzhou_23_1789057282",
+      "city": "南通",
+      "route": "南通 → 苏州（跨城包车）",
+      "vehicle": "23座中巴",
+      "seatType": "23座",
+      "duration": "单程约1.5小时",
+      "distance": "约100公里",
+      "cost": 1700,
+      "quote": 0,
+      "note": "23座中巴成本价；询价补充单；跨城包车",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_sz_pvg_19_1789057283",
+      "city": "苏州",
+      "route": "苏州 → 浦东机场（跨城送机）",
+      "vehicle": "19座中巴",
+      "seatType": "19座",
+      "duration": "单程约2小时",
+      "distance": "约130公里",
+      "cost": 1400,
+      "quote": 0,
+      "note": "19座中巴成本价；询价补充单；跨城送机",
+      "_lastModified": 1789057275237
+    },
+    {
+      "id": "price_sz_pvg_23_1789057284",
+      "city": "苏州",
+      "route": "苏州 → 浦东机场（跨城送机）",
+      "vehicle": "23座中巴",
+      "seatType": "23座",
+      "duration": "单程约2小时",
+      "distance": "约130公里",
+      "cost": 1700,
+      "quote": 0,
+      "note": "23座中巴成本价；询价补充单；跨城送机",
+      "_lastModified": 1789057275237
     }
   ],
   "guests": [
@@ -2446,5 +2576,5 @@
     "built": "2026-09-10T16:14:10.724Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789056778034
+  "_lastModified": 1789057275237
 }
