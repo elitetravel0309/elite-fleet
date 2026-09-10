@@ -382,6 +382,38 @@ textarea{resize:vertical;line-height:1.5}
 .driver-badge.excellent { background:#e6f7ed; color:#1a7f37; }
 .driver-badge.blacklist { background:#fde8e8; color:#c0392b; }
 .driver-rating-stars { color:#f5a623; font-size:12px; letter-spacing:1px; }
+
+/* 数据看板 */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+.kpi-card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+.kpi-card .kpi-label { font-size:12px; color:var(--text-3); margin-bottom:6px; }
+.kpi-card .kpi-value { font-size:24px; font-weight:700; color:var(--text); }
+.kpi-card .kpi-sub { font-size:11px; color:var(--text-3); margin-top:4px; }
+.kpi-card.primary { background:linear-gradient(135deg,var(--accent),var(--accent-2)); border:none; }
+.kpi-card.primary .kpi-label,.kpi-card.primary .kpi-value,.kpi-card.primary .kpi-sub { color:#fff; }
+.kpi-card.success .kpi-value { color:var(--success); }
+.kpi-card.warning .kpi-value { color:var(--warning); }
+.kpi-card.danger .kpi-value { color:var(--danger); }
+.dashboard-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.dashboard-card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+.dashboard-title { font-size:14px; font-weight:600; margin:0 0 12px; color:var(--text); }
+.chart-container { min-height:200px; }
+.bar-chart { display:flex; flex-direction:column; gap:6px; }
+.bar-row { display:flex; align-items:center; gap:8px; font-size:12px; }
+.bar-label { width:100px; text-align:right; color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; }
+.bar-track { flex:1; height:20px; background:var(--bg-2); border-radius:4px; overflow:hidden; }
+.bar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:6px; color:#fff; font-size:11px; font-weight:600; min-width:30px; transition:width 0.3s; }
+.bar-value { width:40px; text-align:right; color:var(--text-2); flex-shrink:0; }
+.donut-chart { display:flex; align-items:center; gap:20px; }
+.donut-legend { display:flex; flex-direction:column; gap:6px; font-size:12px; }
+.donut-legend-item { display:flex; align-items:center; gap:6px; }
+.donut-color { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+.trend-chart { position:relative; height:220px; }
+.trend-svg { width:100%; height:100%; }
+@media(max-width:768px){
+  .dashboard-row { grid-template-columns:1fr; }
+  .kpi-grid { grid-template-columns:repeat(2,1fr); }
+}
 </style>
 </head>
 <body>
@@ -404,6 +436,7 @@ textarea{resize:vertical;line-height:1.5}
     <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
     <button data-route="guests">    <button data-route="hotels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>酒店库</button>
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
+    <button data-route="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>数据看板</button>
     <button data-route="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>报表中心</button>
     <div class="nav-label">资源</div>
     <button data-route="fleet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆与司机</button>
@@ -616,6 +649,56 @@ textarea{resize:vertical;line-height:1.5}
     </section>
 
     <!-- 报表中心 -->
+    <section class="view" data-route="dashboard">
+      <h2 class="section">数据看板</h2>
+      <p class="sub">经营数据一目了然</p>
+      <div class="toolbar">
+        <select id="dashboardPeriod" onchange="renderDashboard()" style="width:140px">
+          <option value="all">全部时间</option>
+          <option value="month">本月</option>
+          <option value="quarter">本季度</option>
+          <option value="year">今年</option>
+        </select>
+        <div class="spacer"></div>
+        <span style="font-size:12px;color:var(--text-3)">数据实时计算</span>
+      </div>
+
+      <div class="kpi-grid" id="dashboardKpis"></div>
+
+      <div class="dashboard-row">
+        <div class="dashboard-card">
+          <h3 class="dashboard-title">订单与收入趋势</h3>
+          <div id="trendChart" class="chart-container"></div>
+        </div>
+        <div class="dashboard-card">
+          <h3 class="dashboard-title">热门线路 TOP10</h3>
+          <div id="topRoutesChart" class="chart-container"></div>
+        </div>
+      </div>
+
+      <div class="dashboard-row">
+        <div class="dashboard-card">
+          <h3 class="dashboard-title">客人来源国分布</h3>
+          <div id="countryChart" class="chart-container"></div>
+        </div>
+        <div class="dashboard-card">
+          <h3 class="dashboard-title">司机使用排行</h3>
+          <div id="driverRankChart" class="chart-container"></div>
+        </div>
+      </div>
+
+      <div class="dashboard-row">
+        <div class="dashboard-card">
+          <h3 class="dashboard-title">订单状态分布</h3>
+          <div id="statusChart" class="chart-container"></div>
+        </div>
+        <div class="dashboard-card">
+          <h3 class="dashboard-title">车型使用分布</h3>
+          <div id="vehicleChart" class="chart-container"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="view" data-route="report">
       <div class="today-head">
         <div><h2 class="section">报表中心</h2><p class="sub">按月份汇总订单数、营业额（对外报价）、成本（车队报价）、利润与利润率</p></div>
@@ -1738,6 +1821,7 @@ function showView(r){
   if(r==='inquiries') renderInquiries();
   if(r==='finance') renderFinance();
   if(r==='hotels') renderHotels();
+  if(r==='dashboard') renderDashboard();
   renderKpis();
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click', ()=>showView(b.dataset.route)));
@@ -4825,6 +4909,223 @@ function saveDriverRating(){
   saveState(S);
   closeDriverRating();
   toast('司机评价已保存');
+}
+
+
+
+/* ============================================================
+   数据看板
+   ============================================================ */
+function renderDashboard(){
+  const period = $('dashboardPeriod') ? $('dashboardPeriod').value : 'all';
+  let orders = [...(S.orders||[])];
+  const now = new Date();
+
+  // 按时间过滤
+  if(period==='month'){
+    const ym = now.toISOString().slice(0,7);
+    orders = orders.filter(o=>(o.date||'').startsWith(ym));
+  } else if(period==='quarter'){
+    const q = Math.floor(now.getMonth()/3);
+    const y = now.getFullYear();
+    orders = orders.filter(o=>{
+      const d = new Date(o.date);
+      return d.getFullYear()===y && Math.floor(d.getMonth()/3)===q;
+    });
+  } else if(period==='year'){
+    const y = now.getFullYear().toString();
+    orders = orders.filter(o=>(o.date||'').startsWith(y));
+  }
+
+  // KPI计算
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((s,o)=>s+(parseFloat(o.quote)||0),0);
+  const totalCost = orders.reduce((s,o)=>s+(parseFloat(o.cost)||0),0);
+  const totalProfit = totalRevenue - totalCost;
+  const avgProfitRate = totalRevenue>0 ? Math.round(totalProfit/totalRevenue*1000)/10 : 0;
+  const pendingOrders = orders.filter(o=>['inquiry','quoted','pending'].includes(o.status)).length;
+  const unassignedDrivers = orders.filter(o=>!o.driver && o.status!=='done' && o.status!=='cancelled').length;
+
+  $('dashboardKpis').innerHTML = `
+    <div class="kpi-card primary"><div class="kpi-label">总订单</div><div class="kpi-value">${totalOrders}</div><div class="kpi-sub">${period==='all'?'全部时间':'当前周期'}</div></div>
+    <div class="kpi-card success"><div class="kpi-label">总收入</div><div class="kpi-value">¥${totalRevenue.toLocaleString()}</div><div class="kpi-sub">对外报价合计</div></div>
+    <div class="kpi-card"><div class="kpi-label">总成本</div><div class="kpi-value">¥${totalCost.toLocaleString()}</div><div class="kpi-sub">车队成本合计</div></div>
+    <div class="kpi-card success"><div class="kpi-label">总利润</div><div class="kpi-value">¥${totalProfit.toLocaleString()}</div><div class="kpi-sub">利润率 ${avgProfitRate}%</div></div>
+    <div class="kpi-card warning"><div class="kpi-label">待跟进</div><div class="kpi-value">${pendingOrders}</div><div class="kpi-sub">询价/已报价/待确认</div></div>
+    <div class="kpi-card danger"><div class="kpi-label">未派司机</div><div class="kpi-value">${unassignedDrivers}</div><div class="kpi-sub">需尽快安排</div></div>
+  `;
+
+  // 订单与收入趋势（按月）
+  renderTrendChart(orders);
+
+  // 热门线路TOP10
+  renderTopRoutes(orders);
+
+  // 客人来源国
+  renderCountryChart(orders);
+
+  // 司机使用排行
+  renderDriverRank(orders);
+
+  // 订单状态分布
+  renderStatusChart(orders);
+
+  // 车型使用分布
+  renderVehicleChart(orders);
+}
+
+function renderTrendChart(orders){
+  const container = $('trendChart');
+  if(!container) return;
+  // 按月分组
+  const monthly = {};
+  orders.forEach(o=>{
+    const ym = (o.date||'').slice(0,7);
+    if(!ym) return;
+    if(!monthly[ym]) monthly[ym] = {orders:0, revenue:0, profit:0};
+    monthly[ym].orders++;
+    monthly[ym].revenue += parseFloat(o.quote)||0;
+    monthly[ym].profit += (parseFloat(o.quote)||0) - (parseFloat(o.cost)||0);
+  });
+  const months = Object.keys(monthly).sort();
+  if(!months.length){ container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+
+  const maxRevenue = Math.max(...months.map(m=>monthly[m].revenue), 1);
+  const w = container.clientWidth || 500;
+  const h = 200;
+  const pad = {l:40, r:20, t:20, b:30};
+  const cw = w - pad.l - pad.r;
+  const ch = h - pad.t - pad.b;
+  const barW = Math.min(40, cw/months.length * 0.6);
+
+  let svg = `<svg class="trend-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">`;
+  // 网格线
+  for(let i=0;i<=4;i++){
+    const y = pad.t + ch*i/4;
+    svg += `<line x1="${pad.l}" y1="${y}" x2="${w-pad.r}" y2="${y}" stroke="var(--line)" stroke-width="0.5"/>`;
+    const val = Math.round(maxRevenue*(4-i)/4);
+    svg += `<text x="${pad.l-5}" y="${y+4}" text-anchor="end" font-size="9" fill="var(--text-3)">${val>=1000?(val/1000)+'k':val}</text>`;
+  }
+  // 柱状图
+  months.forEach((m,i)=>{
+    const x = pad.l + (cw/months.length)*(i+0.5) - barW/2;
+    const revenueH = (monthly[m].revenue/maxRevenue)*ch;
+    const profitH = (monthly[m].profit/maxRevenue)*ch;
+    svg += `<rect x="${x}" y="${pad.t+ch-revenueH}" width="${barW}" height="${revenueH}" rx="3" fill="var(--accent)" opacity="0.7"/>`;
+    if(profitH>0) svg += `<rect x="${x}" y="${pad.t+ch-profitH}" width="${barW}" height="${profitH}" rx="3" fill="var(--success)" opacity="0.8"/>`;
+    svg += `<text x="${x+barW/2}" y="${h-pad.b+14}" text-anchor="middle" font-size="9" fill="var(--text-3)">${m.slice(5)}</text>`;
+    svg += `<text x="${x+barW/2}" y="${pad.t+ch-revenueH-3}" text-anchor="middle" font-size="9" fill="var(--text-2)">${monthly[m].orders}</text>`;
+  });
+  svg += '</svg>';
+  svg += '<div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text-3)"><span><span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:2px;margin-right:4px"></span>收入</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--success);border-radius:2px;margin-right:4px"></span>利润</span><span>柱上数字=订单数</span></div>';
+  container.innerHTML = svg;
+}
+
+function renderTopRoutes(orders){
+  const container = $('topRoutesChart');
+  if(!container) return;
+  const routeCount = {};
+  orders.forEach(o=>{
+    let route = (o.route||'').split('→')[0] || (o.route||'').slice(0,15) || '未填写';
+    route = route.length>15 ? route.slice(0,15)+'...' : route;
+    routeCount[route] = (routeCount[route]||0)+1;
+  });
+  const top = Object.entries(routeCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(!top.length){ container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  const max = top[0][1];
+  container.innerHTML = '<div class="bar-chart">' + top.map(([route,count])=>`
+    <div class="bar-row">
+      <span class="bar-label" title="${route}">${route}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(count/max*100)}%">${count}</div></div>
+    </div>`).join('') + '</div>';
+}
+
+function renderCountryChart(orders){
+  const container = $('countryChart');
+  if(!container) return;
+  const countryCount = {};
+  orders.forEach(o=>{
+    const guest = S.guests.find(g=>g.name===o.guest);
+    let country = guest?.nationality || guest?.country || '未知';
+    if(!country || country==='未知'){
+      // 从联系方式推断
+      const contact = (o.contact||'')+(guest?.contact||'');
+      if(contact.includes('+86')) country='中国';
+      else if(contact.includes('+1')) country='美国';
+      else if(contact.includes('+44')) country='英国';
+      else if(contact.includes('+61')) country='澳大利亚';
+      else if(contact.includes('+49')) country='德国';
+      else if(contact.includes('+33')) country='法国';
+      else if(contact.includes('+81')) country='日本';
+      else if(contact.includes('+82')) country='韩国';
+      else if(contact.includes('+7')) country='俄罗斯';
+      else country='其他/未知';
+    }
+    countryCount[country] = (countryCount[country]||0)+1;
+  });
+  const countries = Object.entries(countryCount).sort((a,b)=>b[1]-a[1]);
+  if(!countries.length){ container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  const total = countries.reduce((s,[,c])=>s+c,0);
+  const colors = ['var(--accent)','var(--success)','var(--warning)','var(--danger)','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b'];
+  container.innerHTML = '<div class="donut-chart"><div style="flex:1">' +
+    countries.map(([c,n],i)=>{
+      const pct = Math.round(n/total*100);
+      return `<div class="bar-row" style="margin-bottom:4px"><span class="bar-label">${c}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i%colors.length]}">${n}</div></div><span class="bar-value">${pct}%</span></div>`;
+    }).join('') + '</div></div>';
+}
+
+function renderDriverRank(orders){
+  const container = $('driverRankChart');
+  if(!container) return;
+  const driverCount = {};
+  orders.forEach(o=>{
+    if(o.driver) driverCount[o.driver] = (driverCount[o.driver]||0)+1;
+  });
+  const top = Object.entries(driverCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(!top.length){ container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  const max = top[0][1];
+  container.innerHTML = '<div class="bar-chart">' + top.map(([driver,count])=>{
+    const d = S.drivers.find(x=>x.name===driver);
+    const rating = d?.avgRating ? ` ⭐${d.avgRating}` : '';
+    return `<div class="bar-row"><span class="bar-label" title="${driver}">${driver}${rating}</span><div class="bar-track"><div class="bar-fill" style="width:${(count/max*100)}%">${count}</div></div></div>`;
+  }).join('') + '</div>';
+}
+
+function renderStatusChart(orders){
+  const container = $('statusChart');
+  if(!container) return;
+  const statusMap = {inquiry:'询价中',quoted:'已报价',pending:'待确认',sent:'已派车队',confirmed:'已确认',done:'已完成',cancelled:'已取消'};
+  const statusCount = {};
+  orders.forEach(o=>{
+    const s = statusMap[o.status] || o.status || '未知';
+    statusCount[s] = (statusCount[s]||0)+1;
+  });
+  const statuses = Object.entries(statusCount).sort((a,b)=>b[1]-a[1]);
+  if(!statuses.length){ container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  const total = statuses.reduce((s,[,c])=>s+c,0);
+  const colors = ['#3498db','#9b59b6','#f39c12','#e67e22','#2ecc71','#95a5a6','#e74c3c'];
+  container.innerHTML = statuses.map(([s,n],i)=>{
+    const pct = Math.round(n/total*100);
+    return `<div class="bar-row" style="margin-bottom:6px"><span class="bar-label">${s}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i%colors.length]}">${n}</div></div><span class="bar-value">${pct}%</span></div>`;
+  }).join('');
+}
+
+function renderVehicleChart(orders){
+  const container = $('vehicleChart');
+  if(!container) return;
+  const vehicleCount = {};
+  orders.forEach(o=>{
+    const v = o.vehicle || '未指定';
+    vehicleCount[v] = (vehicleCount[v]||0)+1;
+  });
+  const vehicles = Object.entries(vehicleCount).sort((a,b)=>b[1]-a[1]);
+  if(!vehicles.length){ container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  const total = vehicles.reduce((s,[,c])=>s+c,0);
+  const colors = ['var(--accent)','var(--success)','var(--warning)','var(--danger)','#9b59b6'];
+  container.innerHTML = vehicles.map(([v,n],i)=>{
+    const pct = Math.round(n/total*100);
+    return `<div class="bar-row" style="margin-bottom:6px"><span class="bar-label">${v}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i%colors.length]}">${n}</div></div><span class="bar-value">${pct}%</span></div>`;
+  }).join('');
 }
 
 </script>
