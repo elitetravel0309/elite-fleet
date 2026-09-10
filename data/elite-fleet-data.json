@@ -1949,6 +1949,26 @@
       "cost": 1300,
       "quote": "",
       "note": "51座大巴市内日租，超时超公里另计"
+    },
+    {
+      "id": "price_bj_gugong_mutianyu_bieke_1789024653",
+      "city": "北京",
+      "route": "故宫+慕田峪10小时",
+      "vehicle": "别克",
+      "duration": "10小时",
+      "cost": 700,
+      "quote": 0,
+      "note": ""
+    },
+    {
+      "id": "price_bj_gugong_mutianyu_lantu_1789024654",
+      "city": "北京",
+      "route": "故宫+慕田峪10小时",
+      "vehicle": "岚图梦想家",
+      "duration": "10小时",
+      "cost": 750,
+      "quote": 0,
+      "note": "有按摩座椅"
     }
   ],
   "guests": [
@@ -2185,5 +2205,5 @@
     "built": "2026-09-10T04:15:18.847Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789013714882
+  "_lastModified": 1789024653006
 }
