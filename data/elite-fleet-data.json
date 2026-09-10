@@ -117,8 +117,8 @@
       "pax": 2,
       "guest": "Karina&Alina",
       "contact": "WhatsApp +7 700 992 1241",
-      "driver": "王师傅",
-      "plate": "京FAG536",
+      "driver": "",
+      "plate": "",
       "fleet": "",
       "status": "confirmed",
       "quote": 1000,
@@ -126,7 +126,7 @@
       "collectAmount": 1000,
       "note": "接机牌用China Wonder Tours logo；客人21:20国际航班CZ8882，18:20前回到大兴机场；司机代收1000元人民币",
       "city": "北京",
-      "_lastModified": 1789027734101
+      "_lastModified": 1789026689130
     },
     {
       "id": "x0730stefaniekrug",
@@ -2250,7 +2250,7 @@
     }
   ],
   "_meta": {
-    "built": "2026-09-10T07:52:30.038Z",
+    "built": "2026-09-10T08:09:59.356Z",
     "source": "workbench-upload"
   },
   "_lastModified": 1789027734101
