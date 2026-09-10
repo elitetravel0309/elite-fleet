@@ -215,6 +215,29 @@
       "_lastModified": 1789039638230
     },
     {
+      "id": "x2609180450marek_1789040746",
+      "date": "2026-09-18",
+      "time": "04:50",
+      "type": "charter",
+      "airport": "首都机场T3",
+      "flight": "CA842接 / CA179送",
+      "route": "首都机场T3 → 天安门 → 故宫 → 天坛 → 首都机场T3",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Marek Cibulka",
+      "contact": "WhatsApp +421 903 972 264",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "status": "confirmed",
+      "quote": 0,
+      "cost": 0,
+      "collectAmount": 0,
+      "note": "5座车+英文导游；接：首都机场T3 CA842约04:50抵达；送：16:00回到首都机场T3（CA179 19:05国际航班）；导游可不到机场接，在第一个点回合；送机看时间导游可送可不送；导游需要帮客人预约门票；同行客人：Lubos Fuska（护照RA2424953）；不用代收",
+      "city": "北京",
+      "_lastModified": 1789040746861
+    },
+    {
       "id": "x609211100byhamre",
       "date": "2026-09-21",
       "time": "11:00",
@@ -2281,11 +2304,29 @@
       "wechat": "微信",
       "contact": "微信（司机确定后建群）",
       "updatedAt": "2026-09-10"
+    },
+    {
+      "id": "guest_marekcibulka_1789040746",
+      "name": "Marek Cibulka",
+      "phone": "+421 903 972 264",
+      "nationality": "斯洛伐克",
+      "passportNo": "BD7965023",
+      "note": "WhatsApp联系；2026-09-18北京一日游（天安门+故宫+天坛），5座车+英文导游；同行客人Lubos Fuska",
+      "_lastModified": 1789040746861
+    },
+    {
+      "id": "guest_lubosfuska_1789040746",
+      "name": "Lubos Fuska",
+      "phone": "",
+      "nationality": "斯洛伐克",
+      "passportNo": "RA2424953",
+      "note": "2026-09-18与Marek Cibulka同行北京一日游",
+      "_lastModified": 1789040746861
     }
   ],
   "_meta": {
     "built": "2026-09-10T11:33:23.285Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789039998820
+  "_lastModified": 1789040746861
 }
