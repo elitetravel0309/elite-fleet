@@ -192,6 +192,29 @@
       "city": "重庆"
     },
     {
+      "id": "x2609170630taiseer_1789039638",
+      "date": "2026-09-17",
+      "time": "06:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "北京华尔道夫酒店 → 慕田峪长城 → 故宫/午门区域 → 北京华尔道夫酒店",
+      "vehicle": "七座",
+      "pax": 2,
+      "guest": "Taiseer",
+      "contact": "微信（司机确定后建群）",
+      "driver": "张师傅",
+      "plate": "京AGF9775",
+      "fleet": "",
+      "status": "confirmed",
+      "quote": 0,
+      "cost": 0,
+      "collectAmount": 0,
+      "note": "指定岚图梦想家（最好黑色）；酒店：北京华尔道夫酒店，北京市东城区金鱼胡同5-15号；客人有微信，司机确定后建群",
+      "city": "北京",
+      "_lastModified": 1789039638230
+    },
+    {
       "id": "x609211100byhamre",
       "date": "2026-09-21",
       "time": "11:00",
@@ -478,13 +501,14 @@
       "id": "d2",
       "city": "北京",
       "name": "张师傅",
-      "phone": "13800000001",
-      "plate": "京A·88001",
-      "carType": "",
-      "color": "",
-      "seatType": "五座",
+      "phone": "18611408806",
+      "plate": "京AGF9775",
+      "carType": "岚图梦想家",
+      "color": "黑色",
+      "seatType": "七座",
       "note": "轿车",
-      "fleet": ""
+      "fleet": "",
+      "lastUsed": 1789039638230
     },
     {
       "id": "d3",
@@ -2247,11 +2271,19 @@
       "_lastModified": 1789026689130,
       "contact": "WhatsApp +7 700 992 1241",
       "updatedAt": "2026-09-10"
+    },
+    {
+      "id": "guest_taiseer_1789039638",
+      "name": "Taiseer",
+      "phone": "",
+      "nationality": "",
+      "note": "微信联系，司机确定后建群",
+      "_lastModified": 1789039638230
     }
   ],
   "_meta": {
     "built": "2026-09-10T08:09:59.356Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789027734101
+  "_lastModified": 1789039638230
 }
