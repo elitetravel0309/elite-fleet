@@ -341,6 +341,31 @@
       "status": "confirmed",
       "note": "6人+12个大小行李，单用车；08:30-09:00酒店接，送机首都机场3号航站楼，航班CX391 13:40起飞；接机牌Welcome Mr. HUSDI HDCI & Party",
       "city": "北京"
+    },
+    {
+      "id": "ord_datong_0910",
+      "date": "2026-09-10",
+      "time": "06:15",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "大同南站美居酒店→悬空寺→云冈石窟→大同南站美居酒店",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "pending",
+      "note": "用车时长10小时。客人没有悬空寺登临票，请司机将客人带到游客中心/票务中心买票。提醒客人：07:45前到悬空寺景区门口排队，外国护照在山西部分景区可走\"境外游客/护照通道\"，但悬空寺登临票不保证有票。酒店：大同南站美居酒店，山西省大同市平城区太和路与重熙街交汇处东北角（太和汇城市广场2号楼17层）",
+      "city": "大同",
+      "_lastModified": 1757500000000,
+      "collectAmount": 0,
+      "statusHistory": []
     }
   ],
   "vehicles": [
@@ -556,6 +581,18 @@
       "fleet": "",
       "note": "",
       "lastUsed": 1789027734101
+    },
+    {
+      "id": "drv_luoyang_jin_16",
+      "name": "靳师傅",
+      "phone": "1383797369",
+      "plate": "豫CF98897",
+      "vehicle": "帕萨特",
+      "city": "洛阳",
+      "seats": "五座",
+      "color": "",
+      "note": "接过Alison法国人2人，客人好评",
+      "_lastModified": 1757500000000
     }
   ],
   "fleets": [
