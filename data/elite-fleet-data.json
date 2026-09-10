@@ -18,7 +18,7 @@
       "quote": 0,
       "cost": 0,
       "status": "confirmed",
-      "note": "转机Layover；航班CA132约16:40抵达大兴，出关后接；23:00之前送到首都机场3号航站楼；接机牌用China Wonder Tours logo；价格待定 [同步测试1789013423443]",
+      "note": "转机Layover；航班CA132约16:40抵达大兴，出关后接；23:00之前送到首都机场3号航站楼；接机牌用China Wonder Tours logo；价格待定",
       "city": "北京"
     },
     {
@@ -2182,8 +2182,8 @@
     }
   ],
   "_meta": {
-    "built": "2026-09-10T04:13:00.669Z",
+    "built": "2026-09-10T04:15:16.159Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789013440264
+  "_lastModified": 1789013714882
 }
