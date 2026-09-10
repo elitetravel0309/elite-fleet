@@ -1981,7 +1981,8 @@
       "duration": "10小时",
       "cost": 700,
       "quote": 0,
-      "note": ""
+      "note": "",
+      "distance": ""
     },
     {
       "id": "price_bj_gugong_mutianyu_lantu_1789024654",
@@ -1991,7 +1992,8 @@
       "duration": "10小时",
       "cost": 750,
       "quote": 0,
-      "note": "有按摩座椅"
+      "note": "有按摩座椅",
+      "distance": ""
     }
   ],
   "guests": [
@@ -2229,12 +2231,14 @@
       "phone": "+7 700 992 1241",
       "nationality": "俄罗斯",
       "note": "WhatsApp联系",
-      "_lastModified": 1789026689130
+      "_lastModified": 1789026689130,
+      "contact": "WhatsApp +7 700 992 1241",
+      "updatedAt": "2026-09-10"
     }
   ],
   "_meta": {
-    "built": "2026-09-10T04:15:18.847Z",
+    "built": "2026-09-10T07:52:30.038Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789026689130
+  "_lastModified": 1789026745870
 }
