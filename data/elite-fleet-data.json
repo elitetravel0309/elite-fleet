@@ -366,6 +366,31 @@
       "_lastModified": 1757500000000,
       "collectAmount": 0,
       "statusHistory": []
+    },
+    {
+      "id": "ord_luoyang_0910",
+      "date": "2026-09-10",
+      "time": "06:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "洛阳美豪剧院酒店→少林寺→午餐→龙门石窟→洛阳龙门火车站",
+      "vehicle": "五座",
+      "pax": 0,
+      "guest": "",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 900,
+      "cost": 600,
+      "status": "confirmed",
+      "note": "06:30洛阳美豪剧院酒店接人，08:00-12:00少林寺，12:00-13:00午餐，14:00-17:00龙门石窟，约17:30出发前往洛阳龙门火车站，19:58火车发车。利润300元，利润率33.3%",
+      "city": "洛阳",
+      "_lastModified": 1757500000000,
+      "collectAmount": 0,
+      "statusHistory": []
     }
   ],
   "vehicles": [
