@@ -434,8 +434,8 @@ textarea{resize:vertical;line-height:1.5}
     <div class="nav-label">业务</div>
     <button data-route="inquiries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>询价管理<span class="count" id="inquiryCount"></span></button>
     <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
-    <button data-route="guests">    <button data-route="hotels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>酒店库</button>
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
+    <button data-route="guests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
+    <button data-route="hotels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>酒店库</button>
     <button data-route="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>数据看板</button>
     <button data-route="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>报表中心</button>
     <div class="nav-label">资源</div>
@@ -445,6 +445,9 @@ textarea{resize:vertical;line-height:1.5}
     <button data-route="finance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>财务结算</button>
     <button data-route="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>数据与同步</button>
   </nav>
+  <div style="padding:8px 14px;border-top:1px solid rgba(255,255,255,.1)">
+    <button id="langToggle" onclick="toggleLang()" style="width:100%;background:rgba(255,255,255,.08);color:#fff;font-size:12px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);cursor:pointer">English / 中文</button>
+  </div>
   <div class="side-foot">Elite Travel · 旅行社订单与车队协作台<br>数据存储于本机浏览器</div>
 </aside>
 
@@ -5126,6 +5129,205 @@ function renderVehicleChart(orders){
     const pct = Math.round(n/total*100);
     return `<div class="bar-row" style="margin-bottom:6px"><span class="bar-label">${v}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i%colors.length]}">${n}</div></div><span class="bar-value">${pct}%</span></div>`;
   }).join('');
+}
+
+
+
+/* ============================================================
+   多语言界面
+   ============================================================ */
+const I18N = {
+  zh: {
+    // 导航
+    'nav.today': '今日排班',
+    'nav.week': '周历',
+    'nav.orders': '订单管理',
+    'nav.drivers': '司机库',
+    'nav.fleet': '车队库',
+    'nav.guests': '客人库',
+    'nav.hotels': '酒店库',
+    'nav.prices': '参考价库',
+    'nav.inquiries': '询价管理',
+    'nav.finance': '财务结算',
+    'nav.dashboard': '数据看板',
+    'nav.report': '报表中心',
+    'nav.data': '数据与同步',
+    // 通用
+    'common.add': '新增',
+    'common.edit': '编辑',
+    'common.delete': '删除',
+    'common.save': '保存',
+    'common.cancel': '取消',
+    'common.search': '搜索',
+    'common.all': '全部',
+    'common.status': '状态',
+    'common.date': '日期',
+    'common.time': '时间',
+    'common.guest': '客人',
+    'common.driver': '司机',
+    'common.vehicle': '车型',
+    'common.pax': '人数',
+    'common.route': '线路',
+    'common.note': '备注',
+    'common.phone': '电话',
+    'common.city': '城市',
+    'common.quote': '报价',
+    'common.cost': '成本',
+    'common.profit': '利润',
+    'common.action': '操作',
+    'common.noData': '暂无数据',
+    'common.confirm': '确认',
+    'common.back': '返回',
+    'common.print': '打印',
+    'common.copy': '复制',
+    'common.export': '导出',
+    'common.import': '导入',
+    // 订单状态
+    'status.inquiry': '询价中',
+    'status.quoted': '已报价',
+    'status.pending': '待确认',
+    'status.sent': '已派车队',
+    'status.confirmed': '已确认',
+    'status.done': '已完成',
+    'status.cancelled': '已取消',
+    // 订单类型
+    'type.arrival': '接机',
+    'type.departure': '送机',
+    'type.charter': '包车',
+    'type.transfer': '市内接送',
+    // 页面标题
+    'page.orders': '订单管理',
+    'page.orders.sub': '所有用车订单，支持增删改查和利润计算',
+    'page.drivers': '司机库',
+    'page.drivers.sub': '管理合作司机信息，支持按城市/车型筛选',
+    'page.fleet': '车队库',
+    'page.fleet.sub': '管理合作车队信息和报价',
+    'page.guests': '客人库',
+    'page.guests.sub': '管理客人档案，含护照信息和历史订单',
+    'page.hotels': '酒店库',
+    'page.hotels.sub': '管理常用酒店信息，订单可快速关联',
+    'page.prices': '参考价库',
+    'page.prices.sub': '管理各城市用车成本价和对外报价',
+    'page.inquiries': '询价管理',
+    'page.inquiries.sub': '跟进客户询价，记录车队报价对比',
+    'page.finance': '财务结算',
+    'page.finance.sub': '应收应付台账，收支记录，月度结算',
+    'page.dashboard': '数据看板',
+    'page.dashboard.sub': '经营数据一目了然',
+    'page.report': '报表中心',
+    'page.report.sub': '订单统计、收入利润、司机车队排行',
+    'page.data': '数据与同步',
+    'page.data.sub': '数据备份、恢复、云端同步设置',
+  },
+  en: {
+    // Nav
+    'nav.today': 'Today',
+    'nav.week': 'Week',
+    'nav.orders': 'Orders',
+    'nav.drivers': 'Drivers',
+    'nav.fleet': 'Fleets',
+    'nav.guests': 'Guests',
+    'nav.hotels': 'Hotels',
+    'nav.prices': 'Prices',
+    'nav.inquiries': 'Inquiries',
+    'nav.finance': 'Finance',
+    'nav.dashboard': 'Dashboard',
+    'nav.report': 'Reports',
+    'nav.data': 'Data & Sync',
+    // Common
+    'common.add': 'Add',
+    'common.edit': 'Edit',
+    'common.delete': 'Delete',
+    'common.save': 'Save',
+    'common.cancel': 'Cancel',
+    'common.search': 'Search',
+    'common.all': 'All',
+    'common.status': 'Status',
+    'common.date': 'Date',
+    'common.time': 'Time',
+    'common.guest': 'Guest',
+    'common.driver': 'Driver',
+    'common.vehicle': 'Vehicle',
+    'common.pax': 'Pax',
+    'common.route': 'Route',
+    'common.note': 'Note',
+    'common.phone': 'Phone',
+    'common.city': 'City',
+    'common.quote': 'Quote',
+    'common.cost': 'Cost',
+    'common.profit': 'Profit',
+    'common.action': 'Action',
+    'common.noData': 'No data',
+    'common.confirm': 'Confirm',
+    'common.back': 'Back',
+    'common.print': 'Print',
+    'common.copy': 'Copy',
+    'common.export': 'Export',
+    'common.import': 'Import',
+    // Order status
+    'status.inquiry': 'Inquiry',
+    'status.quoted': 'Quoted',
+    'status.pending': 'Pending',
+    'status.sent': 'Sent to Fleet',
+    'status.confirmed': 'Confirmed',
+    'status.done': 'Completed',
+    'status.cancelled': 'Cancelled',
+    // Order type
+    'type.arrival': 'Pickup',
+    'type.departure': 'Drop-off',
+    'type.charter': 'Charter',
+    'type.transfer': 'Transfer',
+    // Page titles
+    'page.orders': 'Order Management',
+    'page.orders.sub': 'All car service orders with profit calculation',
+    'page.drivers': 'Driver Library',
+    'page.drivers.sub': 'Manage partner drivers, filter by city/vehicle',
+    'page.fleet': 'Fleet Library',
+    'page.fleet.sub': 'Manage partner fleets and quotes',
+    'page.guests': 'Guest Library',
+    'page.guests.sub': 'Guest profiles with passport info and history',
+    'page.hotels': 'Hotel Library',
+    'page.hotels.sub': 'Manage常用hotels for quick order association',
+    'page.prices': 'Price Library',
+    'page.prices.sub': 'Cost prices and customer quotes by city',
+    'page.inquiries': 'Inquiry Management',
+    'page.inquiries.sub': 'Track inquiries, compare fleet quotes',
+    'page.finance': 'Finance',
+    'page.finance.sub': 'AR/AP ledger, transactions, monthly reports',
+    'page.dashboard': 'Dashboard',
+    'page.dashboard.sub': 'Business metrics at a glance',
+    'page.report': 'Reports',
+    'page.report.sub': 'Order stats, revenue/profit, driver/fleet ranking',
+    'page.data': 'Data & Sync',
+    'page.data.sub': 'Backup, restore, cloud sync settings',
+  }
+};
+
+let currentLang = localStorage.getItem('ef-lang') || 'zh';
+
+function t(key){
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || key;
+}
+
+function toggleLang(){
+  currentLang = (currentLang==='zh') ? 'en' : 'zh';
+  localStorage.setItem('ef-lang', currentLang);
+  applyLang();
+  renderAll();
+}
+
+function applyLang(){
+  const btn = $('langToggle');
+  if(btn) btn.textContent = (currentLang==='zh') ? 'EN' : '中';
+  // 更新所有带data-i18n属性的元素
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(key) el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-placeholder');
+    if(key) el.placeholder = t(key);
+  });
 }
 
 </script>
