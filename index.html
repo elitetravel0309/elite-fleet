@@ -926,6 +926,40 @@ textarea{resize:vertical;line-height:1.5}
     </div>
   </div>
 </div>
+<!-- 客人档案弹窗 -->
+<div class="overlay" id="guestDetailOverlay">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head"><h3 id="gdTitle">客人档案</h3><button class="iconbtn" onclick="closeGuestDetail()">&times;</button></div>
+    <div class="modal-body" id="gdBody" style="max-height:70vh;overflow-y:auto"></div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeGuestDetail()">关闭</button></div>
+  </div>
+</div>
+
+<!-- 模板设置弹窗 -->
+<div class="overlay" id="templateOverlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head"><h3>服务信息模板设置</h3><button class="iconbtn" onclick="document.getElementById('templateOverlay').classList.remove('open')">&times;</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">自定义给客人的服务信息格式。可用变量：{车型} {车牌} {颜色} {司机} {电话} {日期} {线路}</p>
+      <div class="fgroup full"><label>中文模板</label><textarea id="tplZh" style="min-height:100px">服务信息
+车型：{车型}
+车牌：{车牌}
+配置：{颜色}
+司机：{司机}
+电话：{电话}</textarea></div>
+      <div class="fgroup full"><label>英文模板</label><textarea id="tplEn" style="min-height:100px">Service Information
+Vehicle: {车型}
+Plate No.: {车牌}
+Color: {颜色}
+Driver: {司机}
+Phone: +86 {电话}</textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="document.getElementById('templateOverlay').classList.remove('open')">取消</button>
+      <button class="btn primary" onclick="saveTemplate()">保存模板</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* =========================================================
@@ -2680,42 +2714,7 @@ function printTripMsg(){
   const t=$('tripMsgBox').value;
   const w=window.open('','_blank');
   if(!w){ toast('浏览器拦截了新窗口，请允许弹窗或改用复制'); return; }
-  w.document.write('<html><head><meta charset="utf-8"><title>出车单</title><style>body{font-family:system-ui,-apple-system,sans-serif;padding:36px;font-size:14px;line-height:1.9;color:#222}pre{white-space:pre-wrap;font-family:inherit;margin:0}.box{border:1.5px dashed #999;padding:22px;border-radius:10px}</style></head><body><div class="box"><pre>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre></div><script>window.onload=function(){window.print()}<\/script>
-<!-- 客人档案弹窗 -->
-<div class="overlay" id="guestDetailOverlay">
-  <div class="modal" style="max-width:640px">
-    <div class="modal-head"><h3 id="gdTitle">客人档案</h3><button class="iconbtn" onclick="closeGuestDetail()">&times;</button></div>
-    <div class="modal-body" id="gdBody" style="max-height:70vh;overflow-y:auto"></div>
-    <div class="modal-foot"><button class="btn ghost" onclick="closeGuestDetail()">关闭</button></div>
-  </div>
-</div>
-
-<!-- 模板设置弹窗 -->
-<div class="overlay" id="templateOverlay">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-head"><h3>服务信息模板设置</h3><button class="iconbtn" onclick="document.getElementById('templateOverlay').classList.remove('open')">&times;</button></div>
-    <div class="modal-body">
-      <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">自定义给客人的服务信息格式。可用变量：{车型} {车牌} {颜色} {司机} {电话} {日期} {线路}</p>
-      <div class="fgroup full"><label>中文模板</label><textarea id="tplZh" style="min-height:100px">服务信息
-车型：{车型}
-车牌：{车牌}
-配置：{颜色}
-司机：{司机}
-电话：{电话}</textarea></div>
-      <div class="fgroup full"><label>英文模板</label><textarea id="tplEn" style="min-height:100px">Service Information
-Vehicle: {车型}
-Plate No.: {车牌}
-Color: {颜色}
-Driver: {司机}
-Phone: +86 {电话}</textarea></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn ghost" onclick="document.getElementById('templateOverlay').classList.remove('open')">取消</button>
-      <button class="btn primary" onclick="saveTemplate()">保存模板</button>
-    </div>
-  </div>
-</div>
-</body></html>');
+  w.document.write('<html><head><meta charset="utf-8"><title>出车单</title><style>body{font-family:system-ui,-apple-system,sans-serif;padding:36px;font-size:14px;line-height:1.9;color:#222}pre{white-space:pre-wrap;font-family:inherit;margin:0}.box{border:1.5px dashed #999;padding:22px;border-radius:10px}</style></head><body><div class="box"><pre>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre></div><scr'+'ipt>window.onload=function(){window.print()}<\/scr'+'ipt></body></html>');
   w.document.close();
 }
 document.getElementById('tripOverlay').addEventListener('click', e=>{ if(e.target.id==='tripOverlay') closeTripMsg(); });
