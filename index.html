@@ -363,6 +363,25 @@ textarea{resize:vertical;line-height:1.5}
 .quote-doc .quote-terms{font-size:12px;color:var(--text-2);line-height:1.8;margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)}
 .quote-doc .quote-footer{text-align:center;margin-top:24px;font-size:12px;color:var(--text-3)}
 .quote-doc .quote-contact{display:flex;justify-content:center;gap:24px;margin-top:12px;font-size:12px;color:var(--text-2)}
+
+/* 服务确认单 */
+.confirm-doc { background:#fff; padding:24px; border-radius:8px; font-size:13px; line-height:1.7; color:#1a1a1a; }
+.confirm-doc h2 { text-align:center; font-size:18px; margin:0 0 4px; letter-spacing:1px; }
+.confirm-doc .confirm-sub { text-align:center; color:#666; font-size:12px; margin-bottom:16px; }
+.confirm-doc .confirm-section { margin-bottom:14px; }
+.confirm-doc .confirm-section-title { font-weight:600; font-size:13px; border-bottom:1px solid #ddd; padding-bottom:4px; margin-bottom:8px; color:#333; }
+.confirm-doc table { width:100%; border-collapse:collapse; font-size:12px; }
+.confirm-doc table td { padding:4px 8px; border:1px solid #e0e0e0; vertical-align:top; }
+.confirm-doc table td:first-child { background:#f5f5f5; width:35%; font-weight:500; color:#555; }
+.confirm-doc .confirm-footer { margin-top:20px; padding-top:12px; border-top:1px solid #ddd; font-size:11px; color:#888; line-height:1.6; }
+.confirm-doc .confirm-sign { margin-top:24px; display:flex; justify-content:space-between; font-size:12px; }
+/* 司机评价 */
+#ratingStars span { transition:color 0.15s; }
+#ratingStars span.active { color:#f5a623; }
+.driver-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; margin-left:6px; }
+.driver-badge.excellent { background:#e6f7ed; color:#1a7f37; }
+.driver-badge.blacklist { background:#fde8e8; color:#c0392b; }
+.driver-rating-stars { color:#f5a623; font-size:12px; letter-spacing:1px; }
 </style>
 </head>
 <body>
@@ -876,6 +895,73 @@ textarea{resize:vertical;line-height:1.5}
   </div>
 </div>
 
+<!-- 服务确认单弹窗 -->
+<div class="overlay" id="serviceConfirmOverlay">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-head">
+      <h3>服务确认单</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn small ghost" onclick="switchConfirmLang()" id="confirmLangBtn">English</button>
+        <button class="btn small ghost" onclick="copyServiceConfirm()">复制</button>
+        <button class="btn small ghost" onclick="printServiceConfirm()">打印</button>
+        <button class="close" onclick="closeServiceConfirm()">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body" id="serviceConfirmContent" style="max-height:70vh;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeServiceConfirm()">关闭</button>
+      <button class="btn primary" onclick="saveServiceConfirm()">保存到订单备注</button>
+    </div>
+  </div>
+</div>
+
+<!-- 司机评价弹窗 -->
+<div class="overlay" id="driverRatingOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>司机服务评价</h3>
+      <button class="close" onclick="closeDriverRating()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>司机</label><input type="text" id="ratingDriverName" readonly style="background:var(--bg-2)"></div>
+      <div class="field"><label>订单</label><input type="text" id="ratingOrderInfo" readonly style="background:var(--bg-2)"></div>
+      <div class="field">
+        <label>总体评分</label>
+        <div id="ratingStars" style="font-size:28px;cursor:pointer;letter-spacing:4px">
+          <span data-star="1" onclick="setRating(1)">☆</span>
+          <span data-star="2" onclick="setRating(2)">☆</span>
+          <span data-star="3" onclick="setRating(3)">☆</span>
+          <span data-star="4" onclick="setRating(4)">☆</span>
+          <span data-star="5" onclick="setRating(5)">☆</span>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>准时率</label>
+          <select id="ratingPunctuality"><option value="">请选择</option><option value="5">非常准时</option><option value="4">准时</option><option value="3">一般</option><option value="2">迟到</option><option value="1">严重迟到</option></select>
+        </div>
+        <div class="field"><label>服务态度</label>
+          <select id="ratingAttitude"><option value="">请选择</option><option value="5">非常好</option><option value="4">好</option><option value="3">一般</option><option value="2">差</option><option value="1">很差</option></select>
+        </div>
+        <div class="field"><label>车况</label>
+          <select id="ratingVehicle"><option value="">请选择</option><option value="5">非常好</option><option value="4">好</option><option value="3">一般</option><option value="2">差</option><option value="1">很差</option></select>
+        </div>
+        <div class="field"><label>驾驶技术</label>
+          <select id="ratingDriving"><option value="">请选择</option><option value="5">非常好</option><option value="4">好</option><option value="3">一般</option><option value="2">差</option><option value="1">很差</option></select>
+        </div>
+      </div>
+      <div class="field"><label>评价内容</label><textarea id="ratingComment" rows="3" placeholder="客人反馈、服务亮点、需要改进的地方..."></textarea></div>
+      <div class="field" style="display:flex;gap:12px;align-items:center">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="ratingExcellent"> 标记为优秀司机</label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--danger)"><input type="checkbox" id="ratingBlacklist"> 加入黑名单</label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeDriverRating()">取消</button>
+      <button class="btn primary" onclick="saveDriverRating()">保存评价</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 订单弹窗 ===== -->
 <div class="overlay" id="orderOverlay">
   <div class="modal">
@@ -964,6 +1050,8 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn ghost" onclick="fleetMsg(editingId)" title="生成给车队的派单消息，可复制发微信/WhatsApp">派单给车队</button>
       <button class="btn ghost" onclick="quoteMsg(editingId)" title="生成给客人的中英文报价单，可复制发微信/WhatsApp">生成报价单</button>
       <button class="btn ghost" onclick="serviceMsg(editingId)" title="生成给客人的司机服务信息（车型/车牌/司机/电话），一键复制">服务信息</button>
+      <button class="btn ghost" onclick="generateServiceConfirmation()" title="生成中英文服务确认单，可复制/打印">服务确认单</button>
+      <button class="btn ghost" onclick="openDriverRating()" title="给司机服务打分评价">评价司机</button>
       <button class="btn ghost" onclick="tripMsg(editingId)" title="生成给司机的单订单车单，可复制发微信或打印">司机车单</button>
       <button class="btn primary" onclick="saveOrder()">保存任务</button>
     </div>
@@ -1453,7 +1541,7 @@ function seedState(){
   return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:JSON.parse(JSON.stringify(SEED_FLEETS)), guests:[]};
 }
 function loadState(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; if(!Array.isArray(s.inquiries)) s.inquiries=[]; if(!Array.isArray(s.payments)) s.payments=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; if(!Array.isArray(s.hotels)) s.hotels=[]; return s; } } }catch(e){}
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; if(!Array.isArray(s.inquiries)) s.inquiries=[]; if(!Array.isArray(s.payments)) s.payments=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; if(!Array.isArray(s.hotels)) s.hotels=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; return s; } } }catch(e){}
   const s = seedState(); saveState(s); return s;
 }
 /* ===== 撤销/重做 ===== */
@@ -4485,6 +4573,258 @@ function saveHotel(){
   renderHotels();
   closeHotel();
   toast(currentHotelId?'酒店已更新':'酒店已添加');
+}
+
+
+
+/* ============================================================
+   服务确认单自动生成
+   ============================================================ */
+let confirmLang = 'zh';
+
+function generateServiceConfirmation(){
+  if(!currentOrderId){ toast('请先保存订单'); return; }
+  const o = S.orders.find(x=>x.id===currentOrderId);
+  if(!o){ toast('订单不存在'); return; }
+  renderServiceConfirm(o);
+  $('serviceConfirmOverlay').classList.add('show');
+}
+
+function renderServiceConfirm(o){
+  const driver = S.drivers.find(d=>d.name===o.driver) || {};
+  const guest = S.guests.find(g=>g.name===o.guest) || {};
+  const typeMap = {arrival:'接机',departure:'送机',charter:'包车',transfer:'市内接送'};
+  const typeMapEn = {arrival:'Airport Pickup',departure:'Airport Drop-off',charter:'Private Charter',transfer:'City Transfer'};
+
+  if(confirmLang==='zh'){
+    $('confirmLangBtn').textContent = 'English';
+    $('serviceConfirmContent').innerHTML = `
+      <div class="confirm-doc">
+        <h2>Elite Travel 曦驰旅游</h2>
+        <div class="confirm-sub">China Wonder Tours · 用车服务确认单</div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">客人信息</div>
+          <table>
+            <tr><td>客人姓名</td><td>${escapeHtml(o.guest||'')}</td></tr>
+            <tr><td>联系方式</td><td>${escapeHtml(o.contact||guest.contact||'')}</td></tr>
+            <tr><td>人数</td><td>${o.pax||''}人</td></tr>
+          </table>
+        </div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">服务详情</div>
+          <table>
+            <tr><td>服务日期</td><td>${o.date||''}</td></tr>
+            <tr><td>服务类型</td><td>${typeMap[o.type]||o.type||''}</td></tr>
+            <tr><td>出发时间</td><td>${o.time||''}</td></tr>
+            <tr><td>行程线路</td><td>${escapeHtml(o.route||'')}</td></tr>
+            ${o.flight?`<tr><td>航班信息</td><td>${escapeHtml(o.flight||'')}</td></tr>`:''}
+            <tr><td>车型</td><td>${escapeHtml(o.vehicle||'')}</td></tr>
+          </table>
+        </div>
+        ${o.driver?`
+        <div class="confirm-section">
+          <div class="confirm-section-title">司机车辆信息</div>
+          <table>
+            <tr><td>司机</td><td>${escapeHtml(o.driver||'')}</td></tr>
+            <tr><td>联系电话</td><td>${escapeHtml(driver.phone||'')}</td></tr>
+            <tr><td>车型</td><td>${escapeHtml(driver.vehicle||o.vehicle||'')}</td></tr>
+            <tr><td>车牌号</td><td>${escapeHtml(o.plate||driver.plate||'')}</td></tr>
+          </table>
+        </div>`:''}
+        <div class="confirm-section">
+          <div class="confirm-section-title">费用明细</div>
+          <table>
+            <tr><td>服务费用</td><td>人民币 ${o.quote||0} 元</td></tr>
+            ${o.collectAmount?`<tr><td>司机代收</td><td>人民币 ${o.collectAmount} 元</td></tr>`:''}
+            <tr><td>付款方式</td><td>${o.collectAmount?'司机代收现金':'银行转账/微信支付'}</td></tr>
+          </table>
+        </div>
+        ${o.note?`
+        <div class="confirm-section">
+          <div class="confirm-section-title">备注</div>
+          <div style="font-size:12px;color:#555;line-height:1.6">${escapeHtml(o.note)}</div>
+        </div>`:''}
+        <div class="confirm-footer">
+          <strong>取消政策：</strong>出发前24小时取消免收费用；24小时内取消收取50%费用；出发后取消收取全额费用。<br>
+          <strong>温馨提示：</strong>请保持手机畅通，司机会提前15分钟到达约定地点。如有行程变更请及时联系。<br>
+          <strong>紧急联系：</strong>Elite Travel 客服热线
+        </div>
+        <div class="confirm-sign">
+          <div>客人签字：____________</div>
+          <div>日期：____________</div>
+        </div>
+      </div>`;
+  } else {
+    $('confirmLangBtn').textContent = '中文';
+    $('serviceConfirmContent').innerHTML = `
+      <div class="confirm-doc">
+        <h2>Elite Travel</h2>
+        <div class="confirm-sub">China Wonder Tours · Private Car Service Confirmation</div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">Guest Information</div>
+          <table>
+            <tr><td>Guest Name</td><td>${escapeHtml(o.guest||'')}</td></tr>
+            <tr><td>Contact</td><td>${escapeHtml(o.contact||guest.contact||'')}</td></tr>
+            <tr><td>Passengers</td><td>${o.pax||''} pax</td></tr>
+          </table>
+        </div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">Service Details</div>
+          <table>
+            <tr><td>Date</td><td>${o.date||''}</td></tr>
+            <tr><td>Service Type</td><td>${typeMapEn[o.type]||o.type||''}</td></tr>
+            <tr><td>Pickup Time</td><td>${o.time||''}</td></tr>
+            <tr><td>Route</td><td>${escapeHtml(o.route||'')}</td></tr>
+            ${o.flight?`<tr><td>Flight</td><td>${escapeHtml(o.flight||'')}</td></tr>`:''}
+            <tr><td>Vehicle</td><td>${escapeHtml(o.vehicle||'')}</td></tr>
+          </table>
+        </div>
+        ${o.driver?`
+        <div class="confirm-section">
+          <div class="confirm-section-title">Driver & Vehicle</div>
+          <table>
+            <tr><td>Driver</td><td>${escapeHtml(o.driver||'')}</td></tr>
+            <tr><td>Phone</td><td>${escapeHtml(driver.phone||'')}</td></tr>
+            <tr><td>Vehicle</td><td>${escapeHtml(driver.vehicle||o.vehicle||'')}</td></tr>
+            <tr><td>Plate No.</td><td>${escapeHtml(o.plate||driver.plate||'')}</td></tr>
+          </table>
+        </div>`:''}
+        <div class="confirm-section">
+          <div class="confirm-section-title">Payment</div>
+          <table>
+            <tr><td>Service Fee</td><td>RMB ${o.quote||0}</td></tr>
+            ${o.collectAmount?`<tr><td>Driver Collect</td><td>RMB ${o.collectAmount}</td></tr>`:''}
+            <tr><td>Payment Method</td><td>${o.collectAmount?'Cash to Driver':'Bank Transfer / WeChat Pay'}</td></tr>
+          </table>
+        </div>
+        ${o.note?`
+        <div class="confirm-section">
+          <div class="confirm-section-title">Notes</div>
+          <div style="font-size:12px;color:#555;line-height:1.6">${escapeHtml(o.note)}</div>
+        </div>`:''}
+        <div class="confirm-footer">
+          <strong>Cancellation Policy:</strong> Free cancellation 24h before departure; 50% charge within 24h; full charge after departure.<br>
+          <strong>Reminder:</strong> Please keep your phone on. Driver will arrive 15 minutes early. Contact us for any changes.<br>
+          <strong>Emergency Contact:</strong> Elite Travel Customer Service
+        </div>
+        <div class="confirm-sign">
+          <div>Guest Signature: ____________</div>
+          <div>Date: ____________</div>
+        </div>
+      </div>`;
+  }
+}
+
+function switchConfirmLang(){
+  confirmLang = (confirmLang==='zh')?'en':'zh';
+  const o = S.orders.find(x=>x.id===currentOrderId);
+  if(o) renderServiceConfirm(o);
+}
+
+function closeServiceConfirm(){ $('serviceConfirmOverlay').classList.remove('show'); }
+
+function copyServiceConfirm(){
+  const text = $('serviceConfirmContent').innerText;
+  navigator.clipboard.writeText(text).then(()=>toast('已复制到剪贴板')).catch(()=>toast('复制失败，请手动选择'));
+}
+
+function printServiceConfirm(){
+  const content = $('serviceConfirmContent').innerHTML;
+  const w = window.open('', '_blank');
+  w.document.write('<html><head><title>服务确认单</title><style>body{font-family:Arial,sans-serif;padding:20px} .confirm-doc{max-width:600px;margin:0 auto}</style></head><body>'+content+'</body></html>');
+  w.document.close();
+  w.print();
+}
+
+function saveServiceConfirm(){
+  const o = S.orders.find(x=>x.id===currentOrderId);
+  if(o){
+    const confirmNote = '【服务确认单已生成】'+new Date().toLocaleString('zh-CN');
+    o.note = (o.note?o.note+'\n':'')+confirmNote;
+    o._lastModified = Date.now();
+    saveState(S);
+    renderOrders();
+  }
+  closeServiceConfirm();
+  toast('服务确认单已保存到订单备注');
+}
+
+/* ============================================================
+   司机服务评价
+   ============================================================ */
+let currentRatingOrderId = null;
+let currentRatingValue = 0;
+
+function openDriverRating(){
+  if(!currentOrderId){ toast('请先保存订单'); return; }
+  const o = S.orders.find(x=>x.id===currentOrderId);
+  if(!o){ toast('订单不存在'); return; }
+  if(!o.driver){ toast('该订单尚未指派司机'); return; }
+  currentRatingOrderId = currentOrderId;
+  currentRatingValue = 0;
+  $('ratingDriverName').value = o.driver;
+  $('ratingOrderInfo').value = `${o.date} ${o.route||''}`;
+  $('ratingComment').value = '';
+  $('ratingExcellent').checked = false;
+  $('ratingBlacklist').checked = false;
+  ['ratingPunctuality','ratingAttitude','ratingVehicle','ratingDriving'].forEach(id=>$(id).value='');
+  updateRatingStars();
+  $('driverRatingOverlay').classList.add('show');
+}
+
+function setRating(n){
+  currentRatingValue = n;
+  updateRatingStars();
+}
+
+function updateRatingStars(){
+  document.querySelectorAll('#ratingStars span').forEach((s,i)=>{
+    s.textContent = (i < currentRatingValue)?'★':'☆';
+    s.classList.toggle('active', i < currentRatingValue);
+  });
+}
+
+function closeDriverRating(){ $('driverRatingOverlay').classList.remove('show'); currentRatingOrderId=null; }
+
+function saveDriverRating(){
+  if(currentRatingValue===0){ toast('请选择评分'); return; }
+  const o = S.orders.find(x=>x.id===currentRatingOrderId);
+  if(!o){ toast('订单不存在'); return; }
+
+  const rating = {
+    id: 'rating_'+Date.now(),
+    orderId: o.id,
+    orderDate: o.date,
+    driverName: o.driver,
+    rating: currentRatingValue,
+    punctuality: parseInt($('ratingPunctuality').value)||0,
+    attitude: parseInt($('ratingAttitude').value)||0,
+    vehicle: parseInt($('ratingVehicle').value)||0,
+    driving: parseInt($('ratingDriving').value)||0,
+    comment: $('ratingComment').value.trim(),
+    excellent: $('ratingExcellent').checked,
+    blacklist: $('ratingBlacklist').checked,
+    createdAt: Date.now()
+  };
+
+  if(!S.driverRatings) S.driverRatings = [];
+  S.driverRatings.push(rating);
+
+  // 更新司机标记
+  const driver = S.drivers.find(d=>d.name===o.driver);
+  if(driver){
+    if(rating.excellent) driver.excellent = true;
+    if(rating.blacklist) driver.blacklist = true;
+    if(rating.blacklist) driver.excellent = false;
+    // 计算平均评分
+    const driverRatings = S.driverRatings.filter(r=>r.driverName===o.driver);
+    driver.avgRating = driverRatings.length?Math.round(driverRatings.reduce((s,r)=>s+r.rating,0)/driverRatings.length*10)/10:0;
+    driver.ratingCount = driverRatings.length;
+  }
+
+  saveState(S);
+  closeDriverRating();
+  toast('司机评价已保存');
 }
 
 </script>
