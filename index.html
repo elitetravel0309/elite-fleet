@@ -2778,15 +2778,15 @@ function mergeCloud(d){
   const local=S||{orders:[],drivers:[],prices:[],vehicles:[],guests:[],fleets:[]};
   // id优先去重：有id用id，无id用fallback
   const dedupById=(arr,fb)=>{ const s=new Set(), out=[]; (arr||[]).forEach(x=>{ const k=x.id? 'id:'+x.id : (fb? 'fb:'+fb(x):null); if(k&&!s.has(k)){ s.add(k); out.push(x); } }); return out; };
-  // 订单：云端为基底，本地独有订单追加，按id去重
-  const merged=dedupById((d.orders||[]).concat(local.orders||[]), x=>(x.date||'')+'|'+(x.time||'')+'|'+(x.guest||''));
+  // 订单：本地为基底，云端独有订单追加，按id去重（保留本地修改）
+  const merged=dedupById((local.orders||[]).concat(d.orders||[]), x=>(x.date||'')+'|'+(x.time||'')+'|'+(x.guest||''));
   merged.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-  S=Object.assign({}, d, {
+  S=Object.assign({}, local, {
     orders: merged,
-    drivers: dedupById((d.drivers||[]).concat(local.drivers||[]), x=>(x.plate||'')+'|'+(x.name||'')),
-    fleets: dedupById((d.fleets||[]).concat(local.fleets||[]), x=>(x.name||'')),
-    prices: dedupById((d.prices||[]).concat(local.prices||[]), x=>(x.city||'')+'|'+(x.route||'')+'|'+(x.vehicle||'')),
-    vehicles: dedupById((d.vehicles||[]).concat(local.vehicles||[]), x=>(x.plate||'')),
+    drivers: dedupById((local.drivers||[]).concat(d.drivers||[]), x=>(x.plate||'')+'|'+(x.name||'')),
+    fleets: dedupById((local.fleets||[]).concat(d.fleets||[]), x=>(x.name||'')),
+    prices: dedupById((local.prices||[]).concat(d.prices||[]), x=>(x.city||'')+'|'+(x.route||'')+'|'+(x.vehicle||'')),
+    vehicles: dedupById((local.vehicles||[]).concat(d.vehicles||[]), x=>(x.plate||'')),
     guests: dedupById((local.guests||[]).concat(d.guests||[]), x=>(x.name||'').trim().toLowerCase())
   });
 }
@@ -2812,7 +2812,7 @@ function fetchCloudData(){
         mergeCloud(d);
       }
       saveState(S);
-      if(cloudLastModified) S._lastModified = cloudLastModified;
+      // 不覆盖本地_lastModified，保留本地修改时间
       renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
       appReady = true;
       const ld=document.getElementById('cloudLoading'); if(ld) ld.remove();
