@@ -106,6 +106,29 @@
       "city": "北京"
     },
     {
+      "id": "x2609110620karinaalina_1789026689",
+      "date": "2026-09-11",
+      "time": "06:20",
+      "type": "charter",
+      "airport": "PKX",
+      "flight": "CZ5098",
+      "route": "大兴机场接 → 慕田峪长城 → 大兴机场送",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Karina&Alina",
+      "contact": "WhatsApp +7 700 992 1241",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "status": "confirmed",
+      "quote": 1000,
+      "cost": 0,
+      "collectAmount": 1000,
+      "note": "接机牌用China Wonder Tours logo；客人21:20国际航班CZ8882，18:20前回到大兴机场；司机代收1000元人民币",
+      "city": "北京",
+      "_lastModified": 1789026689130
+    },
+    {
       "id": "x0730stefaniekrug",
       "date": "2026-09-11",
       "time": "07:30",
@@ -2199,11 +2222,19 @@
       "createdAt": "2026-09-09",
       "updatedAt": "2026-09-09",
       "id": "guest_1788964737877_Lino_Muzi"
+    },
+    {
+      "id": "guest_karinaalina_1789026689",
+      "name": "Karina&Alina",
+      "phone": "+7 700 992 1241",
+      "nationality": "俄罗斯",
+      "note": "WhatsApp联系",
+      "_lastModified": 1789026689130
     }
   ],
   "_meta": {
     "built": "2026-09-10T04:15:18.847Z",
     "source": "workbench-upload"
   },
-  "_lastModified": 1789024653006
+  "_lastModified": 1789026689130
 }
