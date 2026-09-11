@@ -466,6 +466,31 @@
       "_lastModified": 1789134436247,
       "collectAmount": 0,
       "statusHistory": []
+    },
+    {
+      "id": "ord_1789134689378_mutianyu_train",
+      "date": "2026-09-11",
+      "time": "05:45",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "北京华腾美居酒店 → 慕田峪长城 → 北京火车站",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "inquiry",
+      "note": "05:45 北京华腾美居酒店接客（朝阳区西大望路甲16号院）。驱车前往慕田峪长城。约12:00-13:00之前送到北京火车站，客人14:00的火车。客人姓名和联系方式待补充。",
+      "city": "北京",
+      "_lastModified": 1789134689378,
+      "collectAmount": 0,
+      "statusHistory": []
     }
   ],
   "vehicles": [
