@@ -2164,10 +2164,28 @@ function quickAssign(id){
   qaOrderId=id;
   const oc=cityOf(o);
   $('qaCity').textContent = oc || '未填';
-  const sorted=[...S.drivers].sort((a,b)=>(b.city===oc?1:0)-(a.city===oc?1:0) || (a.city||'').localeCompare(b.city||'','zh'));
+  const cityDrivers = oc? S.drivers.filter(d=>d.city===oc) : [];
+  const showAll = window._qaShowAll || false;
+  let driverList;
+  if(showAll || !cityDrivers.length){
+    driverList = [...S.drivers].sort((a,b)=>(b.city===oc?1:0)-(a.city===oc?1:0) || (a.city||'').localeCompare(b.city||'','zh'));
+  } else {
+    driverList = cityDrivers;
+  }
   const sel=$('qaDriver');
-  sel.innerHTML=sorted.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+(d.city?'（'+escapeHtml(d.city)+'）':'')+(d.carType?' · '+escapeHtml(d.carType):'')+(d.plate?' · '+escapeHtml(d.plate):'')+'</option>').join('');
+  let opts = '';
+  if(oc && cityDrivers.length && !showAll){
+    opts += '<option value="__showall__">— 显示全部城市司机 —</option>';
+  } else if(oc && !cityDrivers.length){
+    opts += '<option value="" disabled>— 该城市暂无司机，显示全部 —</option>';
+  }
+  opts += driverList.map(d=>'<option value="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+(d.city?'（'+escapeHtml(d.city)+'）':'')+(d.carType?' · '+escapeHtml(d.carType):'')+(d.plate?' · '+escapeHtml(d.plate):'')+'</option>').join('');
+  sel.innerHTML=opts;
   if(o.driver){ const hit=S.drivers.find(d=>d.name===o.driver); if(hit) sel.value=hit.name; }
+  sel.onchange = function(){
+    if(this.value==='__showall__'){ window._qaShowAll=true; const cur=o; quickAssign(cur.id); return; }
+    showQaHint();
+  };
   showQaHint();
   $('qaModal').classList.add('open');
 }
@@ -2957,24 +2975,39 @@ function syncFleetSel(fleet, city){
   const orderCity = city || fc || '';
   const sel=$('oDriver');
   const cur=sel.value;
-  const ds=[...S.drivers].sort((a,b)=>{
-    // 第一优先级：城市匹配（订单城市或车队城市）
-    const aCity = (orderCity && a.city===orderCity)?1:0;
-    const bCity = (orderCity && b.city===orderCity)?1:0;
-    if(aCity!==bCity) return bCity-aCity;
-    // 第二优先级：同城市内按最近使用排序
-    const aLu = a.lastUsed||0, bLu = b.lastUsed||0;
-    if(aLu!==bLu) return bLu-aLu;
-    // 第三优先级：车队匹配
-    const af=(a.fleet===fleet?1:0), bf=(b.fleet===fleet?1:0);
-    if(af!==bf) return bf-af;
-    return (a.name||'').localeCompare(b.name||'','zh');
-  });
-  sel.innerHTML='<option value="">— 未指派 —</option>'+ds.map(d=>{
+  const cityDrivers2 = orderCity? S.drivers.filter(d=>d.city===orderCity) : [];
+  const showAll2 = window._orderShowAllDrivers || false;
+  let ds;
+  if(showAll2 || !cityDrivers2.length){
+    ds=[...S.drivers].sort((a,b)=>{
+      const aCity = (orderCity && a.city===orderCity)?1:0;
+      const bCity = (orderCity && b.city===orderCity)?1:0;
+      if(aCity!==bCity) return bCity-aCity;
+      const aLu = a.lastUsed||0, bLu = b.lastUsed||0;
+      if(aLu!==bLu) return bLu-aLu;
+      const af=(a.fleet===fleet?1:0), bf=(b.fleet===fleet?1:0);
+      if(af!==bf) return bf-af;
+      return (a.name||'').localeCompare(b.name||'','zh');
+    });
+  } else {
+    ds=cityDrivers2;
+  }
+  let opts2='<option value="">— 未指派 —</option>';
+  if(orderCity && cityDrivers2.length && !showAll2){
+    opts2 += '<option value="__showall__">— 显示全部城市司机 —</option>';
+  } else if(orderCity && !cityDrivers2.length){
+    opts2 += '<option value="" disabled>— 该城市暂无司机，显示全部 —</option>';
+  }
+  opts2 += ds.map(d=>{
     const rec = (orderCity && d.city===orderCity)? '★ ' : '';
     return '<option value="'+escapeHtml(d.name)+'">'+rec+escapeHtml(d.name)+(d.city?'（'+escapeHtml(d.city)+'）':'')+(d.fleet&&d.fleet!==fleet? ' · '+escapeHtml(d.fleet):'')+'</option>';
   }).join('');
+  sel.innerHTML=opts2;
   if(cur && S.drivers.some(d=>d.name===cur)) sel.value=cur;
+  sel.onchange = function(){
+    if(this.value==='__showall__'){ window._orderShowAllDrivers=true; syncFleetSel(fleet, orderCity); return; }
+    onDriverPick();
+  };
   onDriverPick();
 }
 function onFleetPick(){ syncFleetSel($('oFleet').value, $('oCity').value); }
