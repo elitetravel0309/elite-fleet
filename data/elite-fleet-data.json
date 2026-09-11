@@ -416,6 +416,31 @@
       "_lastModified": 1789123453309,
       "collectAmount": 0,
       "statusHistory": []
+    },
+    {
+      "id": "ord_1789134318818_maria",
+      "date": "2026-09-14",
+      "time": "08:00",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "北京王府井万豪行政公寓酒店 → 慕田峪长城 → shakushaku store",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Maria Lerena",
+      "contact": "+34 653 72 01 38",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "inquiry",
+      "note": "酒店：北京王府井万豪行政公寓酒店，北京东城区霞公府街1号北门。客人已经有慕田峪电子套票。行程结束后送到 shakushaku store（地址待确认，客人也不确定具体位置）。",
+      "city": "北京",
+      "_lastModified": 1789134318818,
+      "collectAmount": 0,
+      "statusHistory": []
     }
   ],
   "vehicles": [
