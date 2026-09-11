@@ -504,8 +504,8 @@
       "pax": 4,
       "guest": "",
       "contact": "",
-      "driver": "",
-      "plate": "",
+      "driver": "张师傅",
+      "plate": "沪BDS7203",
       "fleet": "",
       "price": 0,
       "quote": 0,
@@ -513,7 +513,7 @@
       "status": "inquiry",
       "note": "上海<->南通往返（去程）。09:00 上海外滩花间堂·愉园酒店接（上海市黄浦区人民路386号）。送 南通森迪部落树屋（江苏省南通市崇川区通刘路299号，就在南通森林野生动物园内）。4人7座车。与9月13日南通->上海为同一客人往返订单。",
       "city": "上海",
-      "_lastModified": 1789135078148,
+      "_lastModified": 1789137678072,
       "collectAmount": 0,
       "statusHistory": []
     },
@@ -529,8 +529,8 @@
       "pax": 4,
       "guest": "",
       "contact": "",
-      "driver": "",
-      "plate": "",
+      "driver": "张师傅",
+      "plate": "沪BDS7203",
       "fleet": "",
       "price": 0,
       "quote": 0,
@@ -538,7 +538,7 @@
       "status": "inquiry",
       "note": "上海<->南通往返（返程）。10:30 南通森迪部落树屋接（江苏省南通市崇川区通刘路299号）。送 上海邻家美利亚酒店（上海市浦东新区申迪西路818弄151号）。4人7座车。与9月12日上海->南通为同一客人往返订单。",
       "city": "南通",
-      "_lastModified": 1789135078149,
+      "_lastModified": 1789137678072,
       "collectAmount": 0,
       "statusHistory": []
     },
@@ -834,6 +834,22 @@
       "ratings": [],
       "blacklist": false,
       "_lastModified": 1789135222955
+    },
+    {
+      "id": "drv_1789137678072_zhangshanghai",
+      "name": "张师傅",
+      "phone": "13641926406",
+      "plate": "沪BDS7203",
+      "carType": "",
+      "color": "",
+      "seatType": "七座",
+      "city": "上海",
+      "fleet": "",
+      "note": "南通往返订单指定司机",
+      "rating": 0,
+      "ratings": [],
+      "blacklist": false,
+      "_lastModified": 1789137678072
     }
   ],
   "fleets": [
