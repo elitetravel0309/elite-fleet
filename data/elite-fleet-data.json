@@ -866,6 +866,22 @@
       "ratings": [],
       "blacklist": false,
       "_lastModified": 1789140940949
+    },
+    {
+      "id": "drv_1789169713367_zhaoshifu",
+      "name": "赵师傅",
+      "phone": "13023630209",
+      "plate": "浙A262F2",
+      "carType": "别克商务",
+      "color": "",
+      "seatType": "七座",
+      "city": "杭州",
+      "fleet": "",
+      "note": "服务迪拜的salma moustaoui 杭州会展 9.9-9.11",
+      "rating": 0,
+      "ratings": [],
+      "blacklist": false,
+      "_lastModified": 1789169713367
     }
   ],
   "fleets": [
