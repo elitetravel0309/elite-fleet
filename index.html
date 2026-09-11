@@ -766,6 +766,31 @@ textarea{resize:vertical;line-height:1.5}
           </div>
         </div>
         <div class="panel">
+          <h3>版本历史与回滚</h3>
+          <p class="desc">自动备份最近5个版本，误删或数据异常时可一键回滚。</p>
+          <div class="stack">
+            <div id="versionList" style="font-size:12px;color:var(--text-2);max-height:200px;overflow-y:auto"></div>
+            <button class="btn ghost" onclick="backupNow()">立即备份当前版本</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>同步状态</h3>
+          <p class="desc">本地与云端数据版本对比，确保数据一致。</p>
+          <div class="stack" style="font-size:12px;color:var(--text-2)">
+            <div id="syncDetail" style="line-height:1.8">
+              <div>本地最后修改：<span id="localSyncTime">-</span></div>
+              <div>云端最后修改：<span id="cloudSyncTime">-</span></div>
+              <div>本地订单数：<span id="localOrderCount">-</span></div>
+              <div>云端订单数：<span id="cloudOrderCount">-</span></div>
+              <div id="syncDiff" style="margin-top:6px;font-weight:600"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" onclick="checkSyncStatus()" style="flex:1">检查同步状态</button>
+              <button class="btn primary" onclick="manualSync()" style="flex:1">一键同步（拉取+推送）</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
           <h3>当日出车单</h3>
           <p class="desc">为司机生成当日任务清单，可打印或存为 PDF。</p>
           <div class="stack">
@@ -1675,7 +1700,7 @@ function saveState(s){
   if(!suppressUndo && appReady){
     try{ undoStack.push({label:'数据修改', state: JSON.parse(JSON.stringify(S)), time: Date.now()}); if(undoStack.length>UNDO_MAX) undoStack.shift(); redoStack = []; }catch(e){}
   }
-  try{ s._lastModified=Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} if(appReady) scheduleAutoSync();
+  try{ s._lastModified=Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} if(appReady){ scheduleAutoSync(); if(!window._saveCount) window._saveCount=0; window._saveCount++; if(window._saveCount%10===0 && typeof backupNow==='function') backupNow(true); }
 }
 let appReady = false;
 let autoSyncTimer = null;
@@ -3435,7 +3460,7 @@ function exportOrdersMd(){
   a.download='travelkb_接送订单_'+first+'_'+last+'.md'; a.click(); URL.revokeObjectURL(a.href);
   toast('已导出 '+list.length+' 条为 Markdown');
 }
-function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=todayStr(); if(!$('exFrom').value){ const d=new Date(); d.setDate(d.getDate()-6); $('exFrom').value=fmtDate(d);} loadCfSync(); }
+function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=todayStr(); if(!$('exFrom').value){ const d=new Date(); d.setDate(d.getDate()-6); $('exFrom').value=fmtDate(d);} loadCfSync(); renderVersionList(); checkSyncStatus(); }
 /* ---- 一键上云（Cloudflare Worker → GitHub 仓库 → Pages 自动发布） ---- */
 function loadCfSync(){
   try{ const s=JSON.parse(localStorage.getItem('ef-cf')||'{}'); if($('cfUrl')) $('cfUrl').value=s.url||''; if($('cfKey')) $('cfKey').value=s.key||''; }catch(e){}
@@ -5328,6 +5353,159 @@ function applyLang(){
     const key = el.getAttribute('data-i18n-placeholder');
     if(key) el.placeholder = t(key);
   });
+}
+
+
+
+/* ============================================================
+   版本备份与回滚
+   ============================================================ */
+const VERSION_KEY = 'ef-versions';
+const MAX_VERSIONS = 5;
+
+function backupNow(silent){
+  try{
+    const versions = JSON.parse(localStorage.getItem(VERSION_KEY)||'[]');
+    const snapshot = {
+      time: Date.now(),
+      timeStr: new Date().toLocaleString('zh-CN'),
+      orders: (S.orders||[]).length,
+      drivers: (S.drivers||[]).length,
+      guests: (S.guests||[]).length,
+      prices: (S.prices||[]).length,
+      fleets: (S.fleets||[]).length,
+      data: JSON.parse(JSON.stringify(S))
+    };
+    versions.unshift(snapshot);
+    if(versions.length > MAX_VERSIONS) versions.length = MAX_VERSIONS;
+    localStorage.setItem(VERSION_KEY, JSON.stringify(versions));
+    if(!silent) toast('已备份当前版本（'+snapshot.orders+'单）');
+    renderVersionList();
+    return true;
+  }catch(e){
+    if(!silent) toast('备份失败：'+e.message);
+    return false;
+  }
+}
+
+function renderVersionList(){
+  const el = $('versionList');
+  if(!el) return;
+  try{
+    const versions = JSON.parse(localStorage.getItem(VERSION_KEY)||'[]');
+    if(!versions.length){ el.innerHTML='<div style="color:var(--text-3);padding:8px 0">暂无备份，点击下方按钮立即备份</div>'; return; }
+    el.innerHTML = versions.map((v,i)=>{
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)">'
+        +'<div style="flex:1"><div style="font-weight:600;color:var(--text)">'+v.timeStr+'</div>'
+        +'<div style="font-size:11px;color:var(--text-3)">'+v.orders+'单 · '+v.drivers+'司机 · '+v.guests+'客人 · '+v.prices+'价格</div></div>'
+        +'<button class="btn ghost" style="padding:4px 8px;font-size:11px" onclick="restoreVersion('+i+')">回滚</button>'
+        +'</div>';
+    }).join('');
+  }catch(e){ el.innerHTML='<div style="color:var(--danger)">版本数据异常</div>'; }
+}
+
+function restoreVersion(index){
+  try{
+    const versions = JSON.parse(localStorage.getItem(VERSION_KEY)||'[]');
+    const v = versions[index];
+    if(!v){ toast('版本不存在'); return; }
+    if(!confirm('确定回滚到 '+v.timeStr+' 的版本？\n\n当前：'+(S.orders||[]).length+'单\n回滚后：'+v.orders+'单\n\n回滚前会自动备份当前版本。')) return;
+    // 先备份当前版本
+    backupNow(true);
+    S = JSON.parse(JSON.stringify(v.data));
+    saveState(S);
+    renderAll();
+    toast('已回滚到 '+v.timeStr+'（'+v.orders+'单）');
+    renderVersionList();
+  }catch(e){ toast('回滚失败：'+e.message); }
+}
+
+/* ============================================================
+   同步状态检查与手动同步
+   ============================================================ */
+function checkSyncStatus(){
+  const localTime = S._lastModified ? new Date(S._lastModified).toLocaleString('zh-CN') : '未知';
+  $('localSyncTime').textContent = localTime;
+  $('localOrderCount').textContent = (S.orders||[]).length;
+
+  const u = cloudUrl();
+  if(!u){ $('cloudSyncTime').textContent = '本地模式无云端'; $('cloudOrderCount').textContent = '-'; $('syncDiff').innerHTML = ''; return; }
+
+  $('syncDiff').innerHTML = '<span style="color:var(--text-3)">正在检查云端...</span>';
+  fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(d=>{
+      const cloudTime = d._lastModified ? new Date(d._lastModified).toLocaleString('zh-CN') : '未知';
+      $('cloudSyncTime').textContent = cloudTime;
+      $('cloudOrderCount').textContent = (d.orders||[]).length;
+
+      const localTs = S._lastModified || 0;
+      const cloudTs = d._lastModified || 0;
+      let diffHtml = '';
+      if(Math.abs(localTs - cloudTs) < 5000 && (S.orders||[]).length === (d.orders||[]).length){
+        diffHtml = '<span style="color:var(--confirmed)">✓ 本地与云端一致</span>';
+      } else if(cloudTs > localTs){
+        diffHtml = '<span style="color:var(--warning)">⚠ 云端比本地新，建议先拉取云端</span>';
+      } else if(localTs > cloudTs){
+        diffHtml = '<span style="color:var(--warning)">⚠ 本地比云端新，建议推送到云端</span>';
+      } else {
+        diffHtml = '<span style="color:var(--text-3)">版本时间相同，但订单数不同，建议检查</span>';
+      }
+      $('syncDiff').innerHTML = diffHtml;
+    })
+    .catch(()=>{
+      $('cloudSyncTime').textContent = '获取失败';
+      $('cloudOrderCount').textContent = '-';
+      $('syncDiff').innerHTML = '<span style="color:var(--danger)">✗ 无法连接云端，请检查网络</span>';
+    });
+}
+
+function manualSync(){
+  const u = cloudUrl();
+  if(!u){ toast('本地模式无云端，请先部署'); return; }
+  const url = $('cfUrl') ? $('cfUrl').value.trim() : '';
+  const key = $('cfKey') ? $('cfKey').value.trim() : '';
+  if(!url || !key){ toast('请先填写Cloudflare接口地址和密钥'); return; }
+
+  // 先备份
+  backupNow(true);
+
+  toast('正在拉取云端最新数据...');
+  fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(cloud=>{
+      const localTs = S._lastModified || 0;
+      const cloudTs = cloud._lastModified || 0;
+
+      if(cloudTs > localTs + 5000){
+        // 云端更新，先合并
+        if(confirm('云端数据比本地新！\n\n云端：'+new Date(cloudTs).toLocaleString('zh-CN')+'（'+(cloud.orders||[]).length+'单）\n本地：'+new Date(localTs).toLocaleString('zh-CN')+'（'+(S.orders||[]).length+'单）\n\n选择「确定」= 用云端覆盖本地\n选择「取消」= 保留本地，稍后手动推送')){
+          S = cloud;
+          saveState(S);
+          renderAll();
+          toast('已用云端数据覆盖本地（'+(S.orders||[]).length+'单）');
+        } else {
+          toast('保留本地数据，准备推送到云端');
+        }
+      } else {
+        // 本地更新或一致，合并后推送
+        mergeCloud(cloud);
+        saveState(S);
+      }
+
+      // 推送到云端
+      setTimeout(()=>{
+        toast('正在推送到云端...');
+        uploadToCloud(true);
+        setTimeout(()=>{
+          checkSyncStatus();
+          toast('同步完成');
+        }, 1500);
+      }, 500);
+    })
+    .catch(()=>{
+      toast('拉取云端失败，直接推送本地数据');
+      uploadToCloud(true);
+      setTimeout(checkSyncStatus, 1500);
+    });
 }
 
 </script>
