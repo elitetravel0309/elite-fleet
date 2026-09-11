@@ -391,6 +391,31 @@
       "_lastModified": 1757500000000,
       "collectAmount": 0,
       "statusHistory": []
+    },
+    {
+      "id": "ord_1789123453309_tess",
+      "date": "2026-09-13",
+      "time": "08:00",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "艾丽娅精品酒店(南锣鼓巷店) → 古北口-金山岭徒步 → 送回酒店",
+      "vehicle": "五座",
+      "pax": 3,
+      "guest": "Tess Skrypnek",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "inquiry",
+      "note": "酒店：艾丽娅精品酒店(南锣鼓巷店)，北京东城区南锣鼓巷20号。请师傅送到徒步线出发点（古北口），然后在结束点（金山岭东门）接。客人自己徒步这条线可能5-6小时看情况。",
+      "city": "北京",
+      "_lastModified": 1789123453309,
+      "collectAmount": 0,
+      "statusHistory": []
     }
   ],
   "vehicles": [
