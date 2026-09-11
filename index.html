@@ -3490,19 +3490,17 @@ function uploadToCloud(silent){
     .then(cloud=>{
       const cloudTs = cloud && cloud._lastModified ? cloud._lastModified : 0;
       if(cloudTs > localTs){
-        const cd = new Date(cloudTs).toLocaleString('zh-CN');
-        const ld = localTs? new Date(localTs).toLocaleString('zh-CN') : '未知';
-        if(silent){
-          if(st) st.textContent='⚠ 云端更新，已暂停自动同步';
-          toast('云端数据比本地新（'+cd+'），自动同步已暂停，请点「一键上云」确认覆盖');
-          return;
-        }
-        if(!confirm('云端数据比本地新！\n\n云端最后修改：'+cd+'\n本地最后修改：'+ld+'\n\n覆盖可能丢失云端更新。确定覆盖？')){
-          if(st) st.textContent='已取消（云端版本更新）';
-          return;
+        // 云端数据比本地新：先自动merge云端数据到本地，保留本地修改，然后上传
+        if(st) st.textContent='合并云端更新…';
+        try{
+          mergeCloud(cloud);
+          saveState(S);
+          if(!silent) toast('已合并云端更新，正在上传…');
+        }catch(e){
+          if(!silent) toast('合并云端数据失败：'+e.message);
         }
       }
-      doUpload(url,key,n,silent);
+      doUpload(url,key,(S.orders||[]).length,silent);
     })
     .catch(()=>{ doUpload(url,key,n,silent); });
 }
