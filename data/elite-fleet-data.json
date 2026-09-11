@@ -850,6 +850,22 @@
       "ratings": [],
       "blacklist": false,
       "_lastModified": 1789137678072
+    },
+    {
+      "id": "drv_1789140940949_hujizhong",
+      "name": "胡己忠",
+      "phone": "18955720857",
+      "plate": "沪E G3550",
+      "carType": "考斯特26座",
+      "color": "",
+      "seatType": "考斯特",
+      "city": "上海",
+      "fleet": "",
+      "note": "",
+      "rating": 0,
+      "ratings": [],
+      "blacklist": false,
+      "_lastModified": 1789140940949
     }
   ],
   "fleets": [
