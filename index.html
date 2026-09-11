@@ -562,7 +562,17 @@ textarea{resize:vertical;line-height:1.5}
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#d48806;cursor:pointer;white-space:nowrap"><input type="checkbox" id="fInquiry" onchange="renderOrders()">只看询盘</label>
         <button class="btn ghost small" onclick="exportOrdersCSV()" style="margin-left:auto" title="导出当前筛选的订单为CSV">导出CSV</button>
         <span class="spacer"></span>
+        <button class="btn ghost small" onclick="toggleBatchMode()" id="batchModeBtn">批量操作</button>
         <button class="btn ghost" onclick="clearFilters()">重置</button>
+      </div>
+      <div id="batchBar" style="display:none;background:var(--ink-soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:12px;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:600">已选 <span id="batchCount">0</span> 单</span>
+        <div style="flex:1"></div>
+        <button class="btn small" onclick="batchSetStatus('confirmed')">标记已确认</button>
+        <button class="btn small" onclick="batchSetStatus('done')">标记已完成</button>
+        <button class="btn small" onclick="batchExport()">导出选中</button>
+        <button class="btn small danger" onclick="batchDelete()">删除选中</button>
+        <button class="btn small ghost" onclick="toggleBatchMode()">退出批量</button>
       </div>
       <div id="ordersWrap"></div>
     </section>
@@ -2104,6 +2114,7 @@ function renderOrders(){
     return;
   }
   let html='<table class="order-table"><thead><tr>'
+    +(batchMode?'<th style="width:30px"></th>':'')
     +'<th>日期</th><th>时间</th><th>类型</th><th>路线</th><th>客户</th><th>联系</th><th>车型/人数</th><th>司机/车牌</th><th>报价 / 成本 / 利润</th><th>状态</th><th></th>'
     +'</tr></thead><tbody>';
   list.forEach(o=>{
@@ -2117,7 +2128,9 @@ function renderOrders(){
     if(o.collectAmount) pxCell+='<div style="font-size:10.5px;color:#d48806">代收 ¥'+o.collectAmount+'</div>';
     if(!pxCell && px!=null) pxCell='¥'+px;
     const isUrgent = !o.driver && o.date>=todayStr() && o.date<=addDays(todayStr(),3);
-    html+='<tr onclick="openOrder(\''+o.id+'\')" style="cursor:pointer'+(isUrgent?';border-left:3px solid #e53935':'')+'">'
+    const _checked = selectedOrders.has(o.id)?'checked':'';
+    html+='<tr onclick="'+(batchMode?'toggleOrderSelect(\''+o.id+'\')':'openOrder(\''+o.id+'\')')+'" style="cursor:pointer'+(isUrgent?';border-left:3px solid #e53935':'')+(_checked?';background:rgba(24,144,255,.08)':'')+'">'
+      +(batchMode?'<td style="text-align:center"><input type="checkbox" '+_checked+' onclick="event.stopPropagation();toggleOrderSelect(\''+o.id+'\')"></td>':'')
       +'<td>'+o.date+'</td><td><b>'+o.time+'</b></td>'
       +'<td><span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span>'+(cityOf(o)?' <span style="font-size:11px;color:var(--text-3)">'+cityOf(o)+'</span>':'')+'</td>'
       +'<td>'+escapeHtml(o.route||'')+(o.airport?' <span style="color:var(--text-3)">· '+airportName(o.airport)+'</span>':'')+'</td>'
@@ -5506,6 +5519,99 @@ function manualSync(){
       uploadToCloud(true);
       setTimeout(checkSyncStatus, 1500);
     });
+}
+
+
+
+/* ============================================================
+   常用联系人快速拨号
+   ============================================================ */
+function callPhone(phone){
+  if(!phone){ toast('无电话号码'); return; }
+  const clean = String(phone).replace(/[\s\-()]/g,'');
+  window.location.href = 'tel:' + clean;
+}
+function sendWhatsApp(phone, msg){
+  if(!phone){ toast('无WhatsApp号码'); return; }
+  const clean = String(phone).replace(/[\s\-()+]/g,'');
+  const text = msg ? encodeURIComponent(msg) : '';
+  window.open('https://wa.me/' + clean + (text ? '?text='+text : ''), '_blank');
+}
+function contactButtons(phone, label){
+  if(!phone) return '';
+  const clean = String(phone).replace(/[\s\-()]/g,'');
+  let html = '<span style="display:inline-flex;gap:4px;margin-left:6px">';
+  html += '<button class="btn small" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();callPhone(\''+clean+'\')" title="拨打">📞</button>';
+  if(/^\+/.test(phone) || clean.length >= 10){
+    html += '<button class="btn small" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();sendWhatsApp(\''+clean+'\')" title="WhatsApp">💬</button>';
+  }
+  html += '</span>';
+  return html;
+}
+
+
+
+/* ============================================================
+   订单批量操作
+   ============================================================ */
+let batchMode = false;
+let selectedOrders = new Set();
+
+function toggleBatchMode(){
+  batchMode = !batchMode;
+  selectedOrders.clear();
+  const bar = $('batchBar');
+  const btn = $('batchModeBtn');
+  if(bar){ bar.style.display = batchMode ? 'flex' : 'none'; }
+  if(btn){ btn.textContent = batchMode ? '取消批量' : '批量操作'; btn.style.background = batchMode ? 'var(--accent)' : ''; btn.style.color = batchMode ? '#fff' : ''; }
+  renderOrders();
+}
+function toggleOrderSelect(id){
+  if(selectedOrders.has(id)) selectedOrders.delete(id);
+  else selectedOrders.add(id);
+  updateBatchCount();
+}
+function updateBatchCount(){
+  const el = $('batchCount');
+  if(el) el.textContent = selectedOrders.size;
+}
+function batchSetStatus(status){
+  if(!selectedOrders.size){ toast('请先选择订单'); return; }
+  if(!confirm('确定将选中的 '+selectedOrders.size+' 单标记为「'+(STATUS_META[status]?STATUS_META[status].label:status)+'」？')) return;
+  S.orders.forEach(o=>{ if(selectedOrders.has(o.id)){ o.status = status; o._lastModified = Date.now(); } });
+  saveState(S);
+  toast('已更新 '+selectedOrders.size+' 单状态');
+  selectedOrders.clear();
+  renderOrders(); renderToday(); renderKpis();
+  updateBatchCount();
+}
+function batchExport(){
+  if(!selectedOrders.size){ toast('请先选择订单'); return; }
+  const list = S.orders.filter(o=>selectedOrders.has(o.id));
+  let csv = '日期,时间,类型,客人,车型,人数,线路,司机,车牌,报价,成本,利润,状态,备注\n';
+  list.forEach(o=>{
+    const tm = TYPE_META[o.type]?TYPE_META[o.type].label:o.type;
+    const st = STATUS_META[o.status]?STATUS_META[o.status].label:o.status;
+    const profit = (+o.quote||0) - (+o.cost||0);
+    csv += [o.date,o.time,tm,o.guest||'',o.vehicle||'',o.pax||0,(o.route||'').replace(/,/g,'，'),o.driver||'',o.plate||'',o.quote||0,o.cost||0,profit,st,(o.note||'').replace(/,/g,'，').replace(/\n/g,' ')].join(',')+'\n';
+  });
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '订单导出_'+todayStr()+'_'+list.length+'单.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出 '+list.length+' 单为CSV');
+}
+function batchDelete(){
+  if(!selectedOrders.size){ toast('请先选择订单'); return; }
+  if(!confirm('确定删除选中的 '+selectedOrders.size+' 单？此操作不可恢复！')) return;
+  S.orders = S.orders.filter(o=>!selectedOrders.has(o.id));
+  saveState(S);
+  toast('已删除 '+selectedOrders.size+' 单');
+  selectedOrders.clear();
+  renderOrders(); renderToday(); renderKpis();
+  updateBatchCount();
 }
 
 </script>
