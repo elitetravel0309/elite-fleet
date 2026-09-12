@@ -189,7 +189,8 @@ textarea{resize:vertical;line-height:1.5}
 .fleet-row .type-pill{font-size:11px;background:var(--bg);border:1px solid var(--line-2);color:var(--text-2);padding:2px 8px;border-radius:20px}
 /* ===== 参考价 ===== */
 .price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.price-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.price-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.price-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(20,38,63,.12)}
 .price-card .pc-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .price-card .pc-top b{font-size:14px;color:var(--ink)}
 .price-card .pc-route{font-size:12px;color:var(--text-2);margin-bottom:8px}
@@ -657,9 +658,17 @@ textarea{resize:vertical;line-height:1.5}
         </div>
         <div id="qcRes"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <label style="font-size:12px;color:var(--text-3)">按城市筛选</label>
-        <select id="priceCityFilter" onchange="setPriceFilter(this.value)"></select>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px;max-width:360px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--text-3);flex:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="priceSearch" placeholder="搜索线路/车型/备注..." style="flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;background:var(--card)" oninput="renderPrices()">
+        </div>
+        <label style="font-size:12px;color:var(--text-3)">城市</label>
+        <select id="priceCityFilter" onchange="setPriceFilter(this.value)" style="min-width:100px"></select>
+        <div style="display:flex;gap:4px;margin-left:auto">
+          <button class="btn ghost small" id="priceViewCard" onclick="setPriceView('card')" style="padding:6px 10px">卡片</button>
+          <button class="btn ghost small" id="priceViewTable" onclick="setPriceView('table')" style="padding:6px 10px">表格</button>
+        </div>
         <span id="priceCount" style="font-size:12px;color:var(--text-3)"></span>
       </div>
       <div class="price-grid" id="priceGrid"></div>
@@ -3133,6 +3142,13 @@ function normPrices(){ let ch=false; (S.prices||[]).forEach(p=>{
   }); if(ch) saveState(S); }
 var pCityFilter='';
 function setPriceFilter(v){ pCityFilter=v; renderPrices(); }
+var pViewMode = 'card';
+function setPriceView(mode){
+  pViewMode = mode;
+  if($('priceViewCard')) $('priceViewCard').style.background = mode==='card' ? 'var(--accent-soft)' : '';
+  if($('priceViewTable')) $('priceViewTable').style.background = mode==='table' ? 'var(--accent-soft)' : '';
+  renderPrices();
+}
 function renderPrices(){
   normPrices();
   initCalc();
@@ -3142,33 +3158,109 @@ function renderPrices(){
     const cur=pCityFilter;
     fSel.innerHTML='<option value="">全部城市</option>'+allCities.map(c=>'<option value="'+escapeHtml(c)+'"'+(c===cur?' selected':'')+'>'+escapeHtml(c)+'</option>').join('');
   }
+  // 初始化视图按钮样式
+  if($('priceViewCard')) $('priceViewCard').style.background = pViewMode==='card' ? 'var(--accent-soft)' : '';
+  if($('priceViewTable')) $('priceViewTable').style.background = pViewMode==='table' ? 'var(--accent-soft)' : '';
+  
   let rows=[...S.prices];
   if(pCityFilter) rows=rows.filter(p=>p.city===pCityFilter);
+  // 搜索过滤
+  const kw = ($('priceSearch')?.value||'').toLowerCase().trim();
+  if(kw){
+    rows = rows.filter(p => 
+      (p.route||'').toLowerCase().includes(kw) ||
+      (p.vehicle||'').toLowerCase().includes(kw) ||
+      (p.note||'').toLowerCase().includes(kw) ||
+      (p.city||'').toLowerCase().includes(kw)
+    );
+  }
   rows.sort((a,b)=>(a.city||'').localeCompare(b.city||'','zh') || (a.route||'').localeCompare(b.route||'','zh') || (a.vehicle||'').localeCompare(b.vehicle||'','zh'));
   const cnt=$('priceCount'); if(cnt) cnt.textContent='共 '+rows.length+' 条';
   if(!rows.length){
-    $('priceGrid').innerHTML='<div style="color:var(--text-3);text-align:center;padding:40px 0">暂无参考价，点击右上角新增</div>';
+    $('priceGrid').innerHTML='<div style="color:var(--text-3);text-align:center;padding:60px 0"><div style="font-size:48px;margin-bottom:12px">📋</div><div>暂无参考价，点击右上角新增</div></div>';
     return;
   }
-  let html='<table class="order-table"><thead><tr>'
-    +'<th>城市</th><th>线路</th><th>车型</th><th>时长</th><th>距离</th><th>成本价</th><th>对外报价</th><th>备注</th><th></th>'
-    +'</tr></thead><tbody>';
-  rows.forEach(p=>{
-    const orig=S.prices.indexOf(p);
-    html+='<tr>'
-      +'<td><span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(p.city||'')+'</span></td>'
-      +'<td>'+escapeHtml(p.route||'')+'</td>'
-      +'<td>'+escapeHtml(p.vehicle||'')+'</td>'
-      +'<td>'+(p.duration||'—')+'</td>'
-      +'<td>'+(p.distance||'—')+'</td>'
-      +'<td style="color:var(--confirmed);font-weight:700">'+(p.cost?('¥'+p.cost):'—')+'</td>'
-      +'<td style="color:var(--accent-dark);font-weight:700">'+(p.quote?('¥'+p.quote):'—')+'</td>'
-      +'<td style="font-size:12px;color:var(--text-3)">'+escapeHtml(p.note||'')+'</td>'
-      +'<td><button class="btn ghost small" onclick="editPrice('+orig+')">编辑</button> <button class="btn danger small" onclick="removePrice('+orig+')">删</button></td>'
-      +'</tr>';
-  });
-  html+='</tbody></table>';
-  $('priceGrid').innerHTML=html;
+  
+  if(pViewMode === 'table'){
+    // 表格视图
+    let html='<table class="order-table"><thead><tr>'
+      +'<th>城市</th><th>线路</th><th>车型</th><th>时长</th><th>距离</th><th>成本价</th><th>对外报价</th><th>利润</th><th>备注</th><th></th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(p=>{
+      const orig=S.prices.indexOf(p);
+      const profit = (p.quote||0) - (p.cost||0);
+      const profitRate = p.quote>0 ? Math.round(profit/p.quote*100) : 0;
+      html+='<tr>'
+        +'<td><span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(p.city||'')+'</span></td>'
+        +'<td>'+escapeHtml(p.route||'')+'</td>'
+        +'<td>'+escapeHtml(p.vehicle||'')+'</td>'
+        +'<td>'+(p.duration||'—')+'</td>'
+        +'<td>'+(p.distance||'—')+'</td>'
+        +'<td style="color:var(--confirmed);font-weight:700">'+(p.cost?('¥'+p.cost):'—')+'</td>'
+        +'<td style="color:var(--accent-dark);font-weight:700">'+(p.quote?('¥'+p.quote):'—')+'</td>'
+        +'<td style="color:'+(profit>=0?'var(--confirmed)':'var(--danger)')+';font-weight:600">'+(p.quote&&p.cost?('¥'+profit+' ('+profitRate+'%)'):'—')+'</td>'
+        +'<td style="font-size:12px;color:var(--text-3);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(p.note||'')+'</td>'
+        +'<td><button class="btn ghost small" onclick="editPrice('+orig+')">编辑</button> <button class="btn danger small" onclick="removePrice('+orig+')">删</button></td>'
+        +'</tr>';
+    });
+    html+='</tbody></table>';
+    $('priceGrid').innerHTML=html;
+  } else {
+    // 卡片视图 - 按城市分组
+    const cityGroups = {};
+    rows.forEach(p => {
+      const city = p.city || '未分类';
+      if(!cityGroups[city]) cityGroups[city] = [];
+      cityGroups[city].push(p);
+    });
+    
+    let html = '';
+    Object.keys(cityGroups).sort((a,b)=>a.localeCompare(b,'zh')).forEach(city => {
+      const cityPrices = cityGroups[city];
+      html += '<div style="margin-bottom:24px">';
+      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--accent-soft)">';
+      html += '<span class="tag" style="background:var(--ink);color:#fff;font-size:13px;padding:4px 12px">'+escapeHtml(city)+'</span>';
+      html += '<span style="font-size:12px;color:var(--text-3)">'+cityPrices.length+' 条线路</span>';
+      html += '</div>';
+      html += '<div class="price-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">';
+      
+      cityPrices.forEach(p => {
+        const orig = S.prices.indexOf(p);
+        const profit = (p.quote||0) - (p.cost||0);
+        const profitRate = p.quote>0 ? Math.round(profit/p.quote*100) : 0;
+        html += '<div class="price-card" style="position:relative">';;
+        // 顶部：线路和车型
+        html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">';
+        html += '<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;line-height:1.4">'+escapeHtml(p.route||'未命名线路')+'</div>';
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+        if(p.vehicle) html += '<span class="tag" style="background:var(--accent-soft);color:var(--accent-dark);font-size:11px">'+escapeHtml(p.vehicle)+'</span>';
+        if(p.duration) html += '<span class="tag" style="background:#f0f0f0;color:#666;font-size:11px">'+escapeHtml(p.duration)+'</span>';
+        if(p.distance) html += '<span class="tag" style="background:#f0f0f0;color:#666;font-size:11px">'+escapeHtml(p.distance)+'</span>';
+        html += '</div></div>';
+        // 操作按钮
+        html += '<div style="display:flex;gap:4px;margin-left:8px;flex:none">';
+        html += '<button class="btn ghost small" onclick="editPrice('+orig+')" style="padding:4px 8px;font-size:11px">编辑</button>';
+        html += '<button class="btn danger small" onclick="removePrice('+orig+')" style="padding:4px 8px;font-size:11px">删</button>';
+        html += '</div>';
+        html += '</div>';
+        
+        // 价格区域
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px;background:#fafbfc;border-radius:10px;margin-bottom:10px">';
+        html += '<div style="text-align:center"><div style="font-size:11px;color:var(--text-3);margin-bottom:2px">成本价</div><div style="font-size:18px;font-weight:800;color:var(--confirmed)">'+(p.cost?('¥'+p.cost):'—')+'</div></div>';
+        html += '<div style="text-align:center"><div style="font-size:11px;color:var(--text-3);margin-bottom:2px">对外报价</div><div style="font-size:18px;font-weight:800;color:var(--accent-dark)">'+(p.quote?('¥'+p.quote):'—')+'</div></div>';
+        html += '<div style="text-align:center"><div style="font-size:11px;color:var(--text-3);margin-bottom:2px">利润</div><div style="font-size:18px;font-weight:800;color:'+(profit>=0?'#52c41a':'#ff4d4f')+'">'+(p.quote&&p.cost?('¥'+profit):'—')+'</div><div style="font-size:10px;color:var(--text-3)">'+(p.quote&&p.cost?(profitRate+'%'):'')+'</div></div>';
+        html += '</div>';
+        
+        // 备注
+        if(p.note) html += '<div style="font-size:12px;color:var(--text-2);line-height:1.5;padding-top:8px;border-top:1px solid var(--line)">'+escapeHtml(p.note)+'</div>';
+        
+        html += '</div>';
+      });
+      
+      html += '</div></div>';
+    });
+    $('priceGrid').innerHTML=html;
+  }
 }
 function calcCityRoutes(city){ return [...new Set((S.prices||[]).filter(p=>p.city===city).map(p=>p.route))]; }
 function calcRouteVehicles(city, route){ return [...new Set((S.prices||[]).filter(p=>p.city===city && p.route===route).map(p=>p.vehicle))]; }
