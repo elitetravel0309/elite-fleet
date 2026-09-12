@@ -1329,6 +1329,49 @@ textarea{resize:vertical;line-height:1.5}
   </div>
 </div>
 
+<!-- ===== 司机详情弹窗 ===== -->
+<div class="overlay" id="driverDetailModal">
+  <div class="modal" style="max-width:680px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div id="ddAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2c5282,#1a365d);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600"></div>
+        <div>
+          <h3 id="ddName" style="margin:0;font-size:20px"></h3>
+          <div id="ddMeta" style="font-size:13px;color:var(--text-3);margin-top:4px"></div>
+        </div>
+      </div>
+      <button class="iconbtn" onclick="closeDriverDetail()" style="font-size:24px">&times;</button>
+    </div>
+    <div id="ddContent"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeDriverDetail()">关闭</button>
+      <button class="btn ghost" id="ddCopyBtn" onclick="">复制服务信息</button>
+      <button class="btn primary" id="ddEditBtn" onclick="">编辑司机</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 客人详情弹窗 ===== -->
+<div class="overlay" id="guestDetailModal">
+  <div class="modal" style="max-width:680px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div id="gdAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2f855a,#1a4731);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600"></div>
+        <div>
+          <h3 id="gdName" style="margin:0;font-size:20px"></h3>
+          <div id="gdMeta" style="font-size:13px;color:var(--text-3);margin-top:4px"></div>
+        </div>
+      </div>
+      <button class="iconbtn" onclick="closeGuestDetail()" style="font-size:24px">&times;</button>
+    </div>
+    <div id="gdContent"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeGuestDetail()">关闭</button>
+      <button class="btn primary" id="gdEditBtn" onclick="">编辑客人</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 车队粘贴导入弹窗 ===== -->
 <div class="overlay" id="fleetPasteOverlay">
   <div class="modal">
@@ -2365,9 +2408,9 @@ function renderGuests(){
     const os=guestOrders(g);
     const total=os.reduce((s,o)=>s+((+o.quote)||0),0);
     const last=os.length? os[os.length-1].date : '';
-    return '<div class="fleet-row" style="cursor:pointer" onclick="openGuestModal(\''+g.id+'\')">'
-      +'<div class="avatar" style="background:var(--charter);color:#fff">'+escapeHtml((g.name||'?').slice(0,1).toUpperCase())+'</div>'
-      +'<div class="info"><b>'+escapeHtml(g.name)+'</b>'
+    return '<div class="fleet-row">'
+      +'<div class="avatar" style="background:var(--charter);color:#fff;cursor:pointer" onclick="openGuestDetail(\''+g.id+'\')" title="查看详情">'+escapeHtml((g.name||'?').slice(0,1).toUpperCase())+'</div>'
+      +'<div class="info"><b style="cursor:pointer;color:var(--accent)" onclick="openGuestDetail(\''+g.id+'\')" title="查看详情">'+escapeHtml(g.name)+'</b>'
       +'<span>'+(g.country?'<span class="tag" style="background:var(--bg);color:var(--text-2);font-size:11px">'+escapeHtml(g.country)+'</span> · ':'')+(g.city?'<span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(g.city)+'</span> · ':'')+(g.source?'来源 '+escapeHtml(g.source)+' · ':'')+(g.note?escapeHtml(g.note):'')+'</span>'
       +'<span style="color:var(--text-3);font-size:11.5px">'+(g.phone?'电话 '+escapeHtml(g.phone):'')+(g.wechat?' · 微信 '+escapeHtml(g.wechat):'')+(g.contact&&!g.phone&&!g.wechat?' · '+escapeHtml(g.contact):'')+'</span></div>'
       +'<span class="type-pill">'+os.length+' 单 · ¥'+total+'</span>'
@@ -2607,7 +2650,7 @@ function renderFleet(){
   $('driverList').innerHTML = filteredDrivers.length? filteredDrivers.map(d=>{
     const cnt = S.orders.filter(o=>o.driver===d.name && o.status!=='cancelled').length;
     return '<div class="fleet-row"><div class="avatar">'+escapeHtml((d.name||'?').slice(0,1))+'</div>'
-      +'<div class="info"><b>'+escapeHtml(d.name)+'</b>'
+      +'<div class="info"><b style="cursor:pointer;color:var(--accent)" onclick="openDriverDetail(\''+d.id+'\')" title="查看详情">'+escapeHtml(d.name)+'</b>'
       +'<span>'+(d.city?'<span class="tag" style="background:var(--ink);color:#fff;font-size:11px">'+escapeHtml(d.city)+'</span> · ':'')+(d.carType?('车型 '+escapeHtml(d.carType)+' · '):'')+(d.color?'<span class="tag" style="background:var(--bg);color:var(--text-2);font-size:11px">'+escapeHtml(d.color)+'</span> · ':'')+(d.seatType?'<span class="tag" style="background:var(--charter-soft);color:var(--charter);font-size:11px">'+escapeHtml(d.seatType)+'</span> · ':'')+'车号 '+escapeHtml(d.plate||'—')+(d.fleet?' · '+escapeHtml(d.fleet):'')+'</span>'
       +'<span style="color:var(--text-3);font-size:11.5px">'+(d.phone?'电话 '+escapeHtml(d.phone):'')+(d.note?' · '+escapeHtml(d.note):'')+'</span></div>'
       +'<span class="type-pill">'+cnt+' 个任务</span>'
@@ -2754,6 +2797,120 @@ function legacyCopy(t){
   try{ document.execCommand('copy'); }catch(e){}
   document.body.removeChild(ta);
 }
+
+/* ---- 司机详情弹窗 ---- */
+var viewingDriverId='';
+function openDriverDetail(id){
+  const d=S.drivers.find(x=>x.id===id); if(!d) return;
+  viewingDriverId=id;
+  $('ddAvatar').textContent=(d.name||'?').slice(0,1);
+  $('ddName').textContent=d.name||'';
+  const metaParts=[];
+  if(d.city) metaParts.push(d.city);
+  if(d.carType) metaParts.push(d.carType);
+  if(d.color) metaParts.push(d.color);
+  if(d.seatType) metaParts.push(d.seatType);
+  $('ddMeta').textContent=metaParts.join(' · ');
+  const orders=S.orders.filter(o=>o.driver===d.name && o.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const totalOrders=orders.length;
+  const doneOrders=orders.filter(o=>o.status==='done').length;
+  const totalRevenue=orders.reduce((s,o)=>s+(calcQuote(o)||0),0);
+  const totalCost=orders.reduce((s,o)=>s+(calcCost(o)||0),0);
+  const totalProfit=totalRevenue-totalCost;
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">总任务</div><div style="font-size:20px;font-weight:600;margin-top:2px">'+totalOrders+'</div></div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">已完成</div><div style="font-size:20px;font-weight:600;margin-top:2px;color:var(--done)">'+doneOrders+'</div></div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">总营收</div><div style="font-size:20px;font-weight:600;margin-top:2px">¥'+totalRevenue.toLocaleString()+'</div></div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">总利润</div><div style="font-size:20px;font-weight:600;margin-top:2px;color:'+(totalProfit>=0?'var(--done)':'var(--cancel)')+'">¥'+totalProfit.toLocaleString()+'</div></div>';
+  html+='</div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px">';
+  html+='<div style="font-weight:600;margin-bottom:10px;font-size:14px">车辆与联系信息</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
+  html+='<div><span style="color:var(--text-3)">车型：</span>'+escapeHtml(d.carType||'—')+'</div>';
+  html+='<div><span style="color:var(--text-3)">车号：</span>'+escapeHtml(d.plate||'—')+'</div>';
+  html+='<div><span style="color:var(--text-3)">颜色：</span>'+escapeHtml(d.color||'—')+'</div>';
+  html+='<div><span style="color:var(--text-3)">座位档：</span>'+escapeHtml(d.seatType||'—')+'</div>';
+  html+='<div><span style="color:var(--text-3)">城市：</span>'+escapeHtml(d.city||'—')+'</div>';
+  html+='<div><span style="color:var(--text-3)">所属车队：</span>'+escapeHtml(d.fleet||'—')+'</div>';
+  html+='<div style="grid-column:1/-1"><span style="color:var(--text-3)">电话：</span><a href="tel:'+escapeHtml(d.phone||'')+'" style="color:var(--accent);text-decoration:none">'+escapeHtml(d.phone||'—')+'</a></div>';
+  if(d.note) html+='<div style="grid-column:1/-1"><span style="color:var(--text-3)">备注：</span>'+escapeHtml(d.note)+'</div>';
+  html+='</div></div>';
+  html+='<div style="font-weight:600;margin-bottom:8px;font-size:14px">历史订单 ('+orders.length+')</div>';
+  if(orders.length){
+    html+='<div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">';
+    html+='<table class="order-table" style="margin:0"><thead><tr><th>日期</th><th>类型</th><th>路线</th><th>客人</th><th>状态</th></tr></thead><tbody>';
+    orders.slice(0,20).forEach(o=>{
+      const tm=TYPE_META[o.type]||{label:o.type,soft:'#f0f0f0',color:'#666'};
+      const st=STATUS_META[o.status]||{label:o.status,soft:'#f0f0f0',color:'#666'};
+      html+='<tr onclick="openOrder(\''+o.id+'\');closeDriverDetail()" style="cursor:pointer"><td>'+o.date+'</td><td><span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span></td><td>'+escapeHtml((o.route||'').slice(0,25))+'</td><td>'+escapeHtml(o.guest||'')+'</td><td><span class="st" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span></td></tr>';
+    });
+    html+='</tbody></table></div>';
+    if(orders.length>20) html+='<div style="text-align:center;color:var(--text-3);font-size:12px;margin-top:6px">仅显示最近20条，共'+orders.length+'条</div>';
+  } else {
+    html+='<div style="color:var(--text-3);text-align:center;padding:20px;background:var(--bg);border-radius:8px">暂无历史订单</div>';
+  }
+  $('ddContent').innerHTML=html;
+  $('ddCopyBtn').onclick=function(){ copyDriverCard(id); };
+  $('ddEditBtn').onclick=function(){ closeDriverDetail(); editDriver(id); };
+  $('driverDetailModal').classList.add('open');
+}
+function closeDriverDetail(){ $('driverDetailModal').classList.remove('open'); viewingDriverId=''; }
+document.getElementById('driverDetailModal').addEventListener('click', e=>{ if(e.target.id==='driverDetailModal') closeDriverDetail(); });
+
+/* ---- 客人详情弹窗 ---- */
+var viewingGuestId='';
+function openGuestDetail(id){
+  const g=S.guests.find(x=>x.id===id); if(!g) return;
+  viewingGuestId=id;
+  $('gdAvatar').textContent=(g.name||'?').slice(0,1);
+  $('gdName').textContent=g.name||'';
+  const metaParts=[];
+  if(g.country) metaParts.push(g.country);
+  if(g.city) metaParts.push(g.city);
+  if(g.source) metaParts.push('来源:'+g.source);
+  $('gdMeta').textContent=metaParts.join(' · ');
+  const orders=S.orders.filter(o=>o.guest===g.name && o.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const totalOrders=orders.length;
+  const totalSpend=orders.reduce((s,o)=>s+(calcQuote(o)||0),0);
+  const firstOrder=orders.length? orders[orders.length-1].date : '—';
+  const lastOrder=orders.length? orders[0].date : '—';
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">总订单</div><div style="font-size:20px;font-weight:600;margin-top:2px">'+totalOrders+'</div></div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">总消费</div><div style="font-size:20px;font-weight:600;margin-top:2px">¥'+totalSpend.toLocaleString()+'</div></div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">首次订单</div><div style="font-size:16px;font-weight:600;margin-top:4px">'+firstOrder+'</div></div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--text-3)">最近订单</div><div style="font-size:16px;font-weight:600;margin-top:4px">'+lastOrder+'</div></div>';
+  html+='</div>';
+  html+='<div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px">';
+  html+='<div style="font-weight:600;margin-bottom:10px;font-size:14px">联系信息</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
+  if(g.phone) html+='<div><span style="color:var(--text-3)">电话/WhatsApp：</span><a href="tel:'+escapeHtml(g.phone)+'" style="color:var(--accent);text-decoration:none">'+escapeHtml(g.phone)+'</a></div>';
+  if(g.wechat) html+='<div><span style="color:var(--text-3)">微信：</span>'+escapeHtml(g.wechat)+'</div>';
+  if(g.passport) html+='<div><span style="color:var(--text-3)">护照号：</span>'+escapeHtml(g.passport)+'</div>';
+  if(g.country) html+='<div><span style="color:var(--text-3)">国籍/地区：</span>'+escapeHtml(g.country)+'</div>';
+  if(g.city) html+='<div><span style="color:var(--text-3)">城市：</span>'+escapeHtml(g.city)+'</div>';
+  if(g.source) html+='<div><span style="color:var(--text-3)">来源：</span>'+escapeHtml(g.source)+'</div>';
+  if(g.note) html+='<div style="grid-column:1/-1"><span style="color:var(--text-3)">备注：</span>'+escapeHtml(g.note)+'</div>';
+  html+='</div></div>';
+  html+='<div style="font-weight:600;margin-bottom:8px;font-size:14px">历史订单 ('+orders.length+')</div>';
+  if(orders.length){
+    html+='<div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">';
+    html+='<table class="order-table" style="margin:0"><thead><tr><th>日期</th><th>类型</th><th>路线</th><th>司机</th><th>状态</th></tr></thead><tbody>';
+    orders.slice(0,20).forEach(o=>{
+      const tm=TYPE_META[o.type]||{label:o.type,soft:'#f0f0f0',color:'#666'};
+      const st=STATUS_META[o.status]||{label:o.status,soft:'#f0f0f0',color:'#666'};
+      html+='<tr onclick="openOrder(\''+o.id+'\');closeGuestDetail()" style="cursor:pointer"><td>'+o.date+'</td><td><span class="tag" style="background:'+tm.soft+';color:'+tm.color+'">'+tm.label+'</span></td><td>'+escapeHtml((o.route||'').slice(0,25))+'</td><td>'+escapeHtml(o.driver||'—')+'</td><td><span class="st" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span></td></tr>';
+    });
+    html+='</tbody></table></div>';
+    if(orders.length>20) html+='<div style="text-align:center;color:var(--text-3);font-size:12px;margin-top:6px">仅显示最近20条，共'+orders.length+'条</div>';
+  } else {
+    html+='<div style="color:var(--text-3);text-align:center;padding:20px;background:var(--bg);border-radius:8px">暂无历史订单</div>';
+  }
+  $('gdContent').innerHTML=html;
+  $('gdEditBtn').onclick=function(){ closeGuestDetail(); editGuest(id); };
+  $('guestDetailModal').classList.add('open');
+}
+function closeGuestDetail(){ $('guestDetailModal').classList.remove('open'); viewingGuestId=''; }
+document.getElementById('guestDetailModal').addEventListener('click', e=>{ if(e.target.id==='guestDetailModal') closeGuestDetail(); });
 
 /* ---- 车队：粘贴导入 ---- */
 var fleetPasteBuf = [];
