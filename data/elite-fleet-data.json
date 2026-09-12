@@ -622,6 +622,37 @@
           "note": "新订单录入"
         }
       ]
+    },
+    {
+      "id": "ord_1789178810022_shanghai_hangzhou",
+      "date": "2026-09-16",
+      "time": "07:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "上海镇坪智选假日酒店 → 杭州萧山区浦阳镇浙江CPS国泰包装密封有限公司 → 返回上海镇坪智选假日酒店",
+      "vehicle": "五座",
+      "pax": 1,
+      "guest": "张哥",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "inquiry",
+      "note": "上海酒店接（上海市普陀区中山北路2088号 上海镇坪智选假日酒店），送到杭州萧山公司开会（中国浙江省杭州市萧山区浦阳镇 浙江CPS国泰包装密封有限公司），约3-4小时，当天返回上海酒店",
+      "city": "上海",
+      "_lastModified": 1789178810022,
+      "collectAmount": 0,
+      "statusHistory": [
+        {
+          "status": "inquiry",
+          "time": 1789178810022,
+          "note": "新订单录入"
+        }
+      ]
     }
   ],
   "vehicles": [
