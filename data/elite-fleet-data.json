@@ -591,6 +591,37 @@
       "_lastModified": 1789135222955,
       "collectAmount": 0,
       "statusHistory": []
+    },
+    {
+      "id": "ord_1789173437662_vivienne",
+      "date": "2026-09-13",
+      "time": "",
+      "type": "arrival",
+      "airport": "首都机场T3",
+      "flight": "SQ802",
+      "route": "首都机场T3 → 慕田峪长城酒店（北京市怀柔区渤海镇慕田峪长城景区内）",
+      "vehicle": "七座",
+      "pax": 4,
+      "guest": "Vivienne Lai",
+      "contact": "+65 9191 4914",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "inquiry",
+      "note": "4人+6个大小行李箱；打接机牌姓名 Vivienne Lai；就在对应出口接，不要在星巴克了，新加坡人难搞",
+      "city": "北京",
+      "_lastModified": 1789173437662,
+      "collectAmount": 0,
+      "statusHistory": [
+        {
+          "status": "inquiry",
+          "time": 1789173437662,
+          "note": "新订单录入"
+        }
+      ]
     }
   ],
   "vehicles": [
@@ -3072,6 +3103,20 @@
       "passportAuthority": "German Consulate General in Shanghai",
       "note": "德国护照；Meckbach家庭子女；与Anke/Matthias Meckbach同行",
       "_lastModified": 1789056747365
+    },
+    {
+      "id": "gst_1789173437662_vivienne",
+      "name": "Vivienne Lai",
+      "phone": "+65 9191 4914",
+      "whatsapp": "+65 9191 4914",
+      "wechat": "",
+      "email": "",
+      "nationality": "新加坡",
+      "city": "",
+      "note": "新加坡客人，要求在对应出口接机，不要在星巴克",
+      "totalOrders": 1,
+      "totalSpent": 0,
+      "_lastModified": 1789173437662
     }
   ],
   "_meta": {
