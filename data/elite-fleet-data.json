@@ -1087,6 +1087,28 @@
       "id": "fleet_1788846481763_10",
       "area": "禅城汾江西路",
       "vehicles": "商务车、轿车"
+    },
+    {
+      "id": "flt_1789185389863_yingda",
+      "name": "杭州应达租车公司",
+      "contact": "",
+      "phone": "19858875883",
+      "city": "杭州",
+      "vehicles": "",
+      "rating": 0,
+      "note": "做了杭州索菲特英冠客人的单子第三天",
+      "_lastModified": 1789185389863
+    },
+    {
+      "id": "flt_1789185389864_lijinghui",
+      "name": "李京辉",
+      "contact": "李京辉",
+      "phone": "15137929210",
+      "city": "洛阳",
+      "vehicles": "",
+      "rating": 5,
+      "note": "不错，客人好评",
+      "_lastModified": 1789185389863
     }
   ],
   "prices": [
