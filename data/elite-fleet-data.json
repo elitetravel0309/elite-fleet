@@ -402,6 +402,29 @@
       "statusHistory": []
     },
     {
+      "id": "xmtyf4vfbf2sm",
+      "date": "2026-09-13",
+      "time": "14:44",
+      "type": "arrival",
+      "city": "北京",
+      "airport": "PEK",
+      "flight": "AF202",
+      "route": "首都机场2号航站楼 → 北京柏悦酒店（北京市朝阳区建国门外大街2号）",
+      "vehicle": "五座",
+      "pax": 1,
+      "guest": "Mr CHENAIN Jacques",
+      "contact": "",
+      "driver": "李师傅",
+      "plate": "京MES968",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "collectAmount": 0,
+      "status": "confirmed",
+      "note": "接机牌打 Mr CHENAIN Jacques；对方要大众帕萨特(黑色) 或同级；首都机场2号航站楼接机，航班AF202约14:44抵达，送北京柏悦酒店（北京市朝阳区建国门外大街2号）"
+    },
+    {
       "id": "ord_1789134318818_maria",
       "date": "2026-09-14",
       "time": "08:00",
@@ -653,29 +676,6 @@
       "status": "confirmed",
       "note": "6人+12个大小行李，单用车；08:30-09:00酒店接，送机首都机场3号航站楼，航班CX391 13:40起飞；接机牌Welcome Mr. HUSDI HDCI & Party",
       "city": "北京"
-    },
-    {
-      "id": "xmtyf4vfbf2sm",
-      "date": "2026-09-13",
-      "time": "14:44",
-      "type": "arrival",
-      "city": "北京",
-      "airport": "PEK",
-      "flight": "AF202",
-      "route": "首都机场2号航站楼 → 北京柏悦酒店（北京市朝阳区建国门外大街2号）",
-      "vehicle": "五座",
-      "pax": 1,
-      "guest": "Mr CHENAIN Jacques",
-      "contact": "",
-      "driver": "李师傅",
-      "plate": "京MES968",
-      "fleet": "",
-      "price": 0,
-      "quote": 0,
-      "cost": 0,
-      "collectAmount": 0,
-      "status": "confirmed",
-      "note": "接机牌打 Mr CHENAIN Jacques；对方要大众帕萨特(黑色) 或同级；首都机场2号航站楼接机，航班AF202约14:44抵达，送北京柏悦酒店（北京市朝阳区建国门外大街2号）"
     }
   ],
   "vehicles": [
@@ -877,8 +877,7 @@
       "color": "",
       "seatType": "七座",
       "note": "商务车",
-      "fleet": "",
-      "lastUsed": 1789220573875
+      "fleet": ""
     },
     {
       "id": "driver_wangshifu_1789027734",
@@ -3279,7 +3278,7 @@
     }
   ],
   "_meta": {
-    "built": "2026-09-12T13:42:58.516Z",
+    "built": "2026-09-12T13:44:02.555Z",
     "source": "workbench-upload"
   },
   "_lastModified": 1789220573908,
