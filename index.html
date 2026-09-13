@@ -1358,6 +1358,10 @@ textarea{resize:vertical;line-height:1.5}
       <div class="fgroup"><label>联系人</label><input type="text" id="fleetContact" placeholder="如 王经理"></div>
       <div class="fgroup"><label>电话</label><input type="text" id="fleetPhone" placeholder="如 13800000000"></div>
       <div class="fgroup full"><label>备注</label><input type="text" id="fleetNote" placeholder="如 日租区间800-2500，超时100/h"></div>
+      <div class="fgroup"><label>合作等级</label><select id="fleetLevel"><option value="">普通</option><option value="核心">核心合作</option><option value="优质">优质</option><option value="备选">备选</option><option value="黑名单">黑名单</option></select></div>
+      <div class="fgroup"><label>结算周期</label><select id="fleetSettlement"><option value="">现结</option><option value="周结">周结</option><option value="月结">月结</option><option value="季结">季结</option></select></div>
+      <div class="fgroup"><label>付款方式</label><select id="fleetPayment"><option value="">微信/支付宝</option><option value="银行转账">银行转账</option><option value="现金">现金</option></select></div>
+      <div class="fgroup full"><label>常用车型 / 车队规模</label><input type="text" id="fleetVehicles" placeholder="如：5座帕萨特x3, 7座GL8x5, 17座考斯特x2"></div>
     </div>
     <div class="modal-foot">
       <button class="btn ghost" onclick="closeFleetModal()">取消</button>
@@ -2737,6 +2741,7 @@ function openFleetModal(id){
   if(!f){ return; }
   $('fleetModalTitle').textContent = id? '编辑车队' : '添加车队';
   $('fleetName').value = f.name||''; $('fleetCity').value = f.city||''; $('fleetContact').value = f.contact||''; $('fleetPhone').value = f.phone||''; $('fleetNote').value = f.note||'';
+  $('fleetLevel').value = f.level||''; $('fleetSettlement').value = f.settlement||''; $('fleetPayment').value = f.payment||''; $('fleetVehicles').value = f.vehicles||'';
   $('fleetModal').classList.add('open');
   setTimeout(()=>$('fleetName').focus(),50);
 }
@@ -2796,10 +2801,74 @@ function saveFleetRating(){
   toast('车队评价已保存');
 }
 
+/* 车队对账功能 */
+function openFleetSettlement(fleetName){
+  const f = S.fleets.find(x=>x.name===fleetName);
+  if(!f){ toast('车队不存在'); return; }
+  const orders = S.orders.filter(o=>o.fleet===fleetName && o.status!=='cancelled').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const totalCost = orders.reduce((s,o)=>s+((+o.cost)||0),0);
+  const totalQuote = orders.reduce((s,o)=>s+((+o.quote)||0),0);
+  const unsettled = orders.filter(o=>!o.settled);
+  const unsettledAmount = unsettled.reduce((s,o)=>s+((+o.cost)||0),0);
+  
+  $('fsFleetName').textContent = f.name;
+  $('fsTotalOrders').textContent = orders.length;
+  $('fsTotalCost').textContent = '¥'+totalCost.toLocaleString();
+  $('fsUnsettled').textContent = unsettled.length+' 单 / ¥'+unsettledAmount.toLocaleString();
+  
+  let html = '<table class="order-table"><thead><tr><th>日期</th><th>线路</th><th>客人</th><th>成本</th><th>状态</th><th>操作</th></tr></thead><tbody>';
+  orders.forEach(o=>{
+    html += '<tr>';
+    html += '<td>'+o.date+'</td>';
+    html += '<td>'+escapeHtml((o.route||'').slice(0,20))+'</td>';
+    html += '<td>'+escapeHtml(o.guest||'')+'</td>';
+    html += '<td>¥'+(+o.cost||0)+'</td>';
+    html += '<td><span style="color:'+(o.settled?'#2E7D6B':'#d4a017')+'">'+(o.settled?'已结算':'待结算')+'</span></td>';
+    html += '<td><button class="btn ghost" style="padding:2px 8px;font-size:11px" onclick="toggleSettle(''+o.id+'')">'+(o.settled?'取消结算':'标记结算')+'</button></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  $('fsOrders').innerHTML = html;
+  $('fleetSettlementOverlay').classList.add('open');
+}
+
+function toggleSettle(orderId){
+  const o = S.orders.find(x=>x.id===orderId);
+  if(!o) return;
+  o.settled = !o.settled;
+  o.settledAt = o.settled? todayStr() : '';
+  saveState(S);
+  openFleetSettlement($('fsFleetName').textContent);
+  toast(o.settled? '已标记为已结算' : '已取消结算标记');
+}
+
+function closeFleetSettlement(){
+  $('fleetSettlementOverlay').classList.remove('open');
+}
+
+function exportFleetSettlement(){
+  const fleetName = $('fsFleetName').textContent;
+  const orders = S.orders.filter(o=>o.fleet===fleetName && o.status!=='cancelled').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const totalCost = orders.reduce((s,o)=>s+((+o.cost)||0),0);
+  let csv = '日期,线路,客人,人数,车型,司机,车牌,成本,结算状态\n';
+  orders.forEach(o=>{
+    csv += `${o.date},"${(o.route||'').replace(/"/g,'""')}",${o.guest||''},${o.pax||''},${o.vehicle||''},${o.driver||''},${o.plate||''},${+o.cost||0},${o.settled?'已结算':'待结算'}\n`;
+  });
+  csv += `\n合计,,,,,,,${totalCost},`;
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `车队对账单_${fleetName}_${todayStr()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('对账单已导出');
+}
+
 function saveFleetModal(){
   const name=$('fleetName').value.trim();
   if(!name){ toast('请填写车队名称'); $('fleetName').focus(); return; }
-  const obj={name, city:$('fleetCity').value.trim(), contact:$('fleetContact').value.trim(), phone:$('fleetPhone').value.trim(), note:$('fleetNote').value.trim()};
+  const obj={name, city:$('fleetCity').value.trim(), contact:$('fleetContact').value.trim(), phone:$('fleetPhone').value.trim(), note:$('fleetNote').value.trim(), level:$('fleetLevel').value, settlement:$('fleetSettlement').value, payment:$('fleetPayment').value, vehicles:$('fleetVehicles').value.trim()};
   if(editingFleetId){ const x=S.fleets.find(x=>x.id===editingFleetId); if(x) Object.assign(x,obj); }
   else S.fleets.push(Object.assign({id:uid()},obj));
   saveState(S); renderFleet(); closeFleetModal(); toast('已保存车队');
@@ -6752,6 +6821,32 @@ function batchDelete(){
       <button class="btn ghost" onclick="copyItinerary(currentItineraryId)">复制文本</button>
       <button class="btn ghost" onclick="window.print()">打印</button>
       <button class="btn primary" onclick="document.getElementById('itineraryOverlay').classList.remove('open')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 车队对账弹窗 ===== -->
+<div class="overlay" id="fleetSettlementOverlay">
+  <div class="modal" style="max-width:700px">
+    <h3>车队对账 - <span id="fsFleetName"></span></h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text-3)">总订单</div>
+        <div style="font-size:20px;font-weight:600" id="fsTotalOrders">0</div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text-3)">总成本</div>
+        <div style="font-size:20px;font-weight:600;color:var(--charter)" id="fsTotalCost">¥0</div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text-3)">待结算</div>
+        <div style="font-size:16px;font-weight:600;color:#d4a017" id="fsUnsettled">0 单</div>
+      </div>
+    </div>
+    <div id="fsOrders" style="max-height:300px;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeFleetSettlement()">关闭</button>
+      <button class="btn primary" onclick="exportFleetSettlement()">导出对账单</button>
     </div>
   </div>
 </div>
