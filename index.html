@@ -575,7 +575,13 @@ textarea{resize:vertical;line-height:1.5}
         <div style="flex:1"></div>
         <button class="btn small" onclick="batchSetStatus('confirmed')">标记已确认</button>
         <button class="btn small" onclick="batchSetStatus('done')">标记已完成</button>
-        <button class="btn small" onclick="batchExport()">导出选中</button>
+        <button class="btn small" onclick="selectAllFiltered()">全选</button>
+        <button class="btn small ghost" onclick="invertSelection()">反选</button>
+        <button class="btn small" onclick="batchAssignDriver()">指派司机</button>
+        <button class="btn small" onclick="batchPrintTripMsg()">打印车单</button>
+        <button class="btn small" onclick="batchGenerateServiceMsg()">服务信息</button>
+        <button class="btn small" onclick="batchExportExcel()">导出Excel</button>
+        <button class="btn small success" onclick="batchMarkDone()">标记完成</button>
         <button class="btn small danger" onclick="batchDelete()">删除选中</button>
         <button class="btn small ghost" onclick="toggleBatchMode()">退出批量</button>
       </div>
@@ -1217,7 +1223,10 @@ textarea{resize:vertical;line-height:1.5}
       <div class="fgroup"><label>对外报价（元）</label><input type="number" id="oQuote" min="0" placeholder="给客户的价"></div>
       <div class="fgroup"><label>成本价（元）</label><input type="number" id="oCost" min="0" placeholder="车队报价"></div>
       <div class="fgroup"><label>司机代收（元）</label><input type="number" id="oCollect" min="0" placeholder="司机向客人收的车费"></div>
-      <div class="fgroup" style="align-self:flex-end"><button class="btn ghost small" type="button" onclick="autoPrice()" title="按线路/车型从参考价库自动带出报价与成本">自动计价</button></div>
+      <div class="fgroup" style="align-self:flex-end;display:flex;gap:5px">
+      <button class="btn ghost small" type="button" onclick="autoPrice()" title="按线路/车型从参考价库自动带出报价与成本">自动计价</button>
+      <button class="btn primary small" type="button" onclick="showSmartPriceDetail()" title="智能报价分析，含利润明细和建议">智能报价</button>
+    </div>
       <div class="fgroup"><label>状态</label>
         <select id="oStatus">
           <option value="inquiry">询价中（刚接到问询）</option>
@@ -1241,6 +1250,9 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn ghost" onclick="serviceMsg(editingId)" title="生成给客人的司机服务信息（车型/车牌/司机/电话），一键复制">服务信息</button>
       <button class="btn ghost" onclick="generateServiceConfirmation()" title="生成中英文服务确认单，可复制/打印">服务确认单</button>
       <button class="btn ghost" onclick="openDriverRating()" title="给司机服务打分评价">评价司机</button>
+      <button class="btn ghost" onclick="openCommunicationModal('guest', editingId, $('oGuest').value)" title="记录与客人的沟通内容">沟通记录</button>
+      <button class="btn ghost" onclick="openTemplateModal()" title="从模板快速填充订单信息">订单模板</button>
+      <button class="btn ghost" onclick="saveCurrentAsTemplate()" title="将当前订单信息保存为模板">存为模板</button>
       <button class="btn ghost" onclick="tripMsg(editingId)" title="生成给司机的单订单车单，可复制发微信或打印">司机车单</button>
       <button class="btn primary" onclick="saveOrder()">保存任务</button>
     </div>
@@ -2015,6 +2027,293 @@ function calcCost(o){ return (o && o.cost)? o.cost : guessCost(o); }
 function profitOf(o){ const q=calcQuote(o), c=calcCost(o); return (q!=null && c!=null)? q-c : null; }
 function marginOf(o){ const q=calcQuote(o), c=calcCost(o); return (q!=null && c!=null && q!==0)? (q-c)/q*100 : null; }
 function routeList(){ const set=new Set(); S.orders.forEach(o=>o.route&&set.add(o.route)); return [...set]; }
+
+/* =========================================================
+   增强智能报价系统
+   ========================================================= */
+
+// 线路关键词匹配库
+const ROUTE_KEYWORDS = {
+  'mutianyu': {name:'慕田峪长城', keywords:['慕田峪','mutianyu','长城'], basePrice:{5:500, 7:600, 9:800}, duration:8},
+  'badaling': {name:'八达岭长城', keywords:['八达岭','badaling'], basePrice:{5:450, 7:550, 9:750}, duration:8},
+  'jinshanling': {name:'金山岭长城', keywords:['金山岭','jinshanling'], basePrice:{5:600, 7:700, 9:900}, duration:10},
+  'gubeikou': {name:'古北口长城', keywords:['古北口','gubeikou'], basePrice:{5:550, 7:650, 9:850}, duration:9},
+  'forbidden_city': {name:'故宫', keywords:['故宫','forbidden','午门','天安门'], basePrice:{5:300, 7:400, 9:600}, duration:4},
+  'summer_palace': {name:'颐和园', keywords:['颐和园','summer palace'], basePrice:{5:300, 7:400, 9:600}, duration:4},
+  'temple_heaven': {name:'天坛', keywords:['天坛','temple heaven'], basePrice:{5:250, 7:350, 9:500}, duration:3},
+  'hutong': {name:'胡同游览', keywords:['胡同','hutong','南锣鼓巷','什刹海'], basePrice:{5:200, 7:300, 9:450}, duration:3},
+  'airport_pkx': {name:'大兴机场', keywords:['大兴','pkx','daxing'], basePrice:{5:300, 7:400, 9:600}, duration:2},
+  'airport_pek': {name:'首都机场', keywords:['首都','pek','capital'], basePrice:{5:250, 7:350, 9:500}, duration:1.5},
+  'dazu': {name:'大足石刻', keywords:['大足','dazu'], basePrice:{5:600, 7:700, 9:900}, duration:8},
+  'bingmayong': {name:'兵马俑', keywords:['兵马俑','bingmayong','terracotta'], basePrice:{5:400, 7:500, 9:700}, duration:5},
+  'dayanta': {name:'大雁塔', keywords:['大雁塔','dayanta','big wild goose'], basePrice:{5:200, 7:300, 9:450}, duration:2},
+  'shaolin': {name:'少林寺', keywords:['少林','shaolin'], basePrice:{5:500, 7:600, 9:800}, duration:6},
+  'longmen': {name:'龙门石窟', keywords:['龙门','longmen'], basePrice:{5:300, 7:400, 9:600}, duration:4},
+  'shilin': {name:'石林', keywords:['石林','shilin','stone forest'], basePrice:{5:500, 7:600, 9:800}, duration:6},
+  'jiuxiang': {name:'九乡', keywords:['九乡','jiuxiang'], basePrice:{5:450, 7:550, 9:750}, duration:5},
+};
+
+// 车型座位数映射
+const VEHICLE_SEATS = {
+  '五座': 5, '5座': 5, '5座车': 5, '轿车': 5, '帕萨特': 5, '别克': 7,
+  '七座': 7, '7座': 7, '7座车': 7, 'GL8': 7, '岚图梦想家': 7, '梦想家': 7,
+  '九座': 9, '9座': 9, '9座车': 9,
+  '15座': 15, '十五座': 15,
+  '17座': 17, '十七座': 17, '全顺': 17, '斯宾特': 17,
+  '19座': 19, '十九座': 19, '考斯特': 19,
+  '26座': 26, '二十六座': 26,
+  '38座': 38, '三十八座': 38,
+  '51座': 51, '五十一座': 51,
+};
+
+// 检测车型座位数
+function detectSeats(vehicle){
+  if(!vehicle) return 5;
+  for(const [key, seats] of Object.entries(VEHICLE_SEATS)){
+    if(vehicle.includes(key)) return seats;
+  }
+  const m = vehicle.match(/(\d+)座/);
+  if(m) return parseInt(m[1]);
+  return 5;
+}
+
+// 获取最接近的车型档位价格
+function getPriceBySeats(basePrice, seats){
+  if(!basePrice) return null;
+  if(basePrice[seats]) return basePrice[seats];
+  // 找最接近的档位
+  const availableSeats = Object.keys(basePrice).map(Number).sort((a,b)=>a-b);
+  for(const s of availableSeats){
+    if(seats <= s) return basePrice[s];
+  }
+  return basePrice[availableSeats[availableSeats.length-1]];
+}
+
+// 智能线路匹配
+function matchRoute(route, city){
+  if(!route) return null;
+  const routeLower = route.toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+  
+  for(const [key, info] of Object.entries(ROUTE_KEYWORDS)){
+    let score = 0;
+    for(const kw of info.keywords){
+      if(routeLower.includes(kw.toLowerCase())){
+        score += kw.length; // 关键词越长，匹配度越高
+      }
+    }
+    if(score > bestScore){
+      bestScore = score;
+      bestMatch = info;
+    }
+  }
+  
+  return bestScore > 0 ? bestMatch : null;
+}
+
+// 增强版智能报价
+function enhancedSmartPrice(o){
+  const route = o.route || '';
+  const city = o.city || '';
+  const vehicle = o.vehicle || '';
+  const pax = o.pax || 0;
+  const type = o.type || 'charter';
+  
+  const seats = detectSeats(vehicle);
+  const matchedRoute = matchRoute(route, city);
+  
+  let result = {
+    quote: null,
+    cost: null,
+    hasQuote: false,
+    hasCost: false,
+    breakdown: [],
+    matchedRoute: null,
+    confidence: 'low',
+    suggestions: []
+  };
+  
+  // 1. 先从参考价库精确匹配
+  const sp = smartPrice(o);
+  if(sp.hasQuote){
+    result.quote = sp.quote;
+    result.hasQuote = true;
+    result.breakdown.push({label:'参考价库匹配', amount: sp.quote, type:'quote'});
+    result.confidence = 'high';
+  }
+  if(sp.hasCost){
+    result.cost = sp.cost;
+    result.hasCost = true;
+    result.breakdown.push({label:'参考价库成本', amount: sp.cost, type:'cost'});
+  }
+  
+  // 2. 如果没有精确匹配，用线路关键词估算
+  if(!result.hasQuote && matchedRoute){
+    const basePrice = getPriceBySeats(matchedRoute.basePrice, seats);
+    if(basePrice){
+      // 接机/送机按基础价的60%计算
+      let estimated = basePrice;
+      if(type === 'arrival' || type === 'departure'){
+        estimated = Math.round(basePrice * 0.6 / 10) * 10;
+      }
+      
+      // 人数超过座位数80%，加价10%
+      if(pax > 0 && seats > 0 && pax / seats > 0.8){
+        estimated = Math.round(estimated * 1.1 / 10) * 10;
+        result.suggestions.push('人数较多，已加价10%');
+      }
+      
+      result.quote = estimated;
+      result.hasQuote = true;
+      result.matchedRoute = matchedRoute.name;
+      result.confidence = 'medium';
+      result.breakdown.push({label:'线路匹配: '+matchedRoute.name, amount: estimated, type:'quote'});
+      
+      // 成本按报价的65%估算
+      if(!result.hasCost){
+        result.cost = Math.round(estimated * 0.65 / 10) * 10;
+        result.hasCost = true;
+        result.breakdown.push({label:'估算成本(65%)', amount: result.cost, type:'cost'});
+      }
+    }
+  }
+  
+  // 3. 如果还是没有，用基础车型报价
+  if(!result.hasQuote){
+    const basePrices = {5:300, 7:400, 9:600, 15:800, 17:1000, 19:1200, 26:1500, 38:2000, 51:2500};
+    let base = basePrices[seats] || 400;
+    
+    if(type === 'arrival' || type === 'departure'){
+      base = Math.round(base * 0.7 / 10) * 10;
+    }
+    
+    result.quote = base;
+    result.hasQuote = true;
+    result.confidence = 'low';
+    result.breakdown.push({label:'基础车型报价', amount: base, type:'quote'});
+    result.suggestions.push('无精确匹配，使用基础报价，建议手动调整');
+    
+    if(!result.hasCost){
+      result.cost = Math.round(base * 0.65 / 10) * 10;
+      result.hasCost = true;
+      result.breakdown.push({label:'估算成本(65%)', amount: result.cost, type:'cost'});
+    }
+  }
+  
+  // 计算利润和利润率
+  if(result.hasQuote && result.hasCost){
+    result.profit = result.quote - result.cost;
+    result.margin = result.quote > 0 ? Math.round(result.profit / result.quote * 1000) / 10 : 0;
+  }
+  
+  return result;
+}
+
+// 显示智能报价详情
+function showSmartPriceDetail(){
+  const route = $('oRoute').value.trim();
+  const vehicle = $('oVehicle').value;
+  const city = $('oCity').value;
+  const pax = +$('oPax').value || 0;
+  const type = $('oType').value;
+  
+  if(!route){ toast('请先填写线路'); return; }
+  
+  const o = {route, vehicle, city, pax, type, airport: $('oAirport').value};
+  const result = enhancedSmartPrice(o);
+  
+  let html = '<div style="padding:10px">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">';
+  html += '<h4 style="margin:0">智能报价分析</h4>';
+  const confColors = {high:'#27ae60', medium:'#f39c12', low:'#e74c3c'};
+  const confLabels = {high:'高可信度', medium:'中可信度', low:'低可信度'};
+  html += '<span style="background:'+confColors[result.confidence]+';color:#fff;padding:3px 10px;border-radius:12px;font-size:11px">'+confLabels[result.confidence]+'</span>';
+  html += '</div>';
+  
+  if(result.matchedRoute){
+    html += '<div style="background:#e8f5e9;padding:8px 12px;border-radius:6px;margin-bottom:15px;font-size:13px">';
+    html += '匹配线路: <b>'+result.matchedRoute+'</b>';
+    html += '</div>';
+  }
+  
+  // 报价明细
+  html += '<div style="margin-bottom:15px">';
+  html += '<div style="font-weight:600;margin-bottom:8px;font-size:13px">报价明细</div>';
+  result.breakdown.forEach(b=>{
+    const color = b.type === 'cost' ? '#e74c3c' : '#27ae60';
+    html += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed #eee;font-size:12px">';
+    html += '<span style="color:#666">'+b.label+'</span>';
+    html += '<span style="color:'+color+';font-weight:600">¥'+b.amount+'</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  
+  // 利润分析
+  if(result.profit != null){
+    html += '<div style="background:#f8f9fa;padding:12px;border-radius:8px;margin-bottom:15px">';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">';
+    html += '<div><div style="font-size:11px;color:#666">对外报价</div><div style="font-size:18px;font-weight:700;color:#27ae60">¥'+result.quote+'</div></div>';
+    html += '<div><div style="font-size:11px;color:#666">成本</div><div style="font-size:18px;font-weight:700;color:#e74c3c">¥'+result.cost+'</div></div>';
+    html += '<div><div style="font-size:11px;color:#666">利润</div><div style="font-size:18px;font-weight:700;color:#f39c12">¥'+result.profit+'</div></div>';
+    html += '</div>';
+    html += '<div style="text-align:center;margin-top:8px;font-size:12px;color:#666">利润率: <b style="color:#f39c12">'+result.margin+'%</b></div>';
+    html += '</div>';
+  }
+  
+  // 建议
+  if(result.suggestions.length){
+    html += '<div style="background:#fff3cd;padding:10px;border-radius:6px;margin-bottom:15px">';
+    html += '<div style="font-size:12px;font-weight:600;color:#856404;margin-bottom:5px">建议</div>';
+    result.suggestions.forEach(s=>{
+      html += '<div style="font-size:11px;color:#856404">• '+s+'</div>';
+    });
+    html += '</div>';
+  }
+  
+  // 操作按钮
+  html += '<div style="display:flex;gap:10px">';
+  html += '<button class="btn primary" style="flex:1" onclick="applySmartPrice('+result.quote+','+result.cost+')">应用此报价</button>';
+  html += '<button class="btn ghost" onclick="closeSmartPriceDetail()">关闭</button>';
+  html += '</div>';
+  html += '</div>';
+  
+  $('smartPriceContent').innerHTML = html;
+  $('smartPriceOverlay').classList.add('open');
+}
+
+function applySmartPrice(quote, cost){
+  if(quote) $('oQuote').value = quote;
+  if(cost) $('oCost').value = cost;
+  closeSmartPriceDetail();
+  toast('已应用智能报价');
+}
+
+function closeSmartPriceDetail(){
+  $('smartPriceOverlay').classList.remove('open');
+}
+
+// 报价历史记录
+const QUOTE_HISTORY_KEY = 'elite-fleet-quote-history';
+function saveQuoteHistory(orderData, quoteResult){
+  try{
+    let history = JSON.parse(localStorage.getItem(QUOTE_HISTORY_KEY) || '[]');
+    history.unshift({
+      id: uid(),
+      time: new Date().toISOString(),
+      order: orderData,
+      result: quoteResult
+    });
+    if(history.length > 50) history = history.slice(0, 50);
+    localStorage.setItem(QUOTE_HISTORY_KEY, JSON.stringify(history));
+  }catch(e){}
+}
+
+function getQuoteHistory(){
+  try{
+    return JSON.parse(localStorage.getItem(QUOTE_HISTORY_KEY) || '[]');
+  }catch(e){ return []; }
+}
 
 /* =========================================================
    视图路由
@@ -3699,6 +3998,95 @@ document.getElementById('orderOverlay').addEventListener('click', e=>{ if(e.targ
 /* =========================================================
    快速录单
    ========================================================= */
+
+// 订单模板管理
+const ORDER_TEMPLATE_KEY = 'elite-fleet-order-templates';
+
+function getOrderTemplates(){
+  try{
+    return JSON.parse(localStorage.getItem(ORDER_TEMPLATE_KEY) || '[]');
+  }catch(e){ return []; }
+}
+
+function saveOrderTemplate(template){
+  const list = getOrderTemplates();
+  list.push(template);
+  localStorage.setItem(ORDER_TEMPLATE_KEY, JSON.stringify(list));
+  toast('模板已保存');
+}
+
+function saveCurrentAsTemplate(){
+  const template = {
+    id: uid(),
+    name: prompt('请输入模板名称：') || '未命名模板',
+    type: $('oType').value,
+    city: $('oCity').value,
+    airport: $('oAirport').value,
+    route: $('oRoute').value,
+    vehicle: $('oVehicle').value,
+    pax: $('oPax').value,
+    quote: $('oQuote').value,
+    cost: $('oCost').value,
+    note: $('oNote').value,
+    time: new Date().toISOString()
+  };
+  saveOrderTemplate(template);
+  renderTemplateList();
+}
+
+function applyOrderTemplate(templateId){
+  const list = getOrderTemplates();
+  const t = list.find(x=>x.id===templateId);
+  if(!t) return;
+  if(t.type) $('oType').value = t.type;
+  if(t.city) $('oCity').value = t.city;
+  if(t.airport) $('oAirport').value = t.airport;
+  if(t.route) $('oRoute').value = t.route;
+  if(t.vehicle) $('oVehicle').value = t.vehicle;
+  if(t.pax) $('oPax').value = t.pax;
+  if(t.quote) $('oQuote').value = t.quote;
+  if(t.cost) $('oCost').value = t.cost;
+  if(t.note) $('oNote').value = t.note;
+  closeTemplateModal();
+  toast('已应用模板: '+t.name);
+}
+
+function deleteOrderTemplate(templateId){
+  if(!confirm('确定删除这个模板？')) return;
+  let list = getOrderTemplates();
+  list = list.filter(t=>t.id!==templateId);
+  localStorage.setItem(ORDER_TEMPLATE_KEY, JSON.stringify(list));
+  renderTemplateList();
+  toast('已删除');
+}
+
+function openTemplateModal(){
+  renderTemplateList();
+  $('templateOverlay').classList.add('open');
+}
+
+function closeTemplateModal(){
+  $('templateOverlay').classList.remove('open');
+}
+
+function renderTemplateList(){
+  const list = getOrderTemplates();
+  let html = '';
+  if(list.length){
+    list.forEach(t=>{
+      html += '<div style="padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">';
+      html += '<div><div style="font-weight:600;font-size:13px">'+t.name+'</div>';
+      html += '<div style="font-size:11px;color:#666;margin-top:2px">'+(t.route||'')+' · '+(t.vehicle||'')+' · ¥'+(t.quote||'0')+'</div></div>';
+      html += '<div style="display:flex;gap:5px">';
+      html += '<button class="btn primary small" onclick="applyOrderTemplate(\''+t.id+'\')" style="font-size:11px;padding:4px 10px">应用</button>';
+      html += '<button class="btn danger small" onclick="deleteOrderTemplate(\''+t.id+'\')" style="font-size:11px;padding:4px 10px">删除</button>';
+      html += '</div></div>';
+    });
+  } else {
+    html = '<div style="text-align:center;color:#999;padding:20px">暂无模板，点击"保存为模板"创建</div>';
+  }
+  $('templateList').innerHTML = html;
+}
 
 // 常用线路模板（快速创建订单）
 const COMMON_ROUTES = [
@@ -7107,6 +7495,63 @@ function batchDelete(){
       <button class="btn ghost" onclick="window.print()">打印</button>
       <button class="btn primary" onclick="document.getElementById('itineraryOverlay').classList.remove('open')">关闭</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== 订单模板弹窗 ===== -->
+<div class="overlay" id="templateOverlay">
+  <div class="modal" style="max-width:500px">
+    <h3>订单模板</h3>
+    <div id="templateList" style="max-height:400px;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeTemplateModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 沟通记录弹窗 ===== -->
+<div class="overlay" id="communicationOverlay">
+  <div class="modal" style="max-width:600px">
+    <h3>沟通记录</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="fgroup"><label>类型</label><select id="commType"><option value="guest">客人</option><option value="fleet">车队</option><option value="driver">司机</option></select></div>
+      <div class="fgroup"><label>联系人</label><input type="text" id="commRelatedName" placeholder="客人/车队/司机姓名"></div>
+    </div>
+    <div class="fgroup"><label>联系方式</label><input type="text" id="commContact" placeholder="电话/微信/邮箱等"></div>
+    <div class="fgroup"><label>沟通内容</label><textarea id="commContent" rows="4" placeholder="记录沟通的关键内容、需求、承诺等"></textarea></div>
+    <div style="margin-bottom:10px">
+      <button class="btn primary small" onclick="saveCommunication()">保存记录</button>
+      <select id="commFilterType" onchange="renderCommunicationList()" style="margin-left:10px">
+        <option value="">全部</option>
+        <option value="guest">客人</option>
+        <option value="fleet">车队</option>
+        <option value="driver">司机</option>
+      </select>
+    </div>
+    <div id="commList" style="max-height:300px;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeCommunicationModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 批量服务信息弹窗 ===== -->
+<div class="overlay" id="batchServiceMsgOverlay">
+  <div class="modal" style="max-width:600px">
+    <h3>批量服务信息</h3>
+    <textarea id="batchServiceMsgContent" style="width:100%;height:400px;font-family:monospace;font-size:12px;padding:10px;border:1px solid var(--border);border-radius:6px;resize:vertical"></textarea>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeBatchServiceMsg()">关闭</button>
+      <button class="btn primary" onclick="copyBatchServiceMsg()">复制全部</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 智能报价分析弹窗 ===== -->
+<div class="overlay" id="smartPriceOverlay">
+  <div class="modal" style="max-width:450px">
+    <h3>智能报价分析</h3>
+    <div id="smartPriceContent"></div>
   </div>
 </div>
 
