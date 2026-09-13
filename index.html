@@ -1290,6 +1290,10 @@ textarea{resize:vertical;line-height:1.5}
       <div class="fgroup"><label>所在城市</label><input type="text" id="gCity" list="cityList" placeholder="如 北京"></div>
       <div class="fgroup full"><label>来源渠道</label><select id="gSource"><option value="">— 不填 —</option><option>微信</option><option>WhatsApp</option><option>社交媒体</option><option>老客转介</option><option>邮件</option><option>其他</option></select></div>
       <div class="fgroup full"><label>备注</label><input type="text" id="gNote" placeholder="如 3岁儿童需儿童座椅 / 中文司机优先"></div>
+      <div class="fgroup"><label>护照有效期</label><input type="text" id="gPassportExpiry" placeholder="如 2028-12-31"></div>
+      <div class="fgroup"><label>客人等级</label><select id="gLevel"><option value="">普通</option><option value="VIP">VIP</option><option value="重要">重要客户</option><option value="黑名单">黑名单</option></select></div>
+      <div class="fgroup full"><label>偏好 / 特殊需求</label><textarea id="gPreferences" placeholder="如：中文司机优先 / 需儿童座椅 / 素食 / 轮椅友好 / 喜欢岚图梦想家" style="min-height:60px"></textarea></div>
+      <div class="fgroup full"><label>标签（逗号分隔）</label><input type="text" id="gTags" placeholder="如：亲子,商务,摄影,美食"></div>
     </div>
     <div id="guestOrders" style="margin-top:6px"></div>
     <div class="modal-foot">
@@ -2489,6 +2493,7 @@ function openGuestModal(id){
   $('guestModalTitle').textContent = id? '客人档案' : '添加客人';
   $('gName').value=g.name||''; $('gPhone').value=g.phone||''; $('gWechat').value=g.wechat||''; $('gPassport').value=g.passport||'';
   $('gCountry').value=g.country||''; $('gCity').value=g.city||''; $('gSource').value=g.source||''; $('gNote').value=g.note||'';
+  $('gPassportExpiry').value=g.passportExpiry||''; $('gLevel').value=g.level||''; $('gPreferences').value=g.preferences||''; $('gTags').value=g.tags||'';
   $('gDelBtn').style.display = id? 'inline-flex':'none';
   const os=id? guestOrders(g) : [];
   $('guestOrders').innerHTML = os.length? '<div style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px"><b style="font-size:13px">历史订单 '+os.length+' 单</b><div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">'+os.map(o=>{
@@ -2505,7 +2510,7 @@ function saveGuestModal(){
   const passport = passportEl ? passportEl.value.trim() : '';
   const name=$('gName').value.trim();
   if(!name){ toast('请填写客人姓名'); $('gName').focus(); return; }
-  const obj={name, phone:$('gPhone').value.trim(), wechat:$('gWechat').value.trim(), country:$('gCountry').value.trim(), city:$('gCity').value.trim(), source:$('gSource').value, note:$('gNote').value.trim(), passport:passport};
+  const obj={name, phone:$('gPhone').value.trim(), wechat:$('gWechat').value.trim(), country:$('gCountry').value.trim(), city:$('gCity').value.trim(), source:$('gSource').value, note:$('gNote').value.trim(), passport:passport, passportExpiry:$('gPassportExpiry').value.trim(), level:$('gLevel').value, preferences:$('gPreferences').value.trim(), tags:$('gTags').value.trim()};
   if(editingGuestId){ const g=S.guests.find(x=>x.id===editingGuestId); if(g) Object.assign(g,obj,{updatedAt:todayStr()}); }
   else S.guests.push(Object.assign({id:uid(), contact:'', createdAt:todayStr(), updatedAt:todayStr()},obj));
   saveState(S); renderGuests(); syncGuestList(); closeGuestModal(); toast('已保存客人');
@@ -2947,10 +2952,14 @@ function openGuestDetail(id){
   if(g.phone) html+='<div><span style="color:var(--text-3)">电话/WhatsApp：</span><a href="tel:'+escapeHtml(g.phone)+'" style="color:var(--accent);text-decoration:none">'+escapeHtml(g.phone)+'</a></div>';
   if(g.wechat) html+='<div><span style="color:var(--text-3)">微信：</span>'+escapeHtml(g.wechat)+'</div>';
   if(g.passport) html+='<div><span style="color:var(--text-3)">护照号：</span>'+escapeHtml(g.passport)+'</div>';
+  if(g.passportExpiry) html+='<div><span style="color:var(--text-3)">护照有效期：</span>'+escapeHtml(g.passportExpiry)+'</div>';
+  if(g.level) html+='<div><span style="color:var(--text-3)">客人等级：</span><span style="color:'+(g.level==='VIP'?'#d4a017':g.level==='黑名单'?'#c0392b':'var(--accent)')+';font-weight:600">'+escapeHtml(g.level)+'</span></div>';
   if(g.country) html+='<div><span style="color:var(--text-3)">国籍/地区：</span>'+escapeHtml(g.country)+'</div>';
   if(g.city) html+='<div><span style="color:var(--text-3)">城市：</span>'+escapeHtml(g.city)+'</div>';
   if(g.source) html+='<div><span style="color:var(--text-3)">来源：</span>'+escapeHtml(g.source)+'</div>';
   if(g.note) html+='<div style="grid-column:1/-1"><span style="color:var(--text-3)">备注：</span>'+escapeHtml(g.note)+'</div>';
+  if(g.preferences) html+='<div style="grid-column:1/-1"><span style="color:var(--text-3)">偏好/特殊需求：</span>'+escapeHtml(g.preferences)+'</div>';
+  if(g.tags) html+='<div style="grid-column:1/-1"><span style="color:var(--text-3)">标签：</span>'+g.tags.split(',').map(t=>'<span style="display:inline-block;background:var(--accent-soft);color:var(--accent-dark);padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px">'+escapeHtml(t.trim())+'</span>').join('')+'</div>';
   html+='</div></div>';
   html+='<div style="font-weight:600;margin-bottom:8px;font-size:14px">历史订单 ('+orders.length+')</div>';
   if(orders.length){
@@ -5817,6 +5826,9 @@ function renderServiceConfirm(o){
             <tr><td>行程线路</td><td>${escapeHtml(o.route||'')}</td></tr>
             ${o.flight?`<tr><td>航班信息</td><td>${escapeHtml(o.flight||'')}</td></tr>`:''}
             <tr><td>车型</td><td>${escapeHtml(o.vehicle||'')}</td></tr>
+            ${o.signBoard?`<tr><td>接机牌</td><td>${escapeHtml(o.signBoard||'')}</td></tr>`:''}
+            ${o.luggage?`<tr><td>行李</td><td>${escapeHtml(o.luggage||'')}</td></tr>`:''}
+            ${o.specialRequests?`<tr><td>特殊需求</td><td>${escapeHtml(o.specialRequests||'')}</td></tr>`:''}
           </table>
         </div>
         ${o.driver?`
@@ -5827,6 +5839,8 @@ function renderServiceConfirm(o){
             <tr><td>联系电话</td><td>${escapeHtml(driver.phone||'')}</td></tr>
             <tr><td>车型</td><td>${escapeHtml(driver.vehicle||o.vehicle||'')}</td></tr>
             <tr><td>车牌号</td><td>${escapeHtml(o.plate||driver.plate||'')}</td></tr>
+            ${driver.color?`<tr><td>车辆颜色</td><td>${escapeHtml(driver.color||'')}</td></tr>`:''}
+            ${driver.note?`<tr><td>司机备注</td><td>${escapeHtml(driver.note||'')}</td></tr>`:''}
           </table>
         </div>`:''}
         <div class="confirm-section">
@@ -5875,6 +5889,9 @@ function renderServiceConfirm(o){
             <tr><td>Route</td><td>${escapeHtml(o.route||'')}</td></tr>
             ${o.flight?`<tr><td>Flight</td><td>${escapeHtml(o.flight||'')}</td></tr>`:''}
             <tr><td>Vehicle</td><td>${escapeHtml(o.vehicle||'')}</td></tr>
+            ${o.signBoard?`<tr><td>Sign Board</td><td>${escapeHtml(o.signBoard||'')}</td></tr>`:''}
+            ${o.luggage?`<tr><td>Luggage</td><td>${escapeHtml(o.luggage||'')}</td></tr>`:''}
+            ${o.specialRequests?`<tr><td>Special Requests</td><td>${escapeHtml(o.specialRequests||'')}</td></tr>`:''}
           </table>
         </div>
         ${o.driver?`
@@ -5885,6 +5902,8 @@ function renderServiceConfirm(o){
             <tr><td>Phone</td><td>${escapeHtml(driver.phone||'')}</td></tr>
             <tr><td>Vehicle</td><td>${escapeHtml(driver.vehicle||o.vehicle||'')}</td></tr>
             <tr><td>Plate No.</td><td>${escapeHtml(o.plate||driver.plate||'')}</td></tr>
+            ${driver.color?`<tr><td>Color</td><td>${escapeHtml(driver.color||'')}</td></tr>`:''}
+            ${driver.note?`<tr><td>Driver Note</td><td>${escapeHtml(driver.note||'')}</td></tr>`:''}
           </table>
         </div>`:''}
         <div class="confirm-section">
