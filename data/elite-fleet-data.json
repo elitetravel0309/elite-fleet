@@ -852,6 +852,37 @@
           "note": "新订单录入，已指派司机刘杰"
         }
       ]
+    },
+    {
+      "id": "x2609160630ralf_1789303924236",
+      "date": "2026-09-16",
+      "time": "06:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "北京内蒙古大厦 → 慕田峪长城 → 市区一个点 → 北京内蒙古大厦/市区点",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Ralf",
+      "contact": "有微信，可建群",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "collectAmount": 0,
+      "status": "confirmed",
+      "note": "早上06:30-07:00酒店接，慕田峪长城+市区一个点，回酒店或者市区的那个点下；酒店：北京内蒙古大厦(王府井商业街东单地铁站店)，北京东城区崇文门内大街2号，Inner Mongolia Grand Hotel Wangfujing Beijing，Address: NO.2, Chong Wen Men Nei Street, Dong Cheng District, Beijing；有微信可建群；不用代收",
+      "city": "北京",
+      "_lastModified": 1789303924236,
+      "statusHistory": [
+        {
+          "status": "confirmed",
+          "time": 1789303924236,
+          "note": "新订单录入"
+        }
+      ]
     }
   ],
   "vehicles": [
