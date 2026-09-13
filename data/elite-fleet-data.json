@@ -728,6 +728,37 @@
           "note": "新订单录入"
         }
       ]
+    },
+    {
+      "id": "x2609140730iain_1789280166585",
+      "date": "2026-09-14",
+      "time": "07:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "秦府酒店 → 金山岭长城 → 北京南站",
+      "vehicle": "五座",
+      "pax": 3,
+      "guest": "Iain",
+      "contact": "+34 652 06 83 35",
+      "driver": "刘洋",
+      "plate": "京ACN2007",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "collectAmount": 0,
+      "status": "confirmed",
+      "note": "7:30酒店接，金山岭长城，16:30左右到达北京南站（客人是18:00的高铁）；酒店：秦府酒店(北京南锣鼓巷后海店)，北京东城区宝钞胡同甲107号；Hotel is Qinfu hotel just off Baochao hutong；司机：刘师傅，车型：极狐525黑色，车牌：京ACN2007，电话：15120033382",
+      "city": "北京",
+      "_lastModified": 1789280166585,
+      "statusHistory": [
+        {
+          "status": "confirmed",
+          "time": 1789280166585,
+          "note": "新订单录入，已指派司机刘师傅"
+        }
+      ]
     }
   ],
   "vehicles": [
