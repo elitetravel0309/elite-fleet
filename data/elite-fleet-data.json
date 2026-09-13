@@ -759,6 +759,37 @@
           "note": "新订单录入，已指派司机刘师傅"
         }
       ]
+    },
+    {
+      "id": "x2609140800olha_1789280598267",
+      "date": "2026-09-14",
+      "time": "08:00",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "昆明君悦酒店 → 石林 → 昆明君悦酒店",
+      "vehicle": "五座",
+      "pax": 1,
+      "guest": "Olha Vorobey",
+      "contact": "+1 (514) 663-3999",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 850,
+      "quote": 850,
+      "cost": 550,
+      "collectAmount": 0,
+      "status": "confirmed",
+      "note": "08:00酒店接，去石林，回酒店；酒店：昆明君悦酒店，云南昆明盘龙区崇礼街1号；成本550，报价850，利润300",
+      "city": "昆明",
+      "_lastModified": 1789280598267,
+      "statusHistory": [
+        {
+          "status": "confirmed",
+          "time": 1789280598267,
+          "note": "新订单录入，已成交"
+        }
+      ]
     }
   ],
   "vehicles": [
