@@ -2824,7 +2824,7 @@ function openFleetSettlement(fleetName){
     html += '<td>'+escapeHtml(o.guest||'')+'</td>';
     html += '<td>¥'+(+o.cost||0)+'</td>';
     html += '<td><span style="color:'+(o.settled?'#2E7D6B':'#d4a017')+'">'+(o.settled?'已结算':'待结算')+'</span></td>';
-    html += '<td><button class="btn ghost" style="padding:2px 8px;font-size:11px" onclick="toggleSettle(''+o.id+'')">'+(o.settled?'取消结算':'标记结算')+'</button></td>';
+    html += '<td><button class="btn ghost" style="padding:2px 8px;font-size:11px" onclick="toggleSettle(\''+o.id+'\')">'+(o.settled?'取消结算':'标记结算')+'</button></td>';
     html += '</tr>';
   });
   html += '</tbody></table>';
@@ -3942,7 +3942,7 @@ function openDriverSettlement(driverName){
     html += '<td>'+escapeHtml(o.guest||'')+'</td>';
     html += '<td>¥'+(+o.cost||0)+'</td>';
     html += '<td><span style="color:'+(o.driverSettled?'#2E7D6B':'#d4a017')+'">'+(o.driverSettled?'已结算':'待结算')+'</span></td>';
-    html += '<td><button class="btn ghost" style="padding:2px 8px;font-size:11px" onclick="toggleDriverSettle(''+o.id+'')">'+(o.driverSettled?'取消结算':'标记结算')+'</button></td>';
+    html += '<td><button class="btn ghost" style="padding:2px 8px;font-size:11px" onclick="toggleDriverSettle(\''+o.id+'\')">'+(o.driverSettled?'取消结算':'标记结算')+'</button></td>';
     html += '</tr>';
   });
   html += '</tbody></table>';
@@ -4136,7 +4136,7 @@ function openDriverSettlement(driverName){
     html += '<td>'+escapeHtml(o.guest||'')+'</td>';
     html += '<td>¥'+(+o.cost||0)+'</td>';
     html += '<td><span style="color:'+(o.driverSettled?'#2E7D6B':'#d4a017')+'">'+(o.driverSettled?'已结算':'待结算')+'</span></td>';
-    html += '<td><button class="btn ghost" style="padding:2px 8px;font-size:11px" onclick="toggleDriverSettle(''+o.id+'')">'+(o.driverSettled?'取消结算':'标记结算')+'</button></td>';
+    html += '<td><button class="btn ghost" style="padding:2px 8px;font-size:11px" onclick="toggleDriverSettle(\''+o.id+'\')">'+(o.driverSettled?'取消结算':'标记结算')+'</button></td>';
     html += '</tr>';
   });
   html += '</tbody></table>';
@@ -6268,6 +6268,126 @@ function saveDriverRating(){
 /* ============================================================
    数据看板
    ============================================================ */
+/* 通知提醒系统 */
+function checkNotifications(){
+  const today = todayStr();
+  const notifications = [];
+  
+  // 1. 今日任务提醒
+  const todayOrders = S.orders.filter(o=>o.date===today && o.status!=='cancelled' && o.status!=='done');
+  if(todayOrders.length){
+    const unassigned = todayOrders.filter(o=>!o.driver);
+    notifications.push({
+      type: 'warning',
+      icon: '📅',
+      title: '今日有 '+todayOrders.length+' 个任务',
+      desc: unassigned.length? '其中 '+unassigned.length+' 个未指派司机' : '全部已指派司机',
+      action: '查看今日排班'
+    });
+  }
+  
+  // 2. 待跟进订单提醒
+  const pending = S.orders.filter(o=>['inquiry','quoted','pending'].includes(o.status));
+  if(pending.length){
+    const oldPending = pending.filter(o=>{
+      const days = Math.floor((new Date(today)-new Date(o.date))/(1000*60*60*24));
+      return days>3;
+    });
+    notifications.push({
+      type: 'info',
+      icon: '⏰',
+      title: pending.length+' 单待跟进',
+      desc: oldPending.length? oldPending.length+' 单超过3天未跟进' : '请及时跟进',
+      action: '查看待跟进'
+    });
+  }
+  
+  // 3. 明天任务提醒
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate()+1);
+  const tomorrowStr = tomorrow.toISOString().slice(0,10);
+  const tomorrowOrders = S.orders.filter(o=>o.date===tomorrowStr && o.status!=='cancelled');
+  if(tomorrowOrders.length){
+    const unassigned = tomorrowOrders.filter(o=>!o.driver);
+    notifications.push({
+      type: 'warning',
+      icon: '🚗',
+      title: '明天有 '+tomorrowOrders.length+' 个任务',
+      desc: unassigned.length? unassigned.length+' 个未指派司机，请尽快安排' : '全部已指派司机',
+      action: '查看明天排班'
+    });
+  }
+  
+  // 4. 司机冲突检测
+  const driverConflicts = checkDriverConflicts();
+  if(driverConflicts.length){
+    notifications.push({
+      type: 'danger',
+      icon: '⚠️',
+      title: '检测到 '+driverConflicts.length+' 个司机冲突',
+      desc: '同一司机在同一时间有多个任务',
+      action: '查看冲突'
+    });
+  }
+  
+  // 显示通知
+  if(notifications.length){
+    showNotificationPanel(notifications);
+  }
+}
+
+function checkDriverConflicts(){
+  const conflicts = [];
+  const driverOrders = {};
+  S.orders.forEach(o=>{
+    if(!o.driver || o.status==='cancelled') return;
+    if(!driverOrders[o.driver]) driverOrders[o.driver] = [];
+    driverOrders[o.driver].push(o);
+  });
+  Object.entries(driverOrders).forEach(([driver, orders])=>{
+    const dateGroups = {};
+    orders.forEach(o=>{
+      if(!dateGroups[o.date]) dateGroups[o.date] = [];
+      dateGroups[o.date].push(o);
+    });
+    Object.entries(dateGroups).forEach(([date, dayOrders])=>{
+      if(dayOrders.length>1){
+        // 简单检测：同一天有多个任务可能冲突
+        conflicts.push({driver, date, count: dayOrders.length});
+      }
+    });
+  });
+  return conflicts;
+}
+
+function showNotificationPanel(notifications){
+  const container = $('notificationPanel');
+  if(!container) return;
+  
+  let html = '<div class="notification-list">';
+  notifications.forEach(n=>{
+    const colorMap = {
+      warning: '#d4a017',
+      info: '#2E7D6B',
+      danger: '#c0392b',
+      success: '#27ae60'
+    };
+    html += '<div class="notification-item" style="border-left:3px solid '+(colorMap[n.type]||'var(--accent)')+';background:var(--bg);padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:8px;cursor:pointer" onclick="dismissNotification(this)">';
+    html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">'+n.icon+'</span><span style="font-weight:600;font-size:13px">'+n.title+'</span></div>';
+    html += '<div style="font-size:12px;color:var(--text-3);margin-top:4px;margin-left:24px">'+n.desc+'</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  container.style.display = 'block';
+}
+
+function dismissNotification(el){
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(100%)';
+  setTimeout(()=>el.remove(), 300);
+}
+
 function renderDashboard(){
   const period = $('dashboardPeriod') ? $('dashboardPeriod').value : 'all';
   let orders = [...(S.orders||[])];
@@ -6298,6 +6418,19 @@ function renderDashboard(){
   const pendingOrders = orders.filter(o=>['inquiry','quoted','pending'].includes(o.status)).length;
   const unassignedDrivers = orders.filter(o=>!o.driver && o.status!=='done' && o.status!=='cancelled').length;
 
+  // 计算城市分布
+  const cityCount = {};
+  orders.forEach(o=>{
+    const city = o.city || '未知';
+    cityCount[city] = (cityCount[city]||0)+1;
+  });
+  const topCity = Object.entries(cityCount).sort((a,b)=>b[1]-a[1])[0];
+  
+  // 计算车队和司机结算
+  const fleetSettled = orders.filter(o=>o.settled).length;
+  const driverSettled = orders.filter(o=>o.driverSettled).length;
+  const unsettledFleetAmount = orders.filter(o=>!o.settled).reduce((s,o)=>s+((+o.cost)||0),0);
+  
   $('dashboardKpis').innerHTML = `
     <div class="kpi-card primary"><div class="kpi-label">总订单</div><div class="kpi-value">${totalOrders}</div><div class="kpi-sub">${period==='all'?'全部时间':'当前周期'}</div></div>
     <div class="kpi-card success"><div class="kpi-label">总收入</div><div class="kpi-value">¥${totalRevenue.toLocaleString()}</div><div class="kpi-sub">对外报价合计</div></div>
@@ -6305,6 +6438,8 @@ function renderDashboard(){
     <div class="kpi-card success"><div class="kpi-label">总利润</div><div class="kpi-value">¥${totalProfit.toLocaleString()}</div><div class="kpi-sub">利润率 ${avgProfitRate}%</div></div>
     <div class="kpi-card warning"><div class="kpi-label">待跟进</div><div class="kpi-value">${pendingOrders}</div><div class="kpi-sub">询价/已报价/待确认</div></div>
     <div class="kpi-card danger"><div class="kpi-label">未派司机</div><div class="kpi-value">${unassignedDrivers}</div><div class="kpi-sub">需尽快安排</div></div>
+    <div class="kpi-card"><div class="kpi-label">热门城市</div><div class="kpi-value" style="font-size:18px">${topCity?topCity[0]:'-'}</div><div class="kpi-sub">${topCity?topCity[1]+' 单':'暂无数据'}</div></div>
+    <div class="kpi-card warning"><div class="kpi-label">待结算车队</div><div class="kpi-value">¥${unsettledFleetAmount.toLocaleString()}</div><div class="kpi-sub">${orders.length-fleetSettled} 单未结算</div></div>
   `;
 
   // 订单与收入趋势（按月）
@@ -6971,6 +7106,17 @@ function batchDelete(){
       <button class="btn ghost" onclick="copyItinerary(currentItineraryId)">复制文本</button>
       <button class="btn ghost" onclick="window.print()">打印</button>
       <button class="btn primary" onclick="document.getElementById('itineraryOverlay').classList.remove('open')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 订单状态历史弹窗 ===== -->
+<div class="overlay" id="orderHistoryOverlay">
+  <div class="modal" style="max-width:500px">
+    <h3 id="historyOrderTitle">订单状态历史</h3>
+    <div id="historyContent"></div>
+    <div class="modal-foot">
+      <button class="btn primary" onclick="closeOrderHistory()">关闭</button>
     </div>
   </div>
 </div>
