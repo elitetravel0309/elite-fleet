@@ -883,6 +883,40 @@
           "note": "新订单录入"
         }
       ]
+    },
+    {
+      "id": "x2610090900tanelly_1789570503418",
+      "date": "2026-10-09",
+      "time": "09:00",
+      "type": "arrival",
+      "airport": "KMG",
+      "flight": "8L-834",
+      "route": "昆明长水国际机场 → 九乡 → 石林 → 昆明市区酒店（酒店待定）",
+      "vehicle": "七座",
+      "pax": 4,
+      "guest": "Tan Elly Marina Sutanty",
+      "contact": "WhatsApp +62 821-6534-5701 / sutanty@yahoo.com",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "collectAmount": 0,
+      "status": "confirmed",
+      "note": "接机牌：Tan Elly Marina Sutanty；航班8L-834（祥鹏航空）预计08:15抵达，09:00接机（可根据实际到达调整，司机跟踪航班）；4人+6件行李；行程：昆明长水机场→九乡→石林→昆明市区酒店（酒店名称地址稍后提供）；车型7座商务车/MPV；Email: sutanty@yahoo.com；WhatsApp: +62 821-6534-5701；价格待定（参考价库：昆明石林九乡线路九座车800成本/1200报价）",
+      "city": "昆明",
+      "signBoard": "Tan Elly Marina Sutanty",
+      "luggage": "6件行李",
+      "specialRequests": "接机时间可根据航班实际到达调整，司机跟踪航班",
+      "_lastModified": 1789570503418,
+      "statusHistory": [
+        {
+          "status": "confirmed",
+          "time": 1789570503418,
+          "note": "新订单录入"
+        }
+      ]
     }
   ],
   "vehicles": [
@@ -3439,13 +3473,29 @@
       "totalOrders": 1,
       "totalSpent": 0,
       "_lastModified": 1789173437662
+    },
+    {
+      "id": "gst_1789570503418_tanelly",
+      "name": "Tan Elly Marina Sutanty",
+      "phone": "+62 821-6534-5701",
+      "whatsapp": "+62 821-6534-5701",
+      "wechat": "",
+      "email": "sutanty@yahoo.com",
+      "nationality": "印尼",
+      "city": "昆明",
+      "note": "印尼客人，4人+6件行李，2026-10-09昆明机场接机→九乡→石林→市区酒店",
+      "totalOrders": 1,
+      "totalSpent": 0,
+      "_lastModified": 1789570503418
     }
   ],
   "_meta": {
     "built": "2026-09-10T16:25:39.551Z",
-    "source": "workbench-upload"
+    "source": "workbench-upload",
+    "orderCount": 37,
+    "guestCount": 26
   },
-  "_lastModified": 1789057464793,
+  "_lastModified": 1789570503418,
   "hotels": [
     {
       "id": "hotel_luoyang_mehood",
