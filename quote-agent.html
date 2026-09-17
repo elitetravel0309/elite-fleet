@@ -62,6 +62,13 @@
   .p-cell.gold{background:linear-gradient(135deg,rgba(201,162,75,.14),rgba(201,162,75,.05));border-color:rgba(201,162,75,.45);}
   .p-cell.gold .val{color:var(--navy);}
   .p-cell .sub2{font-size:10.5px;color:var(--ink-3);margin-top:2px;}
+  .smart-panel{margin-top:12px;background:#F3F6FB;border:1px solid #D8E2EF;border-radius:12px;padding:12px 14px;font-size:12.5px;}
+  .smart-panel .sp-title{font-weight:700;color:var(--navy);font-size:12px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .smart-panel .sp-row{display:flex;justify-content:space-between;gap:8px;padding:3px 0;color:var(--ink-2);flex-wrap:wrap;}
+  .smart-panel .sp-row b{color:var(--ink);}
+  .smart-panel .sp-tag{font-size:11px;background:var(--gold);color:#fff;border-radius:6px;padding:1px 7px;font-weight:600;}
+  .smart-panel .sp-ok{color:var(--green);font-weight:600;}
+  .smart-panel .sp-warn{color:var(--red);font-weight:600;}
   /* slider */
   .slider-row{display:flex;align-items:center;gap:12px;margin-top:12px;}
   .slider-row input[type=range]{flex:1;accent-color:var(--navy);height:28px;}
@@ -136,6 +143,12 @@
   </div>
 
   <div class="card no-print">
+    <div class="step-t"><span class="step-n">0</span><h2>从工作台订单生成</h2><span class="hint" id="orderCount"></span></div>
+    <label class="f">选择已有订单（自动带出客人/日期/行程/车型）</label>
+    <select id="selOrder"><option value="">加载中…</option></select>
+  </div>
+
+  <div class="card no-print">
     <div class="step-t"><span class="step-n">1</span><h2>选择城市</h2><span class="hint" id="cityCount"></span></div>
     <select id="selCity"><option value="">请选择城市</option></select>
   </div>
@@ -171,6 +184,7 @@
       <div class="p-cell"><div class="lab">建议报价</div><div class="val" id="pSuggest">-</div></div>
       <div class="p-cell gold"><div class="lab">利润</div><div class="val" id="pProfit">-</div><div class="sub2" id="pProfitRate"></div></div>
     </div>
+    <div class="smart-panel" id="smartPanel"></div>
   </div>
 
   <div class="card no-print hidden" id="cardQuote">
@@ -219,6 +233,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
 
   /* ---------- data ---------- */
   var cities=[], routesByCity={}, vehByRoute={};
+  var CLOUD_ORDERS=[];
   var DATA_SRC='内置底库';
   function normCloudPrices(list){
     return (list||[]).map(function(p){
@@ -242,6 +257,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
             rebuild();
           }
         }
+        if(j&&j.orders){ CLOUD_ORDERS=j.orders; renderOrderSelect(); }
       }catch(e){}
     };
     xhr.onerror=function(){};
@@ -269,6 +285,78 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   function cityCount(){ return cities.length; }
 
   /* ---------- render ---------- */
+  function renderOrderSelect(){
+    var sel=$('selOrder');
+    if(!sel) return;
+    var pending=CLOUD_ORDERS.filter(function(o){return o.status!=='cancelled'&&o.status!=='done';});
+    pending.sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
+    $('orderCount').textContent=pending.length+' 单待报价';
+    if(!pending.length){ sel.innerHTML='<option value="">暂无待报价订单</option>'; return; }
+    sel.innerHTML='<option value="">选择订单（自动带出信息）</option>';
+    pending.forEach(function(o){
+      var opt=document.createElement('option');
+      opt.value=o.id;
+      opt.textContent=(o.date||'')+' '+(o.time||'')+' '+(o.guest||'')+' · '+(o.city||'');
+      sel.appendChild(opt);
+    });
+  }
+
+  function matchRouteByOrder(o){
+    var text=(o.route||'')+' '+(o.note||'');
+    var routes=Object.keys(routesByCity[state.city]||{});
+    var best=null,bestScore=0;
+    routes.forEach(function(r){
+      var keys=r.split(/[→·\s,，、/]+/).filter(function(k){return k.length>=2;});
+      var score=0;
+      keys.forEach(function(k){ if(text.indexOf(k)>=0) score+=k.length; });
+      if(score>bestScore){ bestScore=score; best=r; }
+    });
+    return bestScore>=2?best:null;
+  }
+
+  function applyOrder(id){
+    var o=null;
+    CLOUD_ORDERS.forEach(function(x){ if(x.id===id) o=x; });
+    if(!o) return;
+    state.city=o.city||''; state.route=''; state.veh=null;
+    $('inGuest').value=o.guest||'';
+    $('inPax').value=o.pax||2;
+    $('inDate').value=o.date||todayStr();
+    $('inTime').value=o.time||'';
+    var note=[];
+    if(o.airport&&o.flight) note.push((o.type==='arrival'?'接机 ':'')+(o.type==='departure'?'送机 ':'')+o.airport+' '+o.flight);
+    if(o.route) note.push(o.route);
+    if(o.note) note.push(o.note);
+    $('inNote').value=note.join('；');
+    if(state.city&&cities.indexOf(state.city)>=0){
+      $('selCity').value=state.city;
+      renderRoutes();
+      $('cardRoute').classList.remove('hidden');
+      $('cardVeh').classList.add('hidden');
+      $('cardOrder').classList.add('hidden');
+      $('cardQuote').classList.add('hidden');
+      var mr=matchRouteByOrder(o);
+      if(mr){
+        state.route=mr;
+        renderRoutes();
+        renderVeh();
+        $('cardVeh').classList.remove('hidden');
+        var ps=routesByCity[state.city][mr]||[];
+        var mv=null;
+        ps.forEach(function(p){ if(!mv&&(o.vehicle||'').indexOf(p.v)>=0) mv=p; });
+        if(!mv&&ps.length) mv=ps[0];
+        if(mv){ state.veh=mv; renderVeh(); syncOrder(); $('cardOrder').classList.remove('hidden'); }
+      }
+      showCard('cardOrder');
+      window.scrollTo({top:0,behavior:'smooth'});
+      toast('已带入订单 '+o.guest);
+    }else{
+      $('selCity').value='';
+      showCard('cardOrder');
+      toast('已带入订单信息，请选城市');
+    }
+  }
+
   function renderCities(){
     var sel=$('selCity');
     sel.innerHTML='<option value="">请选择城市</option>';
@@ -326,19 +414,67 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     });
   }
 
+  /* 从历史已成交订单学习该城市/线路的实际利润率（quote/cost） */
+  function learnedMargin(city,route){
+    var samples=[];
+    CLOUD_ORDERS.forEach(function(o){
+      if(o.status!=='confirmed'&&o.status!=='done') return;
+      if(o.cost>0&&o.quote>0&&(o.city||'')===city){
+        var sameRoute=false;
+        if(route&&o.route) sameRoute=(o.route.indexOf(route.slice(0,4))>=0)||(route.indexOf(o.route.slice(0,4))>=0);
+        if(sameRoute||!route) samples.push(o.quote/o.cost);
+      }
+    });
+    if(!samples.length) return null;
+    samples.sort(function(a,b){return a-b;});
+    var med=samples[Math.floor(samples.length/2)];
+    return Math.round((med-1)*100);
+  }
+
   function calc(){
     var p=state.veh;
-    if(!p) return {cost:null,suggest:null,profit:null,rate:null};
+    if(!p) return {cost:null,suggest:null,profit:null,rate:null,floor:null,learned:null,night:false,holiday:false};
     var cost=p.cost>0?money(p.cost):null;
     var quote=p.q>0?money(p.q):null;
     var m=state.margin/100;
+    var learned=learnedMargin(state.city,state.route);
     var suggest=null;
     if(quote!=null) suggest=quote;
-    else if(cost!=null) suggest=Math.round(cost*(1+m)/10)*10;
+    else if(cost!=null){
+      var eff=learned!=null?learned/100:m;
+      suggest=Math.round(cost*(1+eff)/10)*10;
+    }
+    var floor=cost!=null?Math.round(cost*1.05/10)*10:null;
     var profit=null,rate=null;
     if(suggest!=null&&cost!=null){ profit=suggest-cost; rate=Math.round(profit/cost*100)+'%'; }
     else if(suggest!=null&&cost==null){ profit=null; rate='成本待补'; }
-    return {cost:cost,suggest:suggest,profit:profit,rate:rate};
+    var night=false,holiday=false;
+    var t=$('inTime')&&$('inTime').value.trim();
+    if(t){ var h=parseInt(t.split(':')[0],10); if(!isNaN(h)&&(h>=21||h<7)) night=true; }
+    var dt=$('inDate')&&$('inDate').value;
+    if(dt){
+      var d=new Date(dt+'T00:00:00');
+      var cnHoliday=['2026-10-01','2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06','2026-10-07','2026-01-01','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-05-01','2026-05-02','2026-05-03','2026-05-04','2026-05-05','2026-06-25','2026-06-26','2026-06-27'];
+      if(cnHoliday.indexOf(dt)>=0) holiday=true;
+      else if(!isNaN(d.getTime())&&(d.getDay()===6||d.getDay()===0)) holiday=true;
+    }
+    return {cost:cost,suggest:suggest,profit:profit,rate:rate,floor:floor,learned:learned,night:night,holiday:holiday};
+  }
+
+  function renderSmartPanel(r){
+    var panel=$('smartPanel');
+    if(!panel) return;
+    var rows='';
+    var used=null;
+    if(r.quote!=null&&r.veh&&r.veh.q>0) used='参考价库定价';
+    else if(r.learned!=null) used='历史成交中位利润率 '+r.learned+'%';
+    else used='默认利润率 '+state.margin+'%';
+    rows+='<div class="sp-row"><span>定价依据</span><b>'+used+'</b></div>';
+    if(r.floor!=null) rows+='<div class="sp-row"><span>可接受底价（成本+5%）</span><b>¥'+r.floor.toLocaleString()+'</b></div>';
+    if(r.night) rows+='<div class="sp-row"><span>时段提醒</span><b class="sp-warn">夜间用车（21:00-07:00），可加价 10%-15%</b></div>';
+    if(r.holiday) rows+='<div class="sp-row"><span>日期提醒</span><b class="sp-warn">周末/法定节假日，可加价 10%-20%</b></div>';
+    if(r.night&&r.veh&&r.veh.q>0) rows+='<div class="sp-row"><span>议价空间</span><b class="sp-ok">底价以上可谈，别低于 ¥'+(r.floor!=null?r.floor.toLocaleString():'-')+'</b></div>';
+    panel.innerHTML='<div class="sp-title">智能报价建议</div>'+rows;
   }
 
   function syncOrder(){
@@ -347,6 +483,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     $('pSuggest').innerHTML=r.suggest!=null?('¥'+r.suggest.toLocaleString()):'-';
     $('pProfit').innerHTML=r.profit!=null?('¥'+r.profit.toLocaleString()):'-';
     $('pProfitRate').textContent=r.rate||'';
+    renderSmartPanel(r);
     if(state.veh){ renderQuote(); showCard('cardQuote'); }
   }
 
@@ -370,7 +507,6 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var p=state.veh, r=calc(), g=guestInfo();
     var doc=$('doc');
     if(!p){ doc.innerHTML='<div class="empty">请先选择车型</div>'; return; }
-    var costLine = r.cost!=null?('¥'+r.cost.toLocaleString()):'-';
     var priceLine = r.suggest!=null?('¥'+r.suggest.toLocaleString()):'待确认';
     if(lang==='zh'){
       doc.innerHTML=
@@ -384,7 +520,6 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
         '<tr><th>线路</th><td>'+esc(state.route)+'</td></tr>'+
         '<tr><th>车型</th><td>'+esc(p.v||'')+(p.d?'（'+esc(p.d)+'）':'')+'</td></tr>'+
         '<tr><th>人数</th><td>'+esc($('inPax').value||'')+' 人</td></tr>'+
-        '<tr><th>成本参考</th><td>'+costLine+'</td></tr>'+
         '<tr><th>行程说明</th><td>'+esc(g.note||'-')+'</td></tr>'+
         '</tbody></table>'+
         (p.n?'<div class="note">备注：'+esc(p.n)+'</div>':'')+
@@ -401,7 +536,6 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
         '<tr><th>Route</th><td>'+esc(state.route)+'</td></tr>'+
         '<tr><th>Vehicle</th><td>'+esc(p.v||'')+(p.d?' ('+esc(p.d)+')':'')+'</td></tr>'+
         '<tr><th>Passengers</th><td>'+esc($('inPax').value||'')+'</td></tr>'+
-        '<tr><th>Cost Ref.</th><td>'+costLine+'</td></tr>'+
         '<tr><th>Itinerary</th><td>'+esc(g.note||'-')+'</td></tr>'+
         '</tbody></table>'+
         (p.n?'<div class="note">Note: '+esc(p.n)+'</div>':'')+
@@ -482,6 +616,9 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   function showCard(id){ $(id).classList.remove('hidden'); }
 
   /* ---------- events ---------- */
+  $('selOrder').addEventListener('change',function(){
+    if(this.value) applyOrder(this.value);
+  });
   $('selCity').addEventListener('change',function(){
     state.city=this.value; state.route=''; state.veh=null;
     if(!state.city){ return; }
@@ -497,8 +634,8 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     syncOrder();
   });
   $('inGuest').addEventListener('input',renderQuote);
-  $('inDate').addEventListener('change',renderQuote);
-  $('inTime').addEventListener('input',renderQuote);
+  $('inDate').addEventListener('change',function(){ syncOrder(); renderQuote(); });
+  $('inTime').addEventListener('input',function(){ syncOrder(); renderQuote(); });
   $('inNote').addEventListener('input',renderQuote);
   $('inPax').addEventListener('input',renderQuote);
   $('langZh').addEventListener('click',function(){ lang='zh'; this.classList.add('on'); $('langEn').classList.remove('on'); renderQuote(); });
@@ -514,6 +651,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   buildIndex();
   renderCities();
   renderHist();
+  $('selOrder').innerHTML='<option value="">正在连接工作台…</option>';
   $('dataBadge').textContent=PRICE_BASE.length+' 条底价 · 内置';
   loadCloud();
 })();
