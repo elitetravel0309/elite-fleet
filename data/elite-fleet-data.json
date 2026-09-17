@@ -940,6 +940,37 @@
           "note": "新订单录入"
         }
       ]
+    },
+    {
+      "id": "x2609210830jose_1789660501769",
+      "date": "2026-09-21",
+      "time": "08:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "北京天伦王朝酒店 → 慕田峪长城 → 酒店或市中心指定下车点",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Jose Antonio Perez",
+      "contact": "WhatsApp +34 34628114601",
+      "driver": "",
+      "plate": "",
+      "fleet": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "collectAmount": 0,
+      "status": "confirmed",
+      "note": "08:30酒店接 → 慕田峪长城 → 酒店或市中心指定下车点；酒店：北京天伦王朝酒店（北京市东城区王府井大街50号 / Sunworld Dynasty Hotel Beijing Wangfujing）；不用代收",
+      "city": "北京",
+      "_lastModified": 1789660501769,
+      "statusHistory": [
+        {
+          "status": "confirmed",
+          "time": 1789660501769,
+          "note": "新订单录入"
+        }
+      ]
     }
   ],
   "vehicles": [
@@ -3669,13 +3700,29 @@
       "_lastModified": 1789570503418,
       "contact": "WhatsApp +62 821-6534-5701 / sutanty@yahoo.com",
       "updatedAt": "2026-09-16"
+    },
+    {
+      "id": "gst_1789660501769_jose",
+      "name": "Jose Antonio Perez",
+      "phone": "+34 34628114601",
+      "whatsapp": "+34 34628114601",
+      "wechat": "",
+      "email": "",
+      "nationality": "",
+      "city": "北京",
+      "note": "2人，2026-09-21 北京天伦王朝酒店→慕田峪长城",
+      "totalOrders": 1,
+      "totalSpent": 0,
+      "_lastModified": 1789660501769
     }
   ],
   "_meta": {
     "built": "2026-09-16T15:25:12.528Z",
-    "source": "workbench-upload"
+    "source": "workbench-upload",
+    "orderCount": 39,
+    "guestCount": 37
   },
-  "_lastModified": 1789572212365,
+  "_lastModified": 1789660501769,
   "inquiries": [],
   "payments": [],
   "driverRatings": [],
