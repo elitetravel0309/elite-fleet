@@ -69,6 +69,14 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
 .nav button.active svg{opacity:1}
 .nav .count{margin-left:auto;background:rgba(255,255,255,.14);border-radius:20px;font-size:11px;padding:1px 8px;font-weight:600}
 .nav button.active .count{background:rgba(255,255,255,.25)}
+.nav a.qa-link{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;
+  border-radius:9px;color:#C6D2E4;font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s,color .15s;
+  text-decoration:none;background:rgba(201,162,75,.14);border:1px solid rgba(201,162,75,.35);
+}
+.nav a.qa-link svg{width:18px;height:18px;flex:0 0 18px;opacity:.9}
+.nav a.qa-link:hover{background:rgba(201,162,75,.25);color:#fff}
+.nav a.qa-link .tag{margin-left:auto;background:rgba(201,162,75,.25);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;color:#E4C97F;white-space:nowrap}
 .side-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#7E91AD}
 /* ===== 主区 ===== */
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -235,6 +243,9 @@ textarea{resize:vertical;line-height:1.5}
   .nav button{flex-direction:column;gap:3px;padding:7px 8px;font-size:10.5px;text-align:center;min-width:64px;border-radius:10px;margin-bottom:0}
   .nav button svg{width:18px;height:18px;flex:none}
   .nav .count{display:none}
+  .nav a.qa-link{flex-direction:column;gap:3px;padding:7px 8px;font-size:10.5px;text-align:center;min-width:64px;border-radius:10px;margin-bottom:0}
+  .nav a.qa-link svg{width:18px;height:18px;flex:none}
+  .nav a.qa-link .tag{display:none}
   .main{min-width:0;padding-bottom:0}
   .content{padding:14px 14px 84px}
   .topbar{padding:12px 14px;gap:10px;flex-wrap:wrap}
@@ -442,6 +453,7 @@ textarea{resize:vertical;line-height:1.5}
     <div class="nav-label">资源</div>
     <button data-route="fleet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆与司机</button>
     <button data-route="prices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M16 8.5c-.6-.9-2-1.5-4-1.5s-3.4.6-3.4 1.8c0 3 7 1.5 7 4.5 0 1.2-1.6 1.9-3.6 1.9s-3.4-.6-3.6-1.5"/></svg>参考价库</button>
+    <a class="qa-link" href="quote-agent.html" target="_blank" rel="noopener" title="打开报价智能体，快速生成中英文报价单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>报价智能体<span class="tag">NEW</span></a>
     <div class="nav-label">数据</div>
     <button data-route="finance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>财务结算</button>
     <button data-route="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>数据与同步</button>
