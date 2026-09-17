@@ -69,6 +69,8 @@
   .smart-panel .sp-tag{font-size:11px;background:var(--gold);color:#fff;border-radius:6px;padding:1px 7px;font-weight:600;}
   .smart-panel .sp-ok{color:var(--green);font-weight:600;}
   .smart-panel .sp-warn{color:var(--red);font-weight:600;}
+  .override-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .override-row .hint{font-size:11px;color:var(--ink-3);margin-left:auto;}
   /* slider */
   .slider-row{display:flex;align-items:center;gap:12px;margin-top:12px;}
   .slider-row input[type=range]{flex:1;accent-color:var(--navy);height:28px;}
@@ -97,6 +99,7 @@
   .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink-2);}
   .btn.ghost:hover{border-color:var(--navy);color:var(--navy);}
   .btn.small{padding:8px 10px;font-size:12px;min-width:auto;flex:none;}
+  .btn.small.on{background:var(--navy);border-color:var(--navy);color:#fff;}
   /* lang switch */
   .lang-switch{display:flex;background:#F0EDE5;border-radius:10px;padding:3px;margin-left:auto;}
   .lang-switch button{border:none;background:transparent;padding:5px 14px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--ink-2);font-family:inherit;}
@@ -185,6 +188,11 @@
       <div class="p-cell gold"><div class="lab">利润</div><div class="val" id="pProfit">-</div><div class="sub2" id="pProfitRate"></div></div>
     </div>
     <div class="smart-panel" id="smartPanel"></div>
+    <div class="override-row no-print hidden" id="overrideRow">
+      <button class="btn small ghost" id="btnUseOrderQ">用订单已有报价</button>
+      <button class="btn small ghost" id="btnUseCalcQ">按成本+利润率重算</button>
+      <span class="hint" id="orderQuoteHint"></span>
+    </div>
   </div>
 
   <div class="card no-print hidden" id="cardQuote">
@@ -221,7 +229,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   'use strict';
   var $=function(id){return document.getElementById(id);};
   var lang='zh';
-  var state={city:'',route:'',veh:null,margin:30};
+  var state={city:'',route:'',veh:null,margin:30,orderCost:null,orderQuote:null,orderId:null,useOrderQ:false};
   var histKey='et_quote_history_v1';
 
   /* ---------- helpers ---------- */
@@ -289,14 +297,20 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var sel=$('selOrder');
     if(!sel) return;
     var pending=CLOUD_ORDERS.filter(function(o){return o.status!=='cancelled'&&o.status!=='done';});
-    pending.sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
-    $('orderCount').textContent=pending.length+' 单待报价';
-    if(!pending.length){ sel.innerHTML='<option value="">暂无待报价订单</option>'; return; }
+    var pri={inquiry:0,quoted:1,pending:2,confirmed:3,sent:4};
+    pending.sort(function(a,b){
+      var pa=pri[a.status]!=null?pri[a.status]:9, pb=pri[b.status]!=null?pri[b.status]:9;
+      if(pa!==pb) return pa-pb;
+      return (a.date||'').localeCompare(b.date||'');
+    });
+    var statZh={inquiry:'询价',quoted:'已报价',pending:'待确认',confirmed:'已确认',sent:'已派车'};
+    $('orderCount').textContent=pending.length+' 单待处理';
+    if(!pending.length){ sel.innerHTML='<option value="">暂无待处理订单</option>'; return; }
     sel.innerHTML='<option value="">选择订单（自动带出信息）</option>';
     pending.forEach(function(o){
       var opt=document.createElement('option');
       opt.value=o.id;
-      opt.textContent=(o.date||'')+' '+(o.time||'')+' '+(o.guest||'')+' · '+(o.city||'');
+      opt.textContent=(o.date||'')+' '+(o.time||'')+' '+(o.guest||'')+' ['+(statZh[o.status]||o.status||'')+'] · '+(o.city||'');
       sel.appendChild(opt);
     });
   }
@@ -319,6 +333,10 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     CLOUD_ORDERS.forEach(function(x){ if(x.id===id) o=x; });
     if(!o) return;
     state.city=o.city||''; state.route=''; state.veh=null;
+    state.orderId=o.id;
+    state.orderCost=(o.cost>0)?money(o.cost):null;
+    state.orderQuote=(o.quote>0)?money(o.quote):null;
+    state.useOrderQ=!!state.orderQuote;
     $('inGuest').value=o.guest||'';
     $('inPax').value=o.pax||2;
     $('inDate').value=o.date||todayStr();
@@ -414,30 +432,44 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     });
   }
 
-  /* 从历史已成交订单学习该城市/线路的实际利润率（quote/cost） */
+  /* 从历史已成交订单学习利润率：同线路样本优先，其次同城市，最后回退默认 */
   function learnedMargin(city,route){
-    var samples=[];
-    CLOUD_ORDERS.forEach(function(o){
-      if(o.status!=='confirmed'&&o.status!=='done') return;
-      if(o.cost>0&&o.quote>0&&(o.city||'')===city){
-        var sameRoute=false;
-        if(route&&o.route) sameRoute=(o.route.indexOf(route.slice(0,4))>=0)||(route.indexOf(o.route.slice(0,4))>=0);
-        if(sameRoute||!route) samples.push(o.quote/o.cost);
-      }
-    });
-    if(!samples.length) return null;
+    function collect(needRoute){
+      var samples=[];
+      CLOUD_ORDERS.forEach(function(o){
+        if(o.status!=='confirmed'&&o.status!=='done') return;
+        if(o.cost>0&&o.quote>0&&(o.city||'')===city&&o.route){
+          if(needRoute&&route){
+            var same=(o.route.indexOf(route.slice(0,4))>=0)||(route.indexOf(o.route.slice(0,4))>=0);
+            if(!same) return;
+          }
+          samples.push(o.quote/o.cost);
+        }
+      });
+      return samples;
+    }
+    var samples=collect(true);
+    var scope='同线路';
+    if(!samples.length){ samples=collect(false); scope='同城市'; }
+    if(!samples.length) return {rate:null,scope:null};
     samples.sort(function(a,b){return a-b;});
     var med=samples[Math.floor(samples.length/2)];
-    return Math.round((med-1)*100);
+    return {rate:Math.round((med-1)*100),scope:scope,samples:samples.length};
   }
 
   function calc(){
     var p=state.veh;
-    if(!p) return {cost:null,suggest:null,profit:null,rate:null,floor:null,learned:null,night:false,holiday:false};
+    if(!p) return {cost:null,suggest:null,profit:null,rate:null,floor:null,learned:null,night:false,holiday:false,low:null,high:null,nightUp:null,holidayUp:null};
     var cost=p.cost>0?money(p.cost):null;
     var quote=p.q>0?money(p.q):null;
+    if(state.orderCost&&!cost) cost=state.orderCost;
+    if(state.orderQuote){
+      if(state.useOrderQ) quote=state.orderQuote;
+      else quote=p.q>0?money(p.q):null;
+    }
     var m=state.margin/100;
-    var learned=learnedMargin(state.city,state.route);
+    var lm=learnedMargin(state.city,state.route);
+    var learned=lm?lm.rate:null;
     var suggest=null;
     if(quote!=null) suggest=quote;
     else if(cost!=null){
@@ -445,10 +477,12 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
       suggest=Math.round(cost*(1+eff)/10)*10;
     }
     var floor=cost!=null?Math.round(cost*1.05/10)*10:null;
+    var low=cost!=null?Math.round(cost*1.1/10)*10:null;
+    var high=suggest!=null?Math.round(suggest*1.15/10)*10:null;
     var profit=null,rate=null;
     if(suggest!=null&&cost!=null){ profit=suggest-cost; rate=Math.round(profit/cost*100)+'%'; }
     else if(suggest!=null&&cost==null){ profit=null; rate='成本待补'; }
-    var night=false,holiday=false;
+    var night=false,holiday=false,nightUp=null,holidayUp=null;
     var t=$('inTime')&&$('inTime').value.trim();
     if(t){ var h=parseInt(t.split(':')[0],10); if(!isNaN(h)&&(h>=21||h<7)) night=true; }
     var dt=$('inDate')&&$('inDate').value;
@@ -458,7 +492,9 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
       if(cnHoliday.indexOf(dt)>=0) holiday=true;
       else if(!isNaN(d.getTime())&&(d.getDay()===6||d.getDay()===0)) holiday=true;
     }
-    return {cost:cost,suggest:suggest,profit:profit,rate:rate,floor:floor,learned:learned,night:night,holiday:holiday};
+    if(night&&suggest!=null) nightUp=Math.round(suggest*0.1/10)*10;
+    if(holiday&&suggest!=null) holidayUp=Math.round(suggest*0.1/10)*10;
+    return {cost:cost,suggest:suggest,profit:profit,rate:rate,floor:floor,learned:learned,learnedScope:lm?lm.scope:null,learnedN:lm?lm.samples:0,night:night,holiday:holiday,low:low,high:high,nightUp:nightUp,holidayUp:holidayUp};
   }
 
   function renderSmartPanel(r){
@@ -466,14 +502,17 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     if(!panel) return;
     var rows='';
     var used=null;
-    if(r.quote!=null&&r.veh&&r.veh.q>0) used='参考价库定价';
-    else if(r.learned!=null) used='历史成交中位利润率 '+r.learned+'%';
+    if(state.orderQuote&&r.quote!=null) used='订单已有报价';
+    else if(r.quote!=null&&r.veh&&r.veh.q>0) used='参考价库定价';
+    else if(r.learned!=null) used='历史成交利润率 '+r.learned+'%（'+(r.learnedScope||'')+' '+r.learnedN+'单）';
     else used='默认利润率 '+state.margin+'%';
     rows+='<div class="sp-row"><span>定价依据</span><b>'+used+'</b></div>';
+    if(r.low!=null&&r.high!=null) rows+='<div class="sp-row"><span>建议报价区间</span><b>¥'+r.low.toLocaleString()+' – ¥'+r.high.toLocaleString()+'</b></div>';
     if(r.floor!=null) rows+='<div class="sp-row"><span>可接受底价（成本+5%）</span><b>¥'+r.floor.toLocaleString()+'</b></div>';
-    if(r.night) rows+='<div class="sp-row"><span>时段提醒</span><b class="sp-warn">夜间用车（21:00-07:00），可加价 10%-15%</b></div>';
-    if(r.holiday) rows+='<div class="sp-row"><span>日期提醒</span><b class="sp-warn">周末/法定节假日，可加价 10%-20%</b></div>';
-    if(r.night&&r.veh&&r.veh.q>0) rows+='<div class="sp-row"><span>议价空间</span><b class="sp-ok">底价以上可谈，别低于 ¥'+(r.floor!=null?r.floor.toLocaleString():'-')+'</b></div>';
+    if(r.night&&r.nightUp!=null) rows+='<div class="sp-row"><span>时段提醒</span><b class="sp-warn">夜间用车（21:00-07:00），建议加 ¥'+r.nightUp.toLocaleString()+'</b></div>';
+    else if(r.night) rows+='<div class="sp-row"><span>时段提醒</span><b class="sp-warn">夜间用车（21:00-07:00），可加价 10%</b></div>';
+    if(r.holiday&&r.holidayUp!=null) rows+='<div class="sp-row"><span>日期提醒</span><b class="sp-warn">周末/法定节假日，建议加 ¥'+r.holidayUp.toLocaleString()+'</b></div>';
+    else if(r.holiday) rows+='<div class="sp-row"><span>日期提醒</span><b class="sp-warn">周末/法定节假日，可加价 10%</b></div>';
     panel.innerHTML='<div class="sp-title">智能报价建议</div>'+rows;
   }
 
@@ -484,6 +523,17 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     $('pProfit').innerHTML=r.profit!=null?('¥'+r.profit.toLocaleString()):'-';
     $('pProfitRate').textContent=r.rate||'';
     renderSmartPanel(r);
+    var row=$('overrideRow');
+    if(row){
+      if(state.orderQuote){
+        row.classList.remove('hidden');
+        $('orderQuoteHint').textContent='订单已报 ¥'+state.orderQuote.toLocaleString()+(state.orderCost?' · 成本 ¥'+state.orderCost.toLocaleString():'');
+        $('btnUseOrderQ').classList.toggle('on',state.useOrderQ);
+        $('btnUseCalcQ').classList.toggle('on',!state.useOrderQ);
+      }else{
+        row.classList.add('hidden');
+      }
+    }
     if(state.veh){ renderQuote(); showCard('cardQuote'); }
   }
 
@@ -572,7 +622,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     if(!p){ toast('请先选择车型'); return; }
     var hist=[];
     try{ hist=JSON.parse(localStorage.getItem(histKey)||'[]'); }catch(e){}
-    hist.unshift({t:Date.now(),g:g.g,date:g.date,time:g.time,city:state.city,route:state.route,veh:p.v,suggest:r.suggest,cost:r.cost});
+    hist.unshift({t:Date.now(),g:g.g,date:g.date,time:g.time,city:state.city,route:state.route,veh:p.v,suggest:r.suggest,cost:r.cost,orderQuote:state.orderQuote||null});
     hist=hist.slice(0,50);
     try{ localStorage.setItem(histKey,JSON.stringify(hist)); }catch(e){}
     renderHist();
@@ -597,6 +647,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     state.city=h.city||'';
     $('selCity').value=state.city;
     state.route=h.route||'';
+    state.orderId=null; state.orderCost=null; state.orderQuote=null; state.useOrderQ=false;
     renderRoutes();
     state.veh=null;
     var ps=(routesByCity[state.city]||{})[state.route]||[];
@@ -643,6 +694,8 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   $('btnCopy').addEventListener('click',copyQuote);
   $('btnPrint').addEventListener('click',function(){ window.print(); });
   $('btnSave').addEventListener('click',saveHist);
+  $('btnUseOrderQ').addEventListener('click',function(){ state.useOrderQ=true; syncOrder(); toast('按订单报价'); });
+  $('btnUseCalcQ').addEventListener('click',function(){ state.useOrderQ=false; syncOrder(); toast('按成本+利润率重算'); });
   $('btnClearHist').addEventListener('click',function(){
     if(confirm('确定清空全部历史报价？')){ localStorage.removeItem(histKey); renderHist(); toast('已清空'); }
   });
