@@ -227,6 +227,32 @@
       <div><label class="f">车牌号</label><input type="text" id="inPlate" placeholder="如 京A12345"></div>
       <div><label class="f">车型</label><input type="text" id="inVehDispatch" placeholder="自动带出"></div>
     </div>
+    <div class="grid2 no-print">
+      <div><label class="f">服务类型 Service</label>
+        <select id="inDispType">
+          <option value="">自动识别</option>
+          <option>机场接机 Airport Transfer</option>
+          <option>机场送机 Airport Departure</option>
+          <option>包车 Charter</option>
+          <option>市内接送 City Transfer</option>
+        </select>
+      </div>
+      <div><label class="f">航班号 Flight</label><input type="text" id="inDispFlight" placeholder="如 AC25（PVG 抵达）"></div>
+    </div>
+    <div class="grid2 no-print">
+      <div><label class="f">上车地点 Pick-up</label><input type="text" id="inDispPickup" placeholder="如 浦东T2到达层接机点"></div>
+      <div><label class="f">送达地点 Drop-off</label><input type="text" id="inDispDrop" placeholder="酒店 / 终点"></div>
+    </div>
+    <div class="grid2 no-print">
+      <div><label class="f">行李 Luggage</label><input type="text" id="inDispLug" placeholder="如 2件"></div>
+      <div><label class="f">接车时间 Pick-up Time</label><input type="text" id="inDispTime" placeholder="自动带出"></div>
+    </div>
+    <div class="grid2 no-print">
+      <div><label class="f">联系人邮箱 Email</label><input type="text" id="inDispEmail" placeholder="客人邮箱"></div>
+      <div><label class="f">WhatsApp</label><input type="text" id="inDispWA" placeholder="客人 WhatsApp"></div>
+    </div>
+    <div class="no-print"><label class="f">特殊要求 Special Requests</label><input type="text" id="inDispReq" placeholder="如 接机牌：Graham Longford；英文司机"></div>
+    <div class="no-print"><label class="f">备注 Notes</label><textarea id="inDispNotes" rows="2" placeholder="司机须知等"></textarea></div>
     <div class="doc" id="docDispatch"></div>
     <div class="acts no-print">
       <button class="btn gold" id="btnCopyDispatch">复制派车单</button>
@@ -392,10 +418,11 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     if(!o) return;
     state.city=o.city||''; state.route=''; state.veh=null;
     state.orderId=o.id;
+    state.orderType=o.type||'';
     state.orderCost=(o.cost>0)?money(o.cost):null;
     state.orderQuote=(o.quote>0)?money(o.quote):null;
     state.useOrderQ=!!state.orderQuote;
-    if($('inDriver')){ $('inDriver').value=o.driver||''; $('inDriverTel').value=o.driverTel||o.contact||''; $('inPlate').value=o.plate||''; $('inVehDispatch').value=o.vehicle||''; }
+    if($('inDriver')){ $('inDriver').value=o.driver||''; $('inDriverTel').value=o.driverTel||o.contact||''; $('inPlate').value=o.plate||''; $('inVehDispatch').value=o.vehicle||''; $('inDispType').value=o.type==='arrival'?'机场接机 Airport Transfer':(o.type==='departure'?'机场送机 Airport Departure':(o.type==='charter'?'包车 Charter':(o.type==='transfer'?'市内接送 City Transfer':''))); $('inDispFlight').value=(o.airport?o.airport+' ': '')+(o.flight||''); $('inDispPickup').value=o.airport?((o.type==='arrival'?(o.airport+' 到达层'):'')):''; $('inDispTime').value=o.time||''; $('inDispDrop').value=''; $('inDispEmail').value=''; $('inDispWA').value=o.contact||''; $('inDispLug').value=''; $('inDispReq').value=''; $('inDispNotes').value=o.note||''; }
     if($('inConfLoc')){ $('inConfLoc').value=o.airport||''; $('inConfFlight').value=(o.flight||'')+(o.time?(' · '+o.time):''); $('inConfPickup').value=o.time||''; $('inConfDrop').value=''; $('inConfNote').value=o.route?('接机牌：'+o.guest+'；'+o.route):''; }
     $('inGuest').value=o.guest||'';
     $('inPax').value=o.pax||2;
@@ -661,37 +688,58 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var dtel=$('inDriverTel').value.trim();
     var plate=$('inPlate').value.trim();
     var dveh=$('inVehDispatch').value.trim()||(p.v||'');
+    var stype=$('inDispType').value;
+    if(!stype) stype=(state.orderType==='arrival'||g.note.indexOf('接机')>=0)?'机场接机 Airport Transfer':((state.orderType==='departure'||g.note.indexOf('送机')>=0)?'机场送机 Airport Departure':(state.orderType==='charter'||g.note.indexOf('包车')>=0?'包车 Charter':'市内接送 City Transfer'));
+    var flight=$('inDispFlight').value.trim();
+    var pickup=$('inDispPickup').value.trim();
+    var drop=$('inDispDrop').value.trim();
+    var lug=$('inDispLug').value.trim();
+    var dtime=$('inDispTime').value.trim()||g.time;
+    var email=$('inDispEmail').value.trim();
+    var wa=$('inDispWA').value.trim();
+    var req=$('inDispReq').value.trim();
+    var notes=$('inDispNotes').value.trim();
     var dno='D-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000);
     if(lang==='zh'){
       doc.innerHTML=
         '<div class="doc-head"><div class="bh"><h3>Elite Travel 曦驰旅游 · 派车单</h3><p>司机工作单 · 请按单执行</p></div>'+
         '<div class="price-tag"><div class="pt-lab">派车单号</div><div class="pt-val" style="font-size:16px;">'+dno+'</div></div></div>'+
         '<table><tbody>'+
-        '<tr><th>服务日期</th><td>'+esc(g.date)+(g.time?' · '+esc(g.time):'')+'</td></tr>'+
-        '<tr><th>客人</th><td>'+esc(g.g)+'</td></tr>'+
-        '<tr><th>人数</th><td>'+esc($('inPax').value||'')+' 人</td></tr>'+
+        '<tr><th>服务类型</th><td>'+esc(stype)+'</td></tr>'+
+        '<tr><th>状态</th><td>新预订 New Booking</td></tr>'+
+        '<tr><th>日期</th><td>'+esc(g.date)+(dtime?' · '+esc(dtime):'')+'</td></tr>'+
+        '<tr><th>航班号</th><td>'+esc(flight||'-')+'</td></tr>'+
+        '<tr><th>接车时间</th><td>'+esc(dtime||'-')+'</td></tr>'+
+        '<tr><th>上车地点</th><td>'+esc(pickup||'-')+'</td></tr>'+
+        '<tr><th>送达地点</th><td>'+esc(drop||'-')+'</td></tr>'+
+        '<tr><th>乘客</th><td>'+esc(g.g)+' · '+esc($('inPax').value||'')+' 人'+(lug?' · 行李 '+esc(lug):'')+'</td></tr>'+
         '<tr><th>车型</th><td>'+esc(dveh)+'</td></tr>'+
-        '<tr><th>线路</th><td>'+esc(state.route)+'</td></tr>'+
-        '<tr><th>接送点/行程</th><td>'+esc(g.note||'-')+'</td></tr>'+
-        '<tr><th>司机</th><td>'+(driver?esc(driver):'(待定)')+(dtel?' · '+esc(dtel):'')+'</td></tr>'+
-        '<tr><th>车牌</th><td>'+esc(plate||'-')+'</td></tr>'+
+        '<tr><th>线路 / 行程</th><td>'+esc(state.route)+(g.note?' · '+esc(g.note):'')+'</td></tr>'+
+        '<tr><th>司机</th><td>'+(driver?esc(driver):'(待定)')+(dtel?' · '+esc(dtel):'')+(plate?' · 车牌 '+esc(plate):'')+'</td></tr>'+
+        (req?'<tr><th>特殊要求</th><td>'+esc(req)+'</td></tr>':'')+
+        (email||wa?'<tr><th>联系人</th><td>'+(email?'邮箱 '+esc(email):'')+(email&&wa?' · ':'')+(wa?'WhatsApp '+esc(wa):'')+'</td></tr>':'')+
         '</tbody></table>'+
-        '<div class="note">请提前抵达，保持手机畅通；接机/接人请核对客人姓名，送站请预留时间。完成后请向调度确认。</div>';
+        '<div class="note">'+(notes?esc(notes)+'<br>':'')+'请提前抵达，保持手机畅通；接机/接人请核对客人姓名，送站请预留时间。车辆、司机信息请于服务前单独发送客人。费用含司机、车辆、燃油、过路、停车。完成后请向调度确认。</div>';
     }else{
       doc.innerHTML=
-        '<div class="doc-head"><div class="bh"><h3>Elite Travel · Dispatch Slip</h3><p>Driver Work Order</p></div>'+
+        '<div class="doc-head"><div class="bh"><h3>Elite Travel · Dispatch Order</h3><p>Driver Work Order — Please Follow</p></div>'+
         '<div class="price-tag"><div class="pt-lab">Slip No.</div><div class="pt-val" style="font-size:16px;">'+dno+'</div></div></div>'+
         '<table><tbody>'+
-        '<tr><th>Service Date</th><td>'+esc(g.date)+(g.time?' · '+esc(g.time):'')+'</td></tr>'+
-        '<tr><th>Guest</th><td>'+esc(g.g)+'</td></tr>'+
-        '<tr><th>Pax</th><td>'+esc($('inPax').value||'')+'</td></tr>'+
+        '<tr><th>Service</th><td>'+esc(stype)+'</td></tr>'+
+        '<tr><th>Status</th><td>New Booking</td></tr>'+
+        '<tr><th>Date</th><td>'+esc(g.date)+(dtime?' · '+esc(dtime):'')+'</td></tr>'+
+        '<tr><th>Flight</th><td>'+esc(flight||'-')+'</td></tr>'+
+        '<tr><th>Pick-up Time</th><td>'+esc(dtime||'-')+'</td></tr>'+
+        '<tr><th>Pick-up</th><td>'+esc(pickup||'-')+'</td></tr>'+
+        '<tr><th>Drop-off</th><td>'+esc(drop||'-')+'</td></tr>'+
+        '<tr><th>Guest</th><td>'+esc(g.g)+' · '+esc($('inPax').value||'')+' pax'+(lug?' · Luggage '+esc(lug):'')+'</td></tr>'+
         '<tr><th>Vehicle</th><td>'+esc(dveh)+'</td></tr>'+
-        '<tr><th>Route</th><td>'+esc(state.route)+'</td></tr>'+
-        '<tr><th>Pickup / Itinerary</th><td>'+esc(g.note||'-')+'</td></tr>'+
-        '<tr><th>Driver</th><td>'+(driver?esc(driver):'(TBD)')+(dtel?' · '+esc(dtel):'')+'</td></tr>'+
-        '<tr><th>Plate</th><td>'+esc(plate||'-')+'</td></tr>'+
+        '<tr><th>Route / Itinerary</th><td>'+esc(state.route)+(g.note?' · '+esc(g.note):'')+'</td></tr>'+
+        '<tr><th>Driver</th><td>'+(driver?esc(driver):'(TBD)')+(dtel?' · '+esc(dtel):'')+(plate?' · Plate '+esc(plate):'')+'</td></tr>'+
+        (req?'<tr><th>Special Requests</th><td>'+esc(req)+'</td></tr>':'')+
+        (email||wa?'<tr><th>Contact</th><td>'+(email?'Email '+esc(email):'')+(email&&wa?' · ':'')+(wa?'WhatsApp '+esc(wa):'')+'</td></tr>':'')+
         '</tbody></table>'+
-        '<div class="note">Please arrive early and keep your phone on. Verify guest name at pickup and allow extra time for drop-offs. Confirm completion with the dispatcher.</div>';
+        '<div class="note">'+(notes?esc(notes)+'<br>':'')+'Please arrive early and keep your phone on. Verify guest name at pickup and allow extra time. Vehicle and driver details will be sent to the guest separately before service. Fee includes driver, vehicle, fuel, tolls and parking. Confirm completion with the dispatcher.</div>';
     }
   }
 
@@ -783,13 +831,23 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var dtel=$('inDriverTel').value.trim();
     var plate=$('inPlate').value.trim()||'-';
     var dveh=$('inVehDispatch').value.trim()||(p.v||'');
+    var stype=$('inDispType').value||((state.orderType==='arrival'||g.note.indexOf('接机')>=0)?'机场接机':((state.orderType==='departure'||g.note.indexOf('送机')>=0)?'机场送机':'包车'));
+    var flight=$('inDispFlight').value.trim();
+    var pickup=$('inDispPickup').value.trim();
+    var drop=$('inDispDrop').value.trim();
+    var lug=$('inDispLug').value.trim();
+    var dtime=$('inDispTime').value.trim()||g.time;
+    var email=$('inDispEmail').value.trim();
+    var wa=$('inDispWA').value.trim();
+    var req=$('inDispReq').value.trim();
+    var notes=$('inDispNotes').value.trim();
     var text;
     if(lang==='zh'){
       text='【Elite Travel 派车单】\n'
-        +'服务：'+g.date+(g.time?' '+g.time:'')+'\n客人：'+g.g+'（'+($('inPax').value||'')+'人）\n车型：'+dveh+' · 车牌：'+plate+'\n线路：'+state.route+'\n接送点/行程：'+(g.note||'-')+'\n司机：'+driver+(dtel?' · '+dtel:'')+'\n请提前抵达，接人核对姓名，完成后向调度确认。';
+        +'服务类型：'+stype+'\n日期：'+g.date+(dtime?' '+dtime:'')+(flight?'\n航班号：'+flight:'')+(pickup?'\n上车地点：'+pickup:'')+(drop?'\n送达地点：'+drop:'')+'\n乘客：'+g.g+'（'+($('inPax').value||'')+'人'+(lug?' · 行李'+lug:'')+'）\n车型：'+dveh+' · 车牌：'+plate+'\n线路：'+state.route+(g.note?' · '+g.note:'')+'\n司机：'+driver+(dtel?' · '+dtel:'')+(req?'\n特殊要求：'+req:'')+(email||wa?'\n联系人：'+(email?'邮箱 '+email:'')+(email&&wa?' · ':'')+(wa?'WhatsApp '+wa:''):'')+(notes?'\n备注：'+notes:'')+'\n请提前抵达，接人核对姓名，完成后向调度确认。';
     }else{
       text='【Elite Travel Dispatch】\n'
-        +'Date: '+g.date+(g.time?' '+g.time:'')+'\nGuest: '+g.g+' ('+($('inPax').value||'')+' pax)\nVehicle: '+dveh+' · Plate: '+plate+'\nRoute: '+state.route+'\nPickup/Itinerary: '+(g.note||'-')+'\nDriver: '+driver+(dtel?' · '+dtel:'')+'\nPlease arrive early, verify guest name, and confirm with dispatcher.';
+        +'Service: '+stype+'\nDate: '+g.date+(dtime?' '+dtime:'')+(flight?'\nFlight: '+flight:'')+(pickup?'\nPick-up: '+pickup:'')+(drop?'\nDrop-off: '+drop:'')+'\nGuest: '+g.g+' ('+($('inPax').value||'')+' pax'+(lug?' · Luggage '+lug:'')+')\nVehicle: '+dveh+' · Plate: '+plate+'\nRoute: '+state.route+(g.note?' · '+g.note:'')+'\nDriver: '+driver+(dtel?' · '+dtel:'')+(req?'\nSpecial Requests: '+req:'')+(email||wa?'\nContact: '+(email?'Email '+email:'')+(email&&wa?' · ':'')+(wa?'WhatsApp '+wa:''):'')+(notes?'\nNotes: '+notes:'')+'\nPlease arrive early, verify guest name, and confirm with dispatcher.';
     }
     if(navigator.clipboard&&navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).then(function(){toast('派车单已复制');},function(){fallbackCopy(text,'派车单');});
@@ -921,6 +979,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   $('inDriverTel').addEventListener('input',renderDispatch);
   $('inPlate').addEventListener('input',renderDispatch);
   $('inVehDispatch').addEventListener('input',renderDispatch);
+  ['inDispType','inDispFlight','inDispPickup','inDispDrop','inDispLug','inDispTime','inDispEmail','inDispWA','inDispReq','inDispNotes'].forEach(function(id){ $(id).addEventListener('input',renderDispatch); });
   $('langZh2').addEventListener('click',function(){ lang='zh'; this.classList.add('on'); $('langEn2').classList.remove('on'); $('langZh').classList.add('on'); $('langEn').classList.remove('on'); renderDispatch(); renderQuote(); });
   $('langEn2').addEventListener('click',function(){ lang='en'; this.classList.add('on'); $('langZh2').classList.remove('on'); $('langEn').classList.add('on'); $('langZh').classList.remove('on'); renderDispatch(); renderQuote(); });
   $('btnCopyDispatch').addEventListener('click',copyDispatch);
