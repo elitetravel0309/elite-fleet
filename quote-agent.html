@@ -208,6 +208,7 @@
       <button class="btn primary" id="btnPrint">打印 / 存 PDF</button>
       <button class="btn ghost" id="btnSave">保存记录</button>
       <button class="btn ghost" id="btnDispatch">生成派车单</button>
+      <button class="btn ghost" id="btnConfirm">生成确认单</button>
     </div>
   </div>
 
@@ -231,6 +232,39 @@
       <button class="btn gold" id="btnCopyDispatch">复制派车单</button>
       <button class="btn primary" id="btnPrintDispatch">打印派车单</button>
       <button class="btn ghost" id="btnBackQuote">返回报价单</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="cardConfirm">
+    <div class="step-t"><span class="step-n">5C</span><h2>确认单</h2>
+      <div class="lang-switch no-print">
+        <button id="langZh3" class="on">中文</button>
+        <button id="langEn3">EN</button>
+      </div>
+    </div>
+    <div class="grid2 no-print">
+      <div><label class="f">接送地点 Location</label><input type="text" id="inConfLoc" placeholder="酒店 / 机场 / 上车点"></div>
+      <div><label class="f">航班+到达时间 Flight / ETA</label><input type="text" id="inConfFlight" placeholder="如 CA981 · 09:15 抵达"></div>
+    </div>
+    <div class="grid2 no-print">
+      <div><label class="f">接车时间 Pick-up Time</label><input type="text" id="inConfPickup" placeholder="自动带出"></div>
+      <div><label class="f">下车地点 Drop-off</label><input type="text" id="inConfDrop" placeholder="终点 / 酒店"></div>
+    </div>
+    <div class="grid2 no-print">
+      <div><label class="f">包含 Includes</label><input type="text" id="inConfInc" placeholder="司机、车辆、油费、路桥费"></div>
+      <div><label class="f">时长 Duration</label><input type="text" id="inConfDur" placeholder="如 10小时 / 单程"></div>
+    </div>
+    <div class="grid2 no-print">
+      <div><label class="f">订金 Deposit</label><input type="text" id="inConfDep" placeholder="如 50% 或金额"></div>
+      <div><label class="f">余款 Balance</label><input type="text" id="inConfBal" placeholder="余款说明"></div>
+    </div>
+    <div class="no-print"><label class="f">付款方式 Payment</label><input type="text" id="inConfPay" placeholder="如 现金 / 微信 / PayPal"></div>
+    <div class="no-print"><label class="f">备注 / 接机牌 / 说明 Notes</label><textarea id="inConfNote" rows="2" placeholder="接机牌姓名、特别提醒等"></textarea></div>
+    <div class="doc" id="docConfirm"></div>
+    <div class="acts no-print">
+      <button class="btn gold" id="btnCopyConfirm">复制确认单</button>
+      <button class="btn primary" id="btnPrintConfirm">打印确认单</button>
+      <button class="btn ghost" id="btnBackQuote2">返回报价单</button>
     </div>
   </div>
 
@@ -362,6 +396,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     state.orderQuote=(o.quote>0)?money(o.quote):null;
     state.useOrderQ=!!state.orderQuote;
     if($('inDriver')){ $('inDriver').value=o.driver||''; $('inDriverTel').value=o.driverTel||o.contact||''; $('inPlate').value=o.plate||''; $('inVehDispatch').value=o.vehicle||''; }
+    if($('inConfLoc')){ $('inConfLoc').value=o.airport||''; $('inConfFlight').value=(o.flight||'')+(o.time?(' · '+o.time):''); $('inConfPickup').value=o.time||''; $('inConfDrop').value=''; $('inConfNote').value=o.route?('接机牌：'+o.guest+'；'+o.route):''; }
     $('inGuest').value=o.guest||'';
     $('inPax').value=o.pax||2;
     $('inDate').value=o.date||todayStr();
@@ -661,8 +696,72 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   }
 
   /* ---------- actions ---------- */
-  function copyQuote(){
+  function renderConfirm(){
     var p=state.veh, r=calc(), g=guestInfo();
+    var doc=$('docConfirm');
+    if(!p){ doc.innerHTML='<div class="empty">请先选择车型</div>'; return; }
+    var loc=$('inConfLoc').value.trim();
+    var flight=$('inConfFlight').value.trim();
+    var pickup=$('inConfPickup').value.trim();
+    var drop=$('inConfDrop').value.trim();
+    var inc=$('inConfInc').value.trim();
+    var dur=$('inConfDur').value.trim();
+    var dep=$('inConfDep').value.trim();
+    var bal=$('inConfBal').value.trim();
+    var pay=$('inConfPay').value.trim();
+    var note=$('inConfNote').value.trim();
+    var price=r.suggest!=null?('¥'+r.suggest.toLocaleString()):'待确认';
+    var cno='C-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000);
+    if(lang==='zh'){
+      doc.innerHTML=
+        '<div class="doc-head"><div class="bh"><h3>Elite Travel 曦驰旅游 · 服务确认单</h3><p>Service Confirmation</p></div>'+
+        '<div class="price-tag"><div class="pt-lab">确认单号</div><div class="pt-val" style="font-size:16px;">'+cno+'</div></div></div>'+
+        '<table><tbody>'+
+        '<tr><th>客人</th><td>'+esc(g.g)+'</td></tr>'+
+        '<tr><th>服务日期</th><td>'+esc(g.date)+(g.time?' · '+esc(g.time):'')+'</td></tr>'+
+        '<tr><th>接送地点</th><td>'+esc(loc||'-')+'</td></tr>'+
+        '<tr><th>航班 / 到达</th><td>'+esc(flight||'-')+'</td></tr>'+
+        '<tr><th>接车时间</th><td>'+esc(pickup||g.time||'-')+'</td></tr>'+
+        '<tr><th>下车地点</th><td>'+esc(drop||'-')+'</td></tr>'+
+        '<tr><th>线路</th><td>'+esc(state.route)+'</td></tr>'+
+        '<tr><th>车型</th><td>'+esc(p.v||'')+(p.d?'（'+esc(p.d)+'）':'')+'</td></tr>'+
+        '<tr><th>人数</th><td>'+esc($('inPax').value||'')+' 人</td></tr>'+
+        '<tr><th>时长</th><td>'+esc(dur||'-')+'</td></tr>'+
+        '<tr><th>服务费</th><td>'+price+'</td></tr>'+
+        '<tr><th>包含</th><td>'+esc(inc||'司机、车辆、油费、路桥费')+'</td></tr>'+
+        '<tr><th>订金</th><td>'+esc(dep||'-')+'</td></tr>'+
+        '<tr><th>余款</th><td>'+esc(bal||'-')+'</td></tr>'+
+        '<tr><th>付款方式</th><td>'+esc(pay||'-')+'</td></tr>'+
+        '</tbody></table>'+
+        (note?'<div class="note">备注：'+esc(note)+'</div>':'')+
+        '<div class="terms">请仔细核对以上信息；如需变更请提前 24 小时告知。确认后我们将安排司机与车辆。</div>';
+    }else{
+      doc.innerHTML=
+        '<div class="doc-head"><div class="bh"><h3>Elite Travel · Service Confirmation</h3><p>Private Transfer &amp; Charter Service</p></div>'+
+        '<div class="price-tag"><div class="pt-lab">Confirmation No.</div><div class="pt-val" style="font-size:16px;">'+cno+'</div></div></div>'+
+        '<table><tbody>'+
+        '<tr><th>Guest</th><td>'+esc(g.g)+'</td></tr>'+
+        '<tr><th>Service Date</th><td>'+esc(g.date)+(g.time?' · '+esc(g.time):'')+'</td></tr>'+
+        '<tr><th>Pick-up Location</th><td>'+esc(loc||'-')+'</td></tr>'+
+        '<tr><th>Flight / ETA</th><td>'+esc(flight||'-')+'</td></tr>'+
+        '<tr><th>Pick-up Time</th><td>'+esc(pickup||g.time||'-')+'</td></tr>'+
+        '<tr><th>Drop-off Location</th><td>'+esc(drop||'-')+'</td></tr>'+
+        '<tr><th>Route</th><td>'+esc(state.route)+'</td></tr>'+
+        '<tr><th>Vehicle</th><td>'+esc(p.v||'')+(p.d?' ('+esc(p.d)+')':'')+'</td></tr>'+
+        '<tr><th>Guests</th><td>'+esc($('inPax').value||'')+'</td></tr>'+
+        '<tr><th>Duration</th><td>'+esc(dur||'-')+'</td></tr>'+
+        '<tr><th>Total Price</th><td>'+price+'</td></tr>'+
+        '<tr><th>Includes</th><td>'+esc(inc||'Driver, vehicle, fuel, tolls')+'</td></tr>'+
+        '<tr><th>Deposit</th><td>'+esc(dep||'-')+'</td></tr>'+
+        '<tr><th>Balance</th><td>'+esc(bal||'-')+'</td></tr>'+
+        '<tr><th>Payment</th><td>'+esc(pay||'-')+'</td></tr>'+
+        '</tbody></table>'+
+        (note?'<div class="note">Note: '+esc(note)+'</div>':'')+
+        '<div class="terms">Please review the details above. Changes require 24-hour notice. Driver and vehicle will be arranged upon confirmation.</div>';
+    }
+  }
+
+  function copyQuote(){
     if(!p){ toast('请先选择车型'); return; }
     var price=r.suggest!=null?('¥'+r.suggest.toLocaleString()):'待确认';
     var text;
@@ -695,6 +794,27 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     if(navigator.clipboard&&navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).then(function(){toast('派车单已复制');},function(){fallbackCopy(text,'派车单');});
     }else{ fallbackCopy(text,'派车单'); }
+  }
+  function copyConfirm(){
+    var p=state.veh, r=calc(), g=guestInfo();
+    if(!p){ toast('请先选择车型'); return; }
+    var price=r.suggest!=null?('¥'+r.suggest.toLocaleString()):'待确认';
+    var loc=$('inConfLoc').value.trim(), flight=$('inConfFlight').value.trim();
+    var pickup=$('inConfPickup').value.trim()||g.time, drop=$('inConfDrop').value.trim();
+    var inc=$('inConfInc').value.trim(), dur=$('inConfDur').value.trim();
+    var dep=$('inConfDep').value.trim(), bal=$('inConfBal').value.trim(), pay=$('inConfPay').value.trim();
+    var note=$('inConfNote').value.trim();
+    var text;
+    if(lang==='zh'){
+      text='【Elite Travel 曦驰旅游 服务确认单】\n'
+        +'客人：'+g.g+'\n服务日期：'+g.date+(g.time?' '+g.time:'')+'\n接送地点：'+(loc||'-')+'\n航班/到达：'+(flight||'-')+'\n接车时间：'+(pickup||'-')+'\n下车地点：'+(drop||'-')+'\n线路：'+state.route+'\n车型：'+(p.v||'')+(p.d?'（'+p.d+'）':'')+'\n人数：'+($('inPax').value||'')+'人\n时长：'+(dur||'-')+'\n服务费：'+price+'\n包含：'+(inc||'司机、车辆、油费、路桥费')+'\n订金：'+(dep||'-')+'\n余款：'+(bal||'-')+'\n付款方式：'+(pay||'-')+(note?'\n备注：'+note:'')+'\n请核对以上信息，如需变更请提前24小时告知。';
+    }else{
+      text='【Elite Travel - Service Confirmation】\n'
+        +'Guest: '+g.g+'\nService Date: '+g.date+(g.time?' '+g.time:'')+'\nPick-up Location: '+(loc||'-')+'\nFlight / ETA: '+(flight||'-')+'\nPick-up Time: '+(pickup||'-')+'\nDrop-off Location: '+(drop||'-')+'\nRoute: '+state.route+'\nVehicle: '+(p.v||'')+(p.d?' ('+p.d+')':'')+'\nGuests: '+($('inPax').value||'')+'\nDuration: '+(dur||'-')+'\nTotal Price: '+price+'\nIncludes: '+(inc||'Driver, vehicle, fuel, tolls')+'\nDeposit: '+(dep||'-')+'\nBalance: '+(bal||'-')+'\nPayment: '+(pay||'-')+(note?'\nNote: '+note:'')+'\nPlease review the details. Changes require 24-hour notice.';
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){toast('确认单已复制');},function(){fallbackCopy(text,'确认单');});
+    }else{ fallbackCopy(text,'确认单'); }
   }
   function fallbackCopy(text,label){    label=label||'报价';
     var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
@@ -812,6 +932,32 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   });
   $('btnClearHist').addEventListener('click',function(){
     if(confirm('确定清空全部历史报价？')){ localStorage.removeItem(histKey); renderHist(); toast('已清空'); }
+  });
+  $('btnConfirm').addEventListener('click',function(){
+    if(!state.veh){ toast('请先选择车型'); return; }
+    $('inConfPickup').value=$('inConfPickup').value||$('inTime').value;
+    renderConfirm();
+    $('cardConfirm').classList.remove('hidden');
+    $('cardQuote').classList.add('hidden');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  $('btnBackQuote2').addEventListener('click',function(){
+    $('cardConfirm').classList.add('hidden');
+    $('cardQuote').classList.remove('hidden');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  ['inConfLoc','inConfFlight','inConfPickup','inConfDrop','inConfInc','inConfDur','inConfDep','inConfBal','inConfPay','inConfNote'].forEach(function(id){
+    $(id).addEventListener('input',renderConfirm);
+  });
+  $('langZh3').addEventListener('click',function(){ lang='zh'; this.classList.add('on'); $('langEn3').classList.remove('on'); $('langZh').classList.add('on'); $('langEn').classList.remove('on'); renderConfirm(); renderQuote(); });
+  $('langEn3').addEventListener('click',function(){ lang='en'; this.classList.add('on'); $('langZh3').classList.remove('on'); $('langEn').classList.add('on'); $('langZh').classList.remove('on'); renderConfirm(); renderQuote(); });
+  $('btnCopyConfirm').addEventListener('click',copyConfirm);
+  $('btnPrintConfirm').addEventListener('click',function(){
+    renderConfirm();
+    $('cardQuote').classList.add('hidden');
+    $('cardDispatch').classList.add('hidden');
+    $('cardConfirm').classList.remove('hidden');
+    window.print();
   });
 
   /* ---------- init ---------- */
