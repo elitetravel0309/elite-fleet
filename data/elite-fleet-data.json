@@ -1205,6 +1205,25 @@
                        "quote":  1100,
                        "cost":  0,
                        "note":  "layover转机游；06:00机场接；司机慕田峪等候并跟踪航班；10/6国庆节假日附加费已含；定金50% USD85已付(PayPal ID:2KX7003852719752F)；余款USD85当日付；固定价无额外费用"
+                   },
+                   {
+                       "id":  "x260920_alphard_1789825712591",
+                       "date":  "2026-09-20",
+                       "time":  "09:00",
+                       "type":  "transfer",
+                       "airport":  "",
+                       "flight":  "",
+                       "route":  "广州文华东方酒店(Mandarin Oriental Guangzhou) → 澳门瑞吉酒店(The St. Regis Macao)",
+                       "vehicle":  "丰田Alphard 7座商务车",
+                       "pax":  2,
+                       "guest":  "",
+                       "contact":  "",
+                       "driver":  "陈师傅",
+                       "plate":  "澳門AB-54-37 / 粵Z7069",
+                       "status":  "confirmed",
+                       "quote":  0,
+                       "cost":  0,
+                       "note":  "跨境接送；澳门电话63901999/大陆电话18998199999；司机陈师傅"
                    }
                ],
     "vehicles":  [
