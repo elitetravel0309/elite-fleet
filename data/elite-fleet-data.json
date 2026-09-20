@@ -1223,6 +1223,25 @@
       "quote": 0,
       "cost": 0,
       "note": "6人+6件中等行李；司机在T3到达出口举ELITE TRAVEL接机牌；按航班动态接机"
+    },
+    {
+      "id": "x261026_annarita_1789905429689",
+      "date": "2026-10-26",
+      "time": "06:00",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "Houhai Hotel - Beijing Gongwangfu Nanluogu Street Store → 慕田峪长城(北入口徒步到20-23号敌楼,6号敌楼下) → 神路 → 长陵 → 回酒店",
+      "vehicle": "5座车 VW Passat/Toyota Camry或同级",
+      "pax": 2,
+      "guest": "Anna Rita Pacciani & Gianluca Maritti",
+      "contact": "WhatsApp +39 347.502.6581; Email arpacciani@gmail.com",
+      "driver": "",
+      "plate": "",
+      "status": "confirmed",
+      "quote": 1100,
+      "cost": 0,
+      "note": "意大利客人;司机不要导游;徒步约11-12小时;超时100/h;门票现场买;客人接受天气可改期(24-31日期间);当日现金/微信/支付宝支付;已确认"
     }
   ],
   "vehicles": [
