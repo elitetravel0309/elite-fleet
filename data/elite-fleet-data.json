@@ -3824,6 +3824,16 @@
       "cost": 1000,
       "quote": 1400,
       "note": "超时100/h，超公里8/km；含油/司机/停车；旺季另议"
+    },
+    {
+      "city": "北京",
+      "route": "首都机场 → 市区酒店（单程接机/送机）英文司机",
+      "vehicle": "9座奔驰威霆/Vito",
+      "duration": "单程约40分钟",
+      "distance": "约30-40公里",
+      "cost": 600,
+      "quote": 850,
+      "note": "English-speaking driver；含meet&greet/油/高速/停车；英文司机溢价约150；国际客人报价$120"
     }
   ],
   "guests": [
