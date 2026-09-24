@@ -3804,6 +3804,26 @@
       "cost": 1400,
       "quote": 0,
       "note": "酒店→慕田峪→酒店，45座大巴"
+    },
+    {
+      "city": "北京",
+      "route": "首都机场 → 市区酒店（单程接机/送机）",
+      "vehicle": "9座奔驰威霆/Vito",
+      "duration": "单程约40分钟",
+      "distance": "约30-40公里",
+      "cost": 600,
+      "quote": 850,
+      "note": "含meet&greet/油/高速/停车；国际客人报价$115-130；区别于奔驰斯宾特14-19座(接机￥1600+)"
+    },
+    {
+      "city": "北京",
+      "route": "全天包车（8h/100km）",
+      "vehicle": "9座奔驰威霆/Vito",
+      "duration": "8小时",
+      "distance": "100公里",
+      "cost": 1000,
+      "quote": 1400,
+      "note": "超时100/h，超公里8/km；含油/司机/停车；旺季另议"
     }
   ],
   "guests": [
@@ -4324,7 +4344,7 @@
     "guestCount": 37,
     "lastOrderUpdate": "2026-09-18T23:12:14Z"
   },
-  "_lastModified": "2026-09-18T23:56:03Z",
+  "_lastModified": 1727222400000,
   "inquiries": [],
   "payments": [],
   "driverRatings": [],
