@@ -1368,6 +1368,25 @@
       "quote": 0,
       "cost": 0,
       "note": "Same vehicle and driver. Driver waits with luggage at Jinshanling. Part of 3-transfer package RMB 3000 total. Entrance tickets not included."
+    },
+    {
+      "id": "x261006_maryam_1790000000006",
+      "date": "2026-10-06",
+      "time": "07:00",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "07:00 pickup at Jin Tai Green Oasis Hotel (Beijing South Station), No.58 Pengzhuangcun Jia, Yongdingmen Wai, Dongcheng -> Mutianyu Great Wall -> Xiu Shui Street -> Zhuan Zhuan Le (2 shopping stops) -> ~17:00 drop off at Beijing South Railway Station",
+      "vehicle": "5-seater sedan",
+      "pax": 2,
+      "guest": "Maryam",
+      "contact": "WhatsApp +44 7538 153364",
+      "driver": "",
+      "plate": "",
+      "status": "quoted",
+      "quote": 0,
+      "cost": 0,
+      "note": "Includes 2 shopping stops (Xiu Shui Street, Zhuan Zhuan Le). National Day holiday. Drop off at Beijing South Railway Station ~17:00."
     }
   ],
   "vehicles": [
