@@ -1387,6 +1387,25 @@
       "quote": 0,
       "cost": 0,
       "note": "Includes 2 shopping stops (Xiu Shui Street, Zhuan Zhuan Le). National Day holiday. Drop off at Beijing South Railway Station ~17:00."
+    },
+    {
+      "id": "x260927_marek_layover_1790000000007",
+      "date": "2026-09-27",
+      "time": "11:10",
+      "type": "charter",
+      "airport": "PEK",
+      "flight": "CA180",
+      "route": "PEK T3 pickup (CA180 arrives ~11:10) -> Mutianyu Great Wall (driver waits) -> dinner at village near Great Wall -> drop back at PEK T3 by 23:30. Next flight CA841 departs 02:55. Total service time within 10 hours.",
+      "vehicle": "5-seater sedan",
+      "pax": 2,
+      "guest": "Marek Cibulka",
+      "contact": "WhatsApp +421 903 972 264",
+      "driver": "",
+      "plate": "",
+      "status": "quoted",
+      "quote": 0,
+      "cost": 0,
+      "note": "Layover tour. Need to pre-purchase Mutianyu entrance tickets + shuttle bus + round-trip cable car for 2 pax (included in price). Passports: Marek Cibulka BD7965023, Lubos Fuska RA2424953. Drop at PEK T3 by 23:30 for CA841 02:55 departure."
     }
   ],
   "vehicles": [
