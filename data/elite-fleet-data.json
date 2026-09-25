@@ -1292,6 +1292,25 @@
           "note": "新订单录入"
         }
       ]
+    },
+    {
+      "id": "x261004_barbara_1789900000002",
+      "date": "2026-10-04",
+      "time": "10:35",
+      "type": "charter",
+      "airport": "PKX",
+      "flight": "CZ2001",
+      "route": "PKX Daxing Airport pickup (CZ2001 10:35) -> Mutianyu Great Wall (~3h) -> Beijing city sightseeing (~1.5-2h) -> PEK T2 drop-off by 19:30 (flight 21:15)",
+      "vehicle": "5-seater sedan",
+      "pax": 2,
+      "guest": "Barbara",
+      "contact": "WhatsApp +385 99 225 7999",
+      "driver": "",
+      "plate": "",
+      "status": "quoted",
+      "quote": 950,
+      "cost": 650,
+      "note": "Cross-airport layover tour. National Day holiday surcharge included. Arrive PKX Daxing, depart PEK T2. Fixed price all-inclusive: car, driver, fuel, tolls, parking, waiting. Entrance tickets on site."
     }
   ],
   "vehicles": [
