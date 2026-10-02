@@ -917,6 +917,110 @@
           "note": "新订单录入"
         }
       ]
+    },
+    {
+      "id": "x2610171725anna",
+      "date": "2026-10-17",
+      "time": "17:25",
+      "type": "arrival",
+      "airport": "PVG",
+      "flight": "UA857",
+      "route": "浦东机场T2到达层 → 上海东湖宾馆（徐汇区东湖路70号）",
+      "vehicle": "七座",
+      "pax": 2,
+      "guest": "Anna Flavia B. Ladeira",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "price": 0,
+      "quote": 600,
+      "cost": 400,
+      "status": "sent",
+      "note": "UA857约17:25抵达PVG T2；司机举牌接机；行李：自行车托运箱1个(133x94x50cm/23kg)+随身背包2个+常规行李箱1个；需放倒第三排座椅装载自行车箱",
+      "city": "上海"
+    },
+    {
+      "id": "x2610260600annarita",
+      "date": "2026-10-26",
+      "time": "06:00",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "后海酒店（恭王府南锣鼓巷店）接 → 慕田峪长城（北入口上，6号敌楼下） → 明十三陵神路 → 定陵或长陵（二选一） → 送回酒店",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Anna Rita",
+      "contact": "+39 3475026581 / arpacciani@gmail.com",
+      "driver": "",
+      "plate": "",
+      "price": 0,
+      "quote": 0,
+      "cost": 0,
+      "status": "inquiry",
+      "note": "客人要求6:00早出发赶慕田峪早场；慕田峪北入口上、6号敌楼下；神路+定陵或长陵二选一；酒店：后海酒店（北京恭王府南锣鼓巷店）",
+      "city": "北京"
+    },
+    {
+      "id": "x2610121230iris",
+      "date": "2026-10-12",
+      "time": "12:30",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "花间堂·后海酒店（西城区羊房胡同9号）接 → 慕田峪长城（下午游览，看完日落后回程） → 送回酒店",
+      "vehicle": "七座",
+      "pax": 4,
+      "guest": "Iris CAMPETELLA",
+      "contact": "+39 347 217 0172 / irisma@hotmail.it",
+      "driver": "",
+      "plate": "",
+      "price": 0,
+      "quote": 900,
+      "cost": 700,
+      "status": "confirmed",
+      "note": "12:30-13:00酒店接；慕田峪下午游览看完日落后返程；门票+摆渡车+往返缆车已由客人支付，需代买4人份；客人酒店：北京恭王府花间堂·后海（Blossom House Prince Kung's Mansion, No.9 Yangfang Hutong, Xicheng）；护照：RIVELLO Mara YB9255799 / CAMPETELLA Iris YB3552071 / STAROCCIA Settimio YB1579371 / MUZI Lino YB5714348",
+      "city": "北京"
+    },
+    {
+      "id": "x2610150800melissa",
+      "date": "2026-10-15",
+      "time": "08:00",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "朗丽兹西山花园酒店（海淀区丰智东路13号）接 → 慕田峪长城 → 午餐 → 市区一个点或送回酒店",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Melissa Tomiczek",
+      "contact": "+61 422 788 262",
+      "driver": "",
+      "plate": "",
+      "price": 0,
+      "quote": 850,
+      "cost": 580,
+      "status": "sent",
+      "note": "08:00酒店接；慕田峪一日游；午餐后送市区一个点或回酒店；客人朋友推荐来的；酒店：Palace Garden Hotel 朗丽兹西山花园酒店，海淀区丰智东路13号",
+      "city": "北京"
+    },
+    {
+      "id": "x261001_gennaro_1789868977503",
+      "date": "2026-10-01",
+      "time": "11:45",
+      "type": "arrival",
+      "airport": "PEK T3",
+      "flight": "LH722",
+      "route": "首都机场T3到达出口 -> 德全饭店（北京火车站广渠门外地铁站店）",
+      "vehicle": "9座商务车",
+      "pax": 6,
+      "guest": "Gennaro",
+      "contact": "",
+      "driver": "宫宝红",
+      "plate": "京JRF937",
+      "status": "done",
+      "quote": 500,
+      "cost": 450,
+      "note": "6人+6件中等行李；司机在T3到达出口举ELITE TRAVEL接机牌；奔驰9座黑色",
+      "city": "北京"
     }
   ],
   "vehicles": [
@@ -1237,6 +1341,30 @@
       "ratings": [],
       "blacklist": false,
       "_lastModified": 1789292822404
+    },
+    {
+      "id": "d14",
+      "city": "太原",
+      "name": "裴元庆",
+      "phone": "13994335549",
+      "plate": "",
+      "carType": "5/7/9/19座齐全",
+      "color": "",
+      "seatType": "多车型",
+      "note": "老板兼司机；德国客人Toralf Sonntag五星好评by far the best driver in 20 years；山西永青旅游汽车租赁有限公司；13593133479",
+      "fleet": "山西永青旅游"
+    },
+    {
+      "id": "d15",
+      "city": "北京",
+      "name": "宫宝红",
+      "phone": "13621343623",
+      "plate": "京JRF937",
+      "carType": "奔驰商务9座",
+      "color": "黑色",
+      "seatType": "九座",
+      "note": "Wendy车队",
+      "fleet": "Wendy车队"
     }
   ],
   "fleets": [
@@ -1402,6 +1530,14 @@
       "rating": 5,
       "note": "不错，客人好评",
       "_lastModified": 1789185389863
+    },
+    {
+      "id": "f4",
+      "city": "太原",
+      "name": "山西永青旅游汽车租赁有限公司",
+      "contact": "裴元庆",
+      "phone": "13994335549",
+      "note": "自有正规营运车队，5座/7座/9座/19座齐全；旅游包车、商务接待、会议用车、机场车站接送、省内及全国长短途；车辆干净、保险手续齐全、司机稳重；另一电话13593133479；裴师傅老板兼司机，德国客人Toralf Sonntag评价：by far the best driver in 20 years"
     }
   ],
   "prices": [
@@ -3518,6 +3654,96 @@
       "price": 0,
       "note": "",
       "_lastModified": 1757500000000
+    }
+  ],
+  "vehicleGallery": [
+    {
+      "id": "g1",
+      "category": "豪华轿车",
+      "name": "Audi A6L / Mercedes E-Class",
+      "seats": 3,
+      "luggage": "2-3个大箱",
+      "suitable": "商务接待、1-3人高端出行",
+      "image": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
+      "note": "黑色豪华轿车，适合商务客户、机场接送",
+      "cities": "北京/上海"
+    },
+    {
+      "id": "g2",
+      "category": "豪华轿车",
+      "name": "Mercedes S-Class",
+      "seats": 3,
+      "luggage": "2个大箱",
+      "suitable": "VIP接待、高端商务",
+      "image": "https://images.unsplash.com/photo-1622335788912-74b177d20fc3?w=800&q=80",
+      "note": "奔驰S级，顶级豪华体验",
+      "cities": "北京/上海"
+    },
+    {
+      "id": "g3",
+      "category": "商务MPV",
+      "name": "Buick GL8 七座商务",
+      "seats": 6,
+      "luggage": "4-5个大箱",
+      "suitable": "3-6人家庭/商务，最常用车型",
+      "image": "https://images.unsplash.com/photo-1619405399557-35ae85239003?w=800&q=80",
+      "note": "别克GL8陆尊/ES，舒适商务首选",
+      "cities": "北京/上海/成都"
+    },
+    {
+      "id": "g4",
+      "category": "商务MPV",
+      "name": "Mercedes V-Class / 9座商务",
+      "seats": 8,
+      "luggage": "6-7个大箱",
+      "suitable": "6-8人小团、机场接送",
+      "image": "https://images.unsplash.com/photo-1609521263039-f8f4e0f710d2?w=800&q=80",
+      "note": "奔驰V级/岚图梦想家，9座大空间",
+      "cities": "北京/上海"
+    },
+    {
+      "id": "g5",
+      "category": "商旅商务",
+      "name": "Toyota Alphard 埃尔法",
+      "seats": 6,
+      "luggage": "4个大箱",
+      "suitable": "高端家庭、粤港跨境",
+      "image": "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80",
+      "note": "丰田埃尔法，粤港跨境用车首选",
+      "cities": "深圳/广州/香港"
+    },
+    {
+      "id": "g6",
+      "category": "中巴",
+      "name": "Mercedes Sprinter / 14-17座",
+      "seats": 14,
+      "luggage": "10-12个大箱",
+      "suitable": "8-14人团队、展会用车",
+      "image": "https://images.unsplash.com/photo-1592805144716-ef0f9dbf5e17?w=800&q=80",
+      "note": "奔驰斯宾特商旅车，14座豪华商务",
+      "cities": "北京/上海"
+    },
+    {
+      "id": "g7",
+      "category": "中巴",
+      "name": "Toyota Coaster / 19-23座",
+      "seats": 19,
+      "luggage": "15个大箱",
+      "suitable": "15-19人团队、工厂拜访",
+      "image": "https://images.unsplash.com/photo-1566571857452-9f192d15b0c4?w=800&q=80",
+      "note": "丰田考斯特/宇通，中巴主力车型",
+      "cities": "北京/上海/广州"
+    },
+    {
+      "id": "g8",
+      "category": "大巴",
+      "name": "33-45座旅游大巴",
+      "seats": 39,
+      "luggage": "30个大箱",
+      "suitable": "30人以上大团、团建",
+      "image": "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&q=80",
+      "note": "金龙/宇通大巴，适合大团队",
+      "cities": "全国"
     }
   ]
 }

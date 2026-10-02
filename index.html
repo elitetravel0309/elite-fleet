@@ -441,6 +441,7 @@ textarea{resize:vertical;line-height:1.5}
     <button data-route="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>报表中心</button>
     <div class="nav-label">资源</div>
     <button data-route="fleet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>车辆与司机</button>
+    <button data-route="gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>车型相册</button>
     <button data-route="prices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M16 8.5c-.6-.9-2-1.5-4-1.5s-3.4.6-3.4 1.8c0 3 7 1.5 7 4.5 0 1.2-1.6 1.9-3.6 1.9s-3.4-.6-3.6-1.5"/></svg>参考价库</button>
     <div class="nav-label">数据</div>
     <button data-route="finance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>财务结算</button>
@@ -643,7 +644,16 @@ textarea{resize:vertical;line-height:1.5}
       <div id="driverList"></div>
     </section>
 
-    <!-- 参考价 -->
+    <!-- 车型相册 -->
+    <section class="view" data-route="gallery">
+      <div class="today-head">
+        <div><h2 class="section">车型相册</h2><p class="sub">各车型参考照片与规格，点击卡片可编辑照片链接和参数，方便给客户推荐车型</p></div>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn primary" onclick="addGalleryItem()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加车型</button>
+      </div>
+      <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px"></div>
+    </section>
+<!-- 参考价 -->
     <section class="view" data-route="prices">
       <div class="today-head">
         <div><h2 class="section">参考价库</h2><p class="sub">成本价＝车队给你的报价，对外报价＝你给客户的价；订单成本/利润自动匹配</p></div>
@@ -795,6 +805,15 @@ textarea{resize:vertical;line-height:1.5}
             <button class="btn primary" onclick="uploadToCloud()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>保存全部数据到云端</button>
             <div id="cfStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
             <div id="syncStatus" style="font-size:12px;color:var(--text-3);min-height:16px">自动同步：每30秒检查云端更新</div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>网站询盘对接（chinawondercars.com）</h3>
+          <p class="desc">一键拉取网站表单询盘到本工作台询价单（按 id 自动去重合并）。处理询价后修改状态，可一键回推网站后台。</p>
+          <div class="stack">
+            <button class="btn primary" onclick="syncSiteInquiries()">同步网站询盘</button>
+            <button class="btn ghost" onclick="pushSiteInquiryStatus()">推送询价状态到网站</button>
+            <div id="webInqStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
           </div>
         </div>
         <div class="panel">
@@ -1382,6 +1401,28 @@ textarea{resize:vertical;line-height:1.5}
   </div>
 </div>
 
+<!-- ===== 车型相册编辑弹窗 ===== -->
+<div class="overlay" id="galleryModal">
+  <div class="modal">
+    <h3 id="gmTitle">添加车型</h3>
+    <div class="fgrid">
+      <div class="fgroup full"><label>车型名称 *</label><input type="text" id="gmName" placeholder="如 Buick GL8 七座商务"></div>
+      <div class="fgroup"><label>分类</label><input type="text" id="gmCategory" list="galleryCatList" placeholder="如 商务MPV"></div>
+      <div class="fgroup"><label>座位数</label><input type="number" id="gmSeats" value="4" min="1" max="60"></div>
+      <div class="fgroup"><label>行李容量</label><input type="text" id="gmLuggage" placeholder="如 4-5个大箱"></div>
+      <div class="fgroup"><label>可用城市</label><input type="text" id="gmCities" placeholder="如 北京/上海"></div>
+      <div class="fgroup full"><label>适用场景</label><input type="text" id="gmSuitable" placeholder="如 3-6人家庭/商务"></div>
+      <div class="fgroup full"><label>照片URL</label><input type="text" id="gmImage" placeholder="粘贴车型照片链接"></div>
+      <div class="fgroup full"><label>备注</label><input type="text" id="gmNote" placeholder="如 别克GL8陆尊/ES"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeGalleryModal()">取消</button>
+      <button class="btn primary" onclick="saveGalleryItem()">保存</button>
+    </div>
+  </div>
+</div>
+<datalist id="galleryCatList"><option value="豪华轿车"><option value="商务MPV"><option value="商旅商务"><option value="中巴"><option value="大巴"></datalist>
+
 <!-- ===== 司机编辑弹窗 ===== -->
 <div class="overlay" id="driverModal">
   <div class="modal">
@@ -1875,7 +1916,7 @@ function seedState(){
   return {orders:[], vehicles:JSON.parse(JSON.stringify(SEED_VEHICLES)), drivers:JSON.parse(JSON.stringify(SEED_DRIVERS)), prices:JSON.parse(JSON.stringify(SEED_PRICES)), fleets:JSON.parse(JSON.stringify(SEED_FLEETS)), guests:[]};
 }
 function loadState(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; if(!Array.isArray(s.inquiries)) s.inquiries=[]; if(!Array.isArray(s.payments)) s.payments=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; if(!Array.isArray(s.hotels)) s.hotels=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; return s; } } }catch(e){}
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s&&s.orders){ if(!Array.isArray(s.guests)) s.guests=[]; if(!Array.isArray(s.inquiries)) s.inquiries=[]; if(!Array.isArray(s.payments)) s.payments=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; if(!Array.isArray(s.hotels)) s.hotels=[]; if(!Array.isArray(s.vehicleGallery)) s.vehicleGallery=[]; if(!Array.isArray(s.driverRatings)) s.driverRatings=[]; return s; } } }catch(e){}
   const s = seedState(); saveState(s); return s;
 }
 /* ===== 撤销/重做 ===== */
@@ -2345,6 +2386,99 @@ function showSchedule(mode){
   const sc=$('schedCount'); if(sc) sc.textContent=ordersOn(viewDate).length;
   if(isToday) renderToday(); else renderWeek();
 }
+
+/* =========================================================
+   车型相册
+   ========================================================= */
+function renderGallery(){
+  const grid = $('galleryGrid');
+  if(!grid) return;
+  const items = S.vehicleGallery || [];
+  if(!items.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-3);padding:40px 0">暂无车型，点右上角「添加车型」录入</div>';
+    return;
+  }
+  // group by category
+  const cats = {};
+  items.forEach(it=>{ (cats[it.category||'其他'] = cats[it.category||'其他']||[]).push(it); });
+  let html = '';
+  Object.keys(cats).sort().forEach(cat=>{
+    html += '<div style="grid-column:1/-1;margin-top:6px;margin-bottom:-6px"><b style="font-size:14px;color:var(--ink)">'+escapeHtml(cat)+'</b><span style="font-size:12px;color:var(--text-3);margin-left:8px">'+cats[cat].length+' 款</span></div>';
+    cats[cat].forEach(it=>{
+      html += '<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .15s">'
+        +'<div style="height:180px;overflow:hidden;background:var(--bg);cursor:pointer" onclick="editGalleryItem(\''+it.id+'\')">'
+        +'<img src="'+escapeHtml(it.image||'')+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'" alt="'+escapeHtml(it.name)+'">'
+        +'</div>'
+        +'<div style="padding:14px">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="font-size:15px;color:var(--ink)">'+escapeHtml(it.name)+'</b></div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'
+        +'<span class="tag" style="background:var(--arrival-soft);color:var(--arrival);font-size:11px;padding:2px 8px;border-radius:20px">'+it.seats+'座</span>'
+        +'<span class="tag" style="background:var(--bg);color:var(--text-2);font-size:11px;padding:2px 8px;border-radius:20px">行李 '+escapeHtml(it.luggage||'—')+'</span>'
+        +(it.cities?'<span class="tag" style="background:var(--bg);color:var(--text-2);font-size:11px;padding:2px 8px;border-radius:20px">'+escapeHtml(it.cities)+'</span>':'')
+        +'</div>'
+        +'<div style="font-size:12.5px;color:var(--text-2);margin-bottom:4px">适用：'+escapeHtml(it.suitable||'—')+'</div>'
+        +(it.note?'<div style="font-size:12px;color:var(--text-3)">'+escapeHtml(it.note)+'</div>':'')
+        +'<div style="display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">'
+        +'<button class="btn ghost small" onclick="copyGalleryText(\''+it.id+'\')" title="复制车型推荐文案">复制推荐</button>'
+        +'<button class="btn ghost small" onclick="editGalleryItem(\''+it.id+'\')">编辑</button>'
+        +'<button class="btn danger small" onclick="removeGalleryItem(\''+it.id+'\')" style="margin-left:auto">删除</button>'
+        +'</div></div></div>';
+    });
+  });
+  grid.innerHTML = html;
+}
+var editingGalleryId = '';
+function addGalleryItem(){ openGalleryModal(''); }
+function editGalleryItem(id){ openGalleryModal(id); }
+function openGalleryModal(id){
+  editingGalleryId = id||'';
+  const it = id ? (S.vehicleGallery||[]).find(x=>x.id===id) : {id:'',category:'',name:'',seats:4,luggage:'',suitable:'',image:'',note:'',cities:''};
+  if(!it) return;
+  $('gmTitle').textContent = id?'编辑车型':'添加车型';
+  $('gmName').value = it.name||'';
+  $('gmCategory').value = it.category||'';
+  $('gmSeats').value = it.seats||4;
+  $('gmLuggage').value = it.luggage||'';
+  $('gmSuitable').value = it.suitable||'';
+  $('gmImage').value = it.image||'';
+  $('gmCities').value = it.cities||'';
+  $('gmNote').value = it.note||'';
+  $('galleryModal').classList.add('open');
+  setTimeout(()=>$('gmName').focus(),50);
+}
+function closeGalleryModal(){ $('galleryModal').classList.remove('open'); }
+function saveGalleryItem(){
+  const name = $('gmName').value.trim();
+  if(!name){ toast('请输入车型名称'); return; }
+  if(!S.vehicleGallery) S.vehicleGallery = [];
+  if(editingGalleryId){
+    const it = S.vehicleGallery.find(x=>x.id===editingGalleryId);
+    if(it){
+      it.name=name; it.category=$('gmCategory').value.trim(); it.seats=parseInt($('gmSeats').value)||4;
+      it.luggage=$('gmLuggage').value.trim(); it.suitable=$('gmSuitable').value.trim();
+      it.image=$('gmImage').value.trim(); it.cities=$('gmCities').value.trim(); it.note=$('gmNote').value.trim();
+    }
+  } else {
+    S.vehicleGallery.push({
+      id:'g'+Date.now(), name:name, category:$('gmCategory').value.trim(),
+      seats:parseInt($('gmSeats').value)||4, luggage:$('gmLuggage').value.trim(),
+      suitable:$('gmSuitable').value.trim(), image:$('gmImage').value.trim(),
+      cities:$('gmCities').value.trim(), note:$('gmNote').value.trim()
+    });
+  }
+  saveState(S); closeGalleryModal(); renderGallery(); toast('已保存');
+}
+function removeGalleryItem(id){
+  if(!confirm('确定删除这款车型？')) return;
+  S.vehicleGallery = (S.vehicleGallery||[]).filter(x=>x.id!==id);
+  saveState(S); renderGallery(); toast('已删除');
+}
+function copyGalleryText(id){
+  const it = (S.vehicleGallery||[]).find(x=>x.id===id);
+  if(!it) return;
+  const txt = it.name+' ('+it.seats+'座)\n行李：'+(it.luggage||'—')+'\n适用：'+(it.suitable||'—')+(it.note?'\n备注：'+it.note:'');
+  navigator.clipboard.writeText(txt).then(()=>toast('已复制车型信息'));
+}
 function showView(r){
   if(r==='today'||r==='week'){ scheduleMode = (r==='today')? 'today':'week'; r='schedule'; }
   curRoute = r;
@@ -2354,6 +2488,7 @@ function showView(r){
   if(r==='guests') renderGuests();
   if(r==='report') renderReport();
   if(r==='fleet') renderFleet();
+  if(r==='gallery') renderGallery();
   if(r==='prices') renderPrices();
   if(r==='data') renderData();
   if(r==='inquiries') renderInquiries();
@@ -3519,7 +3654,7 @@ function normPrices(){ let ch=false; (S.prices||[]).forEach(p=>{
   }); if(ch) saveState(S); }
 var pCityFilter='';
 function setPriceFilter(v){ pCityFilter=v; renderPrices(); }
-var pViewMode = 'card';
+var pViewMode = 'table';
 function setPriceView(mode){
   pViewMode = mode;
   if($('priceViewCard')) $('priceViewCard').style.background = mode==='card' ? 'var(--accent-soft)' : '';
@@ -4619,6 +4754,86 @@ function importBackup(ev){
   ev.target.value='';
 }
 function cloudUrl(){ return location.protocol==='file:'? null : ('data/elite-fleet-data.json?t='+Date.now()); }
+const WEB_INQ_API = 'https://www.chinawondercars.com/api/workbench';
+const WEB_INQ_SECRET = 'ef-inq-2026';
+const WEB_INQ_STATUS_MAP = { new:'new', contacted:'following', converted:'won', lost:'lost' };
+const WEB_INQ_STATUS_RMAP = { new:'new', quoted:'contacted', following:'contacted', won:'converted', lost:'lost' };
+const WEB_INQ_SERVICE_LABELS = { airport:'机场接送', city:'城市包车', business:'商务用车', multiday:'多日包车', general:'一般询价' };
+
+async function syncSiteInquiries(){
+  const st = webInqStatus;
+  if(st) st.textContent = '正在拉取网站询盘…';
+  try{
+    const res = await fetch(WEB_INQ_API + '?limit=500', { cache:'no-store', headers:{ 'x-api-secret': WEB_INQ_SECRET } });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error || '接口错误');
+    if(!S.inquiries) S.inquiries = [];
+    const map = new Map(S.inquiries.map(i=>[i.id, i]));
+    let added = 0, updated = 0;
+    (d.inquiries||[]).forEach(q=>{
+      const id = 'web_' + q.id;
+      const label = WEB_INQ_SERVICE_LABELS[q.service_type] || q.service_type || '';
+      const note = [ (q.message||'').replace(/\s+/g,' ').trim(), (q.source_page?'来源页: '+q.source_page:''), (label?'服务: '+label:''), (q.price_range?'网站预估: '+q.price_range:'') ].filter(Boolean).join('\n');
+      const rec = {
+        id: id,
+        guest: q.name || '',
+        contact: q.whatsapp || q.email || '',
+        email: q.email || '',
+        date: (q.service_date||'').slice(0,10),
+        serviceDate: (q.service_date||'').slice(0,10),
+        city: q.city || '',
+        pax: q.passengers ? parseInt(q.passengers) : 1,
+        vehicle: '',
+        status: WEB_INQ_STATUS_MAP[q.status] || 'new',
+        route: label,
+        quote: 0, cost: 0,
+        followUp: '', followUps: [], fleetQuotes: [],
+        note: note,
+        source: 'chinawondercars.com',
+        _lastModified: Date.now()
+      };
+      if(map.has(id)){ updated++; map.set(id, Object.assign({}, map.get(id), rec)); }
+      else { added++; map.set(id, rec); }
+    });
+    S.inquiries = [...map.values()];
+    saveState(S);
+    renderInquiries();
+    if(st) st.textContent = '✓ 同步完成：新增 '+added+' 条，更新 '+updated+' 条（询价单共 '+S.inquiries.length+' 条）';
+    toast('网站询盘同步完成：新增 '+added+'，更新 '+updated);
+  }catch(e){
+    if(st) st.textContent = '✗ 同步失败：' + (e.message||e);
+    toast('网站询盘同步失败：' + (e.message||e));
+  }
+}
+
+async function pushSiteInquiryStatus(){
+  const st = webInqStatus;
+  if(st) st.textContent = '正在推送询价状态…';
+  try{
+    const pending = (S.inquiries||[]).filter(i=>/^web_\d+$/.test(i.id));
+    if(!pending.length){ if(st) st.textContent = '没有来自网站的询价（先点「同步网站询盘」）'; return; }
+    let pushed = 0, skipped = 0;
+    for(const i of pending){
+      const wid = i.id.replace('web_','');
+      const status = WEB_INQ_STATUS_RMAP[i.status] || i.status;
+      if(!status){ skipped++; continue; }
+      const res = await fetch(WEB_INQ_API + '/' + wid, {
+        method:'PUT',
+        headers:{ 'Content-Type':'application/json', 'x-api-secret': WEB_INQ_SECRET },
+        body: JSON.stringify({ status: status })
+      });
+      const d = await res.json().catch(()=>({ok:false}));
+      if(d.ok) pushed++; else skipped++;
+    }
+    if(st) st.textContent = '✓ 已推送 '+pushed+'/'+pending.length+' 条状态到网站'+(skipped?'（跳过 '+skipped+'）':'');
+    toast('询价状态已推送：'+pushed+'/'+pending.length);
+  }catch(e){
+    if(st) st.textContent = '✗ 推送失败：' + (e.message||e);
+    toast('推送失败：' + (e.message||e));
+  }
+}
+
 function mergeCloud(d){
   // 以 id 为优先去重键，避免修改姓名/车牌后生成重复条目
   const local=S||{orders:[],drivers:[],prices:[],vehicles:[],guests:[],fleets:[]};
@@ -4633,6 +4848,7 @@ function mergeCloud(d){
     fleets: dedupById((local.fleets||[]).concat(d.fleets||[]), x=>(x.name||'')),
     prices: dedupById((local.prices||[]).concat(d.prices||[]), x=>(x.city||'')+'|'+(x.route||'')+'|'+(x.vehicle||'')),
     vehicles: dedupById((local.vehicles||[]).concat(d.vehicles||[]), x=>(x.plate||'')),
+    vehicleGallery: dedupById((local.vehicleGallery||[]).concat(d.vehicleGallery||[]), x=>(x.id||'')),
     guests: dedupById((local.guests||[]).concat(d.guests||[]), x=>(x.name||'').trim().toLowerCase())
   });
 }

@@ -1,0 +1,7 @@
+name = "cwc-inquiry-proxy"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+workers_dev = false
+routes = [
+  { pattern = "inquiry-api.chinawondercars.com", zone_id = "01a2cdca3d8780b5206c54599225f11a" }
+]
