@@ -1489,6 +1489,27 @@
                        "status":  "quoted",
                        "note":  "金山岭正门进东门出；司马台+古北水镇；22:00前返回市区；长途约330km；按实际时长结算",
                        "city":  "北京"
+                   },
+                   {
+                       "id":  "x261002_jacinto_night",
+                       "date":  "2026-10-02",
+                       "time":  "12:00",
+                       "type":  "charter",
+                       "airport":  "PEK",
+                       "flight":  "CA184",
+                       "route":  "首都机场PEK → 天安门广场 → 慕田峪长城(夜游) → 晚餐 → 返回首都机场PEK",
+                       "vehicle":  "奥迪A6L",
+                       "pax":  1,
+                       "guest":  "Jacinto Ajram Tares",
+                       "contact":  "护照号 PAX567328",
+                       "driver":  "",
+                       "plate":  "",
+                       "price":  0,
+                       "quote":  2000,
+                       "cost":  1430,
+                       "status":  "quoted",
+                       "note":  "CA184 11:20抵达PEK，司机举牌接机；12:00出发；13:00-14:15天安门；16:15-19:30慕田峪夜游；20:30返回PEK约23:00；帮订天安门+慕田峪夜游门票+摆渡车+缆车",
+                       "city":  "北京"
                    }
                ],
     "vehicles":  [
