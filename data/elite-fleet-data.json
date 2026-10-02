@@ -1447,6 +1447,27 @@
                        "status":  "quoted",
                        "note":  "含英文持证导游全天；门票含故宫+慕田峪门票+摆渡车+往返缆车；需客人护照信息提前订故宫定时票；利润870",
                        "city":  "北京"
+                   },
+                   {
+                       "id":  "x261006_azat_jinshanling",
+                       "date":  "2026-10-06",
+                       "time":  "07:00",
+                       "type":  "charter",
+                       "airport":  "",
+                       "flight":  "",
+                       "route":  "天伦王朝酒店 → 金山岭长城(正门进东门出) → 司马台长城 → 古北水镇 → 返回酒店",
+                       "vehicle":  "五座",
+                       "pax":  2,
+                       "guest":  "Azat Zakiev",
+                       "contact":  "+7 915 332-42-72",
+                       "driver":  "",
+                       "plate":  "",
+                       "price":  0,
+                       "quote":  2000,
+                       "cost":  1500,
+                       "status":  "confirmed",
+                       "note":  "07:00出发，22:00前返回；金山岭正门进东门出；含司马台+古北水镇；超长时间按实际结算",
+                       "city":  "北京"
                    }
                ],
     "vehicles":  [
