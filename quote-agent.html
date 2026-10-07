@@ -131,10 +131,11 @@
     .head{background:#fff !important;color:#000;border-bottom:2px solid #000;border-radius:0;}
     .head h1{color:#000;}
     .head .sub,.badge{color:#555 !important;}
-    body.printing-quote #cardQuote, body.printing-dispatch #cardDispatch, body.printing-confirm #cardConfirm{display:block !important;}
-    body.printing-quote #cardDispatch, body.printing-quote #cardConfirm,
-    body.printing-dispatch #cardQuote, body.printing-dispatch #cardConfirm,
-    body.printing-confirm #cardQuote, body.printing-confirm #cardDispatch{display:none !important;}
+    body.printing-quote #cardQuote, body.printing-dispatch #cardDispatch, body.printing-confirm #cardConfirm, body.printing-receipt #cardReceipt{display:block !important;}
+    body.printing-quote #cardDispatch, body.printing-quote #cardConfirm, body.printing-quote #cardReceipt,
+    body.printing-dispatch #cardQuote, body.printing-dispatch #cardConfirm, body.printing-dispatch #cardReceipt,
+    body.printing-confirm #cardQuote, body.printing-confirm #cardDispatch, body.printing-confirm #cardReceipt,
+    body.printing-receipt #cardQuote, body.printing-receipt #cardDispatch, body.printing-receipt #cardConfirm{display:none !important;}
   }
 </style>
 </head>
@@ -316,8 +317,25 @@
       <button class="btn ghost" id="btnSendConfirmMail">发邮件</button>
       <button class="btn primary" id="btnPrintConfirm">打印确认单</button>
       <button class="btn ghost" id="btnPolishConfirm">AI 润色</button>
+      <button class="btn gold" id="btnReceipt">生成收据</button>
       <button class="btn ghost" id="btnSaveWorkbench">保存到工作台</button>
       <button class="btn ghost" id="btnBackQuote2">返回报价单</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="cardReceipt">
+    <div class="step-t"><span class="step-n">5D</span><h2>收款收据</h2>
+      <div class="lang-switch no-print">
+        <button id="langZh4" class="on">中文</button>
+        <button id="langEn4">EN</button>
+      </div>
+    </div>
+    <div class="doc" id="docReceipt"></div>
+    <div class="acts no-print">
+      <button class="btn gold" id="btnCopyReceipt">复制收据</button>
+      <button class="btn primary" id="btnPrintReceipt">打印 / 存 PDF</button>
+      <button class="btn ghost" id="btnExportReceipt">导出邮件 JSON</button>
+      <button class="btn ghost" id="btnBackConfirm">返回确认单</button>
     </div>
   </div>
 
@@ -1206,11 +1224,107 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   }
   /* ===== 打印（作用域） ===== */
   function printScoped(kind){
-    document.body.classList.remove('printing-quote','printing-dispatch','printing-confirm');
+    document.body.classList.remove('printing-quote','printing-dispatch','printing-confirm','printing-receipt');
     document.body.classList.add('printing-'+kind);
     var rem=function(){ document.body.classList.remove('printing-'+kind); window.removeEventListener('afterprint',rem); };
     window.addEventListener('afterprint',rem);
     window.print();
+  }
+  /* ===== 收据（方向1：PDF 邮件外发的前置） ===== */
+  var QAR_SEQ_KEY='qa-receipt-seq';
+  function qaReceiptNo(){
+    var y=new Date().getFullYear();
+    var seq=1;
+    try{ var m=JSON.parse(localStorage.getItem(QAR_SEQ_KEY)||'{}'); if(m.y===y) seq=m.n+1; }catch(e){}
+    try{ localStorage.setItem(QAR_SEQ_KEY,JSON.stringify({y:y,n:seq})); }catch(e){}
+    var pad=('000'+seq).slice(-4);
+    return 'R-'+y+'-'+pad;
+  }
+  function qaReceiptData(){
+    var p=state.veh, r=calc(), g=guestInfo();
+    var paidVal=$('inConfDep').value.trim();
+    var paid=0;
+    var pm=paidVal.match(/\d+(\.\d+)?/);
+    if(paidVal.indexOf('%')>=0){ paid=r.suggest!=null? Math.round(r.suggest*(+pm[0])/100) : 0; }
+    else if(pm){ paid=+pm[0]; }
+    if(paidVal && /全|paid|all/i.test(paidVal)) paid=r.suggest!=null?r.suggest:0;
+    var total=r.suggest!=null?r.suggest:0;
+    var balance=Math.max(0,total-paid);
+    return {
+      no:qaReceiptNo(), date:g.date, time:g.time, guest:g.g, contact:qaClientWA(), email:qaClientEmail(),
+      city:state.city, route:state.route, vehicle:(p?p.v:''), pax:parseInt($('inPax').value,10)||1,
+      total:total, paid:paid, balance:balance,
+      method:$('inConfPay').value.trim()||'-', payDate:todayStr()
+    };
+  }
+  function buildReceiptText(){
+    var d=qaReceiptData();
+    if(lang==='zh'){
+      return '【Elite Travel 曦驰旅游 · 收款收据】\n'
+        +'收据编号：'+d.no+'\n客人：'+d.guest+'\n服务日期：'+d.date+(d.time?' '+d.time:'')+'\n线路：'+d.city+' · '+d.route+'\n车型：'+(d.vehicle||'')+' · 人数：'+d.pax+'人\n服务费用：人民币 '+d.total+' 元\n本次实收：人民币 '+d.paid+' 元\n收款方式：'+(d.method==='-'?'待确认':d.method)+'\n收款日期：'+d.payDate+(d.balance>0?'\n待收余额：人民币 '+d.balance+' 元（服务当日支付）':'\n付款状态：已全额付清 ✓')+'\n\nAlice Li · China Wonder Cars / China Wonder Tours\nE-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823\nwww.chinawondercars.com · www.chinawondertours.com';
+    }
+    return '【Elite Travel · Payment Receipt】\n'
+      +'Receipt No: '+d.no+'\nGuest: '+d.guest+'\nService Date: '+d.date+(d.time?' '+d.time:'')+'\nRoute: '+d.city+' · '+d.route+'\nVehicle: '+(d.vehicle||'')+' · Pax: '+d.pax+'\nService Fee: RMB '+d.total+'\nAmount Received: RMB '+d.paid+'\nPayment Method: '+(d.method==='-'?'TBC':d.method)+'\nPayment Date: '+d.payDate+(d.balance>0?'\nBalance Due: RMB '+d.balance+' (payable on service day)':'\nPayment Status: Fully Paid ✓')+'\n\nAlice Li · China Wonder Cars / China Wonder Tours\nE-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823\nwww.chinawondercars.com · www.chinawondertours.com';
+  }
+  function renderReceiptDoc(){
+    var d=qaReceiptData();
+    if(lang==='zh'){
+      $('docReceipt').innerHTML='<div class="head"><div><h1>Elite Travel 曦驰旅游</h1><div class="sub">China Wonder Tours · 收款收据</div></div><span class="badge">收据编号 '+d.no+'</span></div>'
+        +'<div style="padding:14px 18px;line-height:1.9">'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>客人</span><b>'+esc(d.guest)+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>服务日期</span><b>'+d.date+(d.time?' '+d.time:'')+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>线路</span><b>'+esc(d.city)+' · '+esc(d.route)+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>车型 / 人数</span><b>'+(d.vehicle||'-')+' / '+d.pax+'人</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>服务费用</span><b>¥'+d.total.toLocaleString()+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px;color:var(--done)"><span>本次实收</span><b>¥'+d.paid.toLocaleString()+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>收款方式</span><b>'+esc(d.method)+'</b></div>'
+        +(d.balance>0
+          ?'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px;color:#d48806"><span>待收余额</span><b>¥'+d.balance.toLocaleString()+'（服务当日支付）</b></div>'
+          :'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px;color:var(--done)"><span>付款状态</span><b>已全额付清 ✓</b></div>')
+        +'</div>'
+        +'<div style="font-size:11.5px;color:#666;line-height:1.8;padding:10px 18px 16px">Alice Li · China Wonder Cars / China Wonder Tours<br>E-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823<br>www.chinawondercars.com · www.chinawondertours.com</div>';
+    }else{
+      $('docReceipt').innerHTML='<div class="head"><div><h1>Elite Travel</h1><div class="sub">China Wonder Tours · Payment Receipt</div></div><span class="badge">Receipt No '+d.no+'</span></div>'
+        +'<div style="padding:14px 18px;line-height:1.9">'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>Guest</span><b>'+esc(d.guest)+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>Service Date</span><b>'+d.date+(d.time?' '+d.time:'')+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>Route</span><b>'+esc(d.city)+' · '+esc(d.route)+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>Vehicle / Pax</span><b>'+(d.vehicle||'-')+' / '+d.pax+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>Service Fee</span><b>RMB '+d.total.toLocaleString('en-US')+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px;color:var(--done)"><span>Amount Received</span><b>RMB '+d.paid.toLocaleString('en-US')+'</b></div>'
+        +'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px"><span>Payment Method</span><b>'+esc(d.method)+'</b></div>'
+        +(d.balance>0
+          ?'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px;color:#d48806"><span>Balance Due</span><b>RMB '+d.balance.toLocaleString('en-US')+' (on service day)</b></div>'
+          :'<div style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px;color:var(--done)"><span>Payment Status</span><b>Fully Paid ✓</b></div>')
+        +'</div>'
+        +'<div style="font-size:11.5px;color:#666;line-height:1.8;padding:10px 18px 16px">Alice Li · China Wonder Cars / China Wonder Tours<br>E-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823<br>www.chinawondercars.com · www.chinawondertours.com</div>';
+    }
+  }
+  function showReceipt(){
+    if(!state.veh){ toast('请先选择车型'); return; }
+    renderReceiptDoc();
+    $('cardReceipt').classList.remove('hidden');
+    $('cardConfirm').classList.add('hidden');
+    $('cardQuote').classList.add('hidden');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function exportReceiptJson(){
+    var d=qaReceiptData();
+    var savedLang=lang;
+    lang='en'; var te=buildReceiptText();
+    lang='zh'; var tz=buildReceiptText();
+    lang=savedLang;
+    var payload={receiptNo:d.no,date:todayStr(),guest:d.guest,contact:d.contact,email:d.email,
+      service:{date:d.date,time:d.time,route:d.city+' · '+d.route,vehicle:d.vehicle,pax:d.pax,quote:d.total},
+      paid:d.paid,balance:d.balance,method:d.method,payDate:d.payDate,text_zh:tz,text_en:te};
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='qa-receipt.json'; a.click();
+    toast('已导出 qa-receipt.json → 运行 scripts/send_receipt.ps1 发 PDF 邮件');
+  }
+  function copyReceipt(){
+    var t=buildReceiptText();
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){toast('收据已复制');},function(){fallbackCopy(t,'收据');}); }
+    else{ fallbackCopy(t,'收据'); }
   }
   /* ===== AI 润色 ===== */
   var AI_PRESETS={ openai:{url:'https://api.openai.com/v1/chat/completions',model:'gpt-4o-mini'}, deepseek:{url:'https://api.deepseek.com/chat/completions',model:'deepseek-chat'}, kimi:{url:'https://api.moonshot.cn/v1/chat/completions',model:'moonshot-v1-8k'}, qwen:{url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',model:'qwen-plus'} };
@@ -1418,6 +1532,17 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     printScoped('confirm');
   });
   $('btnPolishConfirm').addEventListener('click',function(){ polishDoc('confirm'); });
+  $('btnReceipt').addEventListener('click',showReceipt);
+  $('btnCopyReceipt').addEventListener('click',copyReceipt);
+  $('btnPrintReceipt').addEventListener('click',function(){ printScoped('receipt'); });
+  $('btnExportReceipt').addEventListener('click',exportReceiptJson);
+  $('btnBackConfirm').addEventListener('click',function(){
+    $('cardReceipt').classList.add('hidden');
+    $('cardConfirm').classList.remove('hidden');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  $('langZh4').addEventListener('click',function(){ lang='zh'; this.classList.add('on'); $('langEn4').classList.remove('on'); $('langZh').classList.add('on'); $('langEn').classList.remove('on'); renderReceiptDoc(); renderConfirm(); renderQuote(); });
+  $('langEn4').addEventListener('click',function(){ lang='en'; this.classList.add('on'); $('langZh4').classList.remove('on'); $('langEn').classList.add('on'); $('langZh').classList.remove('on'); renderReceiptDoc(); renderConfirm(); renderQuote(); });
   $('btnSaveWorkbench').addEventListener('click',saveWorkbench);
 
   /* ---------- AI 设置 / 润色结果 ---------- */

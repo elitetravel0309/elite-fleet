@@ -812,6 +812,7 @@ textarea{resize:vertical;line-height:1.5}
         <div><h2 class="section">参考价库</h2><p class="sub">成本价＝车队给你的报价，对外报价＝你给客户的价；订单成本/利润自动匹配</p></div>
         <div class="spacer" style="flex:1"></div>
         <button class="btn ghost" onclick="openBatchModal()" style="margin-right:8px" title="一次录入/修改多条成本价">批量录入</button>
+        <button class="btn ghost" onclick="applyLearnedPrices()" style="margin-right:8px" title="从已成交/已完成订单聚合均价，回填参考价库的报价与成本">从成交回填</button>
         <button class="btn primary" onclick="addPrice()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增价格</button>
       </div>
       <!-- 智能计价器 -->
@@ -3421,6 +3422,46 @@ function guestOrders(g){
     return false;
   }).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
 }
+/* ===== 跟进提醒（方向4：客户档案与跟进） ===== */
+function inquiryMatchesGuest(g, i){
+  const nm=(g.name||'').trim().toLowerCase();
+  const gp=(g.phone||'').replace(/[\s\-+()]/g,'');
+  const gi=(i.guest||'').trim().toLowerCase();
+  const ip=(i.contact||'').replace(/[\s\-+()]/g,'');
+  if(gi && gi===nm) return true;
+  if(gp && ip && ip.includes(gp.slice(-8)) ) return true;
+  if(i.email && g.contact && i.email.toLowerCase()===(g.contact||'').toLowerCase()) return true;
+  return false;
+}
+function guestFollowup(g){
+  const today=todayStr();
+  const items=(S.inquiries||[]).filter(i=>['new','quoted','pending'].includes(i.status) && i.followUp && i.followUp<=today && inquiryMatchesGuest(g,i));
+  if(!items.length) return '';
+  const soon=items[0].followUp===today?'今日':'截至 '+items[0].followUp;
+  return '询盘待跟进：'+soon+' · '+items[0].guest;
+}
+function renderFollowupPanel(){
+  const el=$('followupPanel'); if(!el) return;
+  const today=todayStr();
+  const due=(S.inquiries||[]).filter(i=>['new','quoted','pending'].includes(i.status) && i.followUp && i.followUp<=today)
+    .sort((a,b)=>(a.followUp||'').localeCompare(b.followUp||''));
+  const stale=(S.inquiries||[]).filter(i=>['new','quoted'].includes(i.status) && !i.followUp && i.date && i.date<today);
+  if(!due.length && !stale.length){
+    el.innerHTML='<div style="display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);font-size:13px;color:var(--text-3)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>今日无到期跟进 · 需在询价管理中设置下次跟进日期后自动提醒</div>';
+    return;
+  }
+  const row=i=>'<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer" onclick="openInquiry(\''+i.id+'\')">'
+    +'<span class="tag" style="background:'+(i.followUp===today?'#e53935':'#f5a623')+';color:#fff;font-size:11px;flex-shrink:0">'+(i.followUp===today?'今天':'到期 '+i.followUp)+'</span>'
+    +'<b style="flex-shrink:0">'+escapeHtml(i.guest||'未命名')+'</b>'
+    +'<span style="font-size:12px;color:var(--text-3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml((i.route||i.note||'').slice(0,40))+'</span>'
+    +'<span class="st" style="background:#e8f2fd;color:#1e88e5;font-size:11px">'+escapeHtml(i.status==='new'?'新询价':(i.status==='quoted'?'已报价':'待确认'))+'</span></div>';
+  let html='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden">'
+    +'<div style="display:flex;align-items:center;gap:8px;padding:12px 14px;background:rgba(229,57,53,.06)"><b style="font-size:14px;color:#e53935">今日待跟进</b><span style="font-size:12px;color:var(--text-3)">'+due.length+' 条到期 · '+stale.length+' 条长期未跟进</span></div>';
+  html+=due.map(row).join('');
+  stale.slice(0,5).forEach(i=>{ html+=row(Object.assign({},i,{followUp:'长期'})); });
+  html+='</div>';
+  el.innerHTML=html;
+}
 function renderGuests(){
   ensureGuests();
   renderFollowupPanel();
@@ -4309,6 +4350,33 @@ function renderPrices(){
 function calcCityRoutes(city){ return [...new Set((S.prices||[]).filter(p=>p.city===city).map(p=>p.route))]; }
 function calcRouteVehicles(city, route){ return [...new Set((S.prices||[]).filter(p=>p.city===city && p.route===route).map(p=>p.vehicle))]; }
 function calcMatch(city, route, vehicle){ return (S.prices||[]).find(p=>p.city===city && p.route===route && p.vehicle===vehicle) || null; }
+/* ===== 成交沉淀：从已成交订单聚合均价回填参考价库（方向2） ===== */
+function applyLearnedPrices(){
+  if(!confirm('将从已成交/已完成订单按 城市×线路×车型 聚合成交均价，回填参考价库（无成交数据的条目不动）。继续？')) return;
+  const agg={};
+  (S.orders||[]).forEach(o=>{
+    if(!['confirmed','sent','done'].includes(o.status)) return;
+    const route=(o.route||'').trim();
+    if(!route) return;
+    const q=+o.quote||0, c=+o.cost||0;
+    if(!q && !c) return;
+    const key=(cityOf(o)||'北京')+'||'+route+'||'+(o.vehicle||'五座');
+    if(!agg[key]) agg[key]={city:cityOf(o)||'北京',route,veh:o.vehicle||'五座',n:0,qsum:0,csum:0};
+    const a=agg[key]; a.n++; a.qsum+=q; a.csum+=c;
+  });
+  const keys=Object.keys(agg);
+  if(!keys.length){ toast('暂无已成交订单可回填（需 status 为 已派车/已确认/已完成 且填写报价或成本）'); return; }
+  if(!Array.isArray(S.prices)) S.prices=[];
+  let up=0, add=0;
+  keys.forEach(k=>{
+    const a=agg[k], q=Math.round(a.qsum/a.n), c=Math.round(a.csum/a.n);
+    let p=S.prices.find(x=>x.city===a.city && x.route===a.route && x.vehicle===a.veh);
+    if(p){ let ch=false; if(q && p.quote!==q){ p.quote=q; ch=true; } if(c && p.cost!==c){ p.cost=c; ch=true; } if(ch) up++; }
+    else { S.prices.push({city:a.city,route:a.route,vehicle:a.veh,duration:'',distance:'',cost:c,quote:q,note:'成交回填（'+a.n+'单）'}); add++; }
+  });
+  saveState(S); renderPrices();
+  toast('成交回填完成：更新 '+up+' 条，新增 '+add+' 条（来自 '+keys.length+' 个 线路×车型）');
+}
 function initCalc(){
   if($('qcCity').options.length) { runCalc(); return; }
   const cities=[...new Set((S.prices||[]).map(p=>p.city).filter(Boolean))];
@@ -5656,12 +5724,77 @@ function renderReport(){
     return html+'</tbody></table></div>';
   }
   function kpi(name,val){ return '<div style="flex:1 1 130px;min-width:110px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)"><div style="font-size:12px;color:var(--text-3)">'+name+'</div><div style="font-size:19px;font-weight:700;color:var(--ink);margin-top:4px">'+val+'</div></div>'; }
+  /* 线路热度 TOP10（当月） */
+  function routeHeat(orders){
+    const rm={};
+    orders.forEach(o=>{ const r=o.route||'未标注线路'; (rm[r]=rm[r]||[]).push(o); });
+    const rows=Object.keys(rm).map(r=>({r,n:rm[r].length,m:money(rm[r])})).sort((a,b)=>b.n-a.n||b.m-a.m).slice(0,10);
+    if(!rows.length) return '';
+    const max=rows[0].n;
+    let h='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">线路热度 TOP10（当月）</b>';
+    rows.forEach(x=>{
+      h+='<div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span style="font-size:12px;color:var(--text-3);width:24px">#'+(rows.indexOf(x)+1)+'</span>'
+        +'<div style="flex:1;height:18px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.max(4,Math.round(x.n/max*100))+'%;background:linear-gradient(90deg,#2E7D6B,#4CAF8A);border-radius:4px"></div></div>'
+        +'<b style="font-size:12px;width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escapeHtml(x.r)+'">'+escapeHtml(x.r)+'</b>'
+        +'<span style="font-size:12px;color:var(--text-2);width:60px;text-align:right">'+x.n+' 单</span>'
+        +'<span style="font-size:12px;color:var(--text-3);width:90px;text-align:right">'+fmtMoney(x.m)+'</span></div>';
+    });
+    return h+'</div>';
+  }
+  /* 成交漏斗（全量） */
+  function funnel(){
+    const inq=(S.inquiries||[]);
+    const inqTotal=inq.length;
+    const inqQuoted=inq.filter(i=>['quoted','pending','won'].includes(i.status)||(i.quote>0)).length;
+    const inqWon=inq.filter(i=>i.status==='won').length;
+    const ords=(S.orders||[]);
+    const ordWon=ords.filter(o=>['confirmed','sent','done'].includes(o.status)).length;
+    const recv=(S.payments||[]).filter(p=>p.type==='receive'&&p.status!=='cancelled').reduce((t,p)=>t+(+p.amount||0),0);
+    const steps=[
+      ['询盘总数', inqTotal, '#1e88e5'],
+      ['已报价', inqQuoted, '#f39c12'],
+      ['已成交（询盘）', inqWon, '#2E7D6B'],
+      ['已成交（订单）', ordWon, '#2E7D6B'],
+      ['已收款金额', '¥'+recv.toLocaleString('zh-CN'), '#7cb342']
+    ];
+    const maxN=Math.max(1,inqTotal,inqQuoted,inqWon,ordWon);
+    let h='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">成交漏斗</b>';
+    steps.forEach(s=>{
+      h+='<div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span style="font-size:12px;color:var(--text-3);width:88px">'+s[0]+'</span>'
+        +'<div style="flex:1;height:16px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.max(3,Math.round((typeof s[1]==='number'?s[1]:maxN)/maxN*100))+'%;background:'+s[2]+';border-radius:4px"></div></div>'
+        +'<b style="font-size:12px;width:100px;text-align:right">'+s[1]+'</b></div>';
+    });
+    return h+'</div>';
+  }
+  /* 近12个月趋势 */
+  function trend(){
+    const m={};
+    (S.orders||[]).forEach(o=>{
+      const k=(o.date||'').slice(0,7); if(!k) return;
+      m[k]=m[k]||{n:0,rev:0,pr:0};
+      m[k].n++; m[k].rev+=(+o.quote||0); m[k].pr+=profitOf(o)||0;
+    });
+    const keys=Object.keys(m).sort().slice(-12);
+    if(!keys.length) return '';
+    const maxRev=Math.max(1,...keys.map(k=>m[k].rev));
+    let h='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">月度趋势（近12个月）</b>';
+    keys.forEach(k=>{
+      h+='<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="font-size:11px;color:var(--text-3);width:48px">'+k.slice(2)+'</span>'
+        +'<div style="flex:1;height:14px;background:var(--bg);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,Math.round(m[k].rev/maxRev*100))+'%;background:var(--accent);border-radius:3px"></div></div>'
+        +'<span style="font-size:11px;color:var(--text-2);width:88px;text-align:right">'+fmtMoney(m[k].rev)+'</span>'
+        +'<span style="font-size:11px;color:var(--text-3);width:40px;text-align:right">'+m[k].n+'单</span></div>';
+    });
+    return h+'</div>';
+  }
   $('rpBody').innerHTML =
     '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">'
     +kpi('订单数', orders.length)+kpi('营业额', fmtMoney(money(orders)))+kpi('成本', fmtMoney(cost(orders)))
     +kpi('利润', fmtMoney(profit(orders)))+kpi('利润率', rate(profit(orders),money(orders)))
     +kpi('司机代收', fmtMoney(sum(orders,'collectAmount')))
     +'</div>'
+    +funnel()
+    +routeHeat(orders)
+    +trend()
     +tbl('按城市汇总', cityMap)
     +tbl('按对接车队汇总', fleetMap)
     +tbl('按客人汇总', guestMap)
@@ -7261,7 +7394,7 @@ function savePayment(){
   saveState(S);
   renderFinance();
   closePayment();
-  if(currentOrderId) renderOrders();
+  renderOrders();
   toast(currentPaymentId?'记录已更新':'记录已添加');
 }
 
