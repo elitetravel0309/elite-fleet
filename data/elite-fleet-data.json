@@ -1582,6 +1582,26 @@
             "note": "Afternoon pickup. Same vehicle and driver as Oct 16 and Oct 19. Part of 3-transfer package RMB 3000 total."
         },
         {
+            "id": "x261018_rolan_bj",
+            "date": "2026-10-18",
+            "time": "15:15",
+            "type": "charter",
+            "airport": "PKX",
+            "flight": "MU5705",
+            "route": "Day1 大兴机场接机→馨香雅苑四合院(北京天安门王府井店)；Day2 07:00酒店接→慕田峪长城→约14:30返程回酒店",
+            "vehicle": "5座车",
+            "pax": 2,
+            "guest": "Roland Walters",
+            "contact": "",
+            "driver": "",
+            "plate": "",
+            "status": "confirmed",
+            "quote": 0,
+            "cost": 0,
+            "note": "10/18 大兴机场接机 MU5705 @15:15抵达，China Wonder Tours logo举牌接机，送馨香雅苑四合院(北京市东城区朝阳门街道演乐胡同91号)；10/19 07:00酒店接→慕田峪长城→约14:30返程回酒店；2人5座车；价格待定",
+            "city": "北京"
+        },
+        {
             "id": "x261019_oliver_jinshanling_1790000000005",
             "date": "2026-10-19",
             "time": "08:00",
@@ -4941,6 +4961,20 @@
             "totalOrders": 1,
             "totalSpent": 0,
             "_lastModified": 1789660501769
+        },
+        {
+            "id": "gst_1791382972170_roland",
+            "name": "Roland Walters",
+            "phone": "",
+            "whatsapp": "",
+            "wechat": "",
+            "email": "",
+            "nationality": "",
+            "city": "北京",
+            "note": "2人，2026-10-18 大兴接机送馨香雅苑四合院；10/19 慕田峪往返",
+            "totalOrders": 1,
+            "totalSpent": 0,
+            "_lastModified": 1791382972170
         }
     ],
     "_meta": {
@@ -4952,7 +4986,21 @@
     },
     "_lastModified": 1727222400000,
     "inquiries": [],
-    "payments": [],
+    "payments": [
+        {
+            "id": "pay_261024_daniela_dep",
+            "orderId": "x261024dan1",
+            "guest": "Daniela Queiroz",
+            "amount": 625,
+            "currency": "CNY",
+            "method": "Alipay",
+            "type": "定金",
+            "date": "2026-10-07",
+            "status": "received",
+            "note": "50% deposit of RMB 1,250; balance RMB 625 payable on service day",
+            "_lastModified": 1791382972170
+        }
+    ],
     "driverRatings": [],
     "hotels": []
 }
