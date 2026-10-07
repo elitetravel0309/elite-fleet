@@ -797,6 +797,7 @@ textarea{resize:vertical;line-height:1.5}
       <div class="today-head">
         <div><h2 class="section">参考价库</h2><p class="sub">成本价＝车队给你的报价，对外报价＝你给客户的价；订单成本/利润自动匹配</p></div>
         <div class="spacer" style="flex:1"></div>
+        <button class="btn ghost" onclick="openBatchModal()" style="margin-right:8px" title="一次录入/修改多条成本价">批量录入</button>
         <button class="btn primary" onclick="addPrice()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增价格</button>
       </div>
       <!-- 智能计价器 -->
@@ -1754,6 +1755,34 @@ textarea{resize:vertical;line-height:1.5}
     <div class="modal-foot">
       <button class="btn ghost" onclick="closePriceModal()">取消</button>
       <button class="btn primary" onclick="savePriceModal()">保存价格</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 成本价批量录入表单 ===== -->
+<div class="overlay" id="batchModal">
+  <div class="modal" style="max-width:1040px;width:96%">
+    <h3>成本价批量录入表单</h3>
+    <div class="m-sub">选择城市后自动载入该城市已有条目（可改）；每行一条线路，成本价＝车队给你报价，对外报价＝你给客户的价。按「城市＋线路＋车型」去重：已存在则更新，不存在则新增。</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0">
+      <label style="font-size:12px;color:var(--text-3)">城市</label>
+      <select id="batchCity" onchange="batchOnCityChange()" style="min-width:140px"></select>
+      <input type="text" id="batchCityNew" placeholder="输入新城市名…" style="display:none;width:180px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;background:var(--card)">
+      <button class="btn ghost small" onclick="addBatchRow(null)">+ 添加一行</button>
+      <span id="batchCount" style="font-size:12px;color:var(--text-3)"></span>
+    </div>
+    <div style="overflow:auto;max-height:52vh;border:1px solid var(--line-2);border-radius:10px">
+      <table class="order-table" style="margin:0;min-width:900px">
+        <thead><tr>
+          <th style="width:26%">线路 *</th><th style="width:11%">车型</th><th style="width:9%">时长</th><th style="width:9%">距离(km)</th>
+          <th style="width:10%">成本价(¥)</th><th style="width:10%">对外报价(¥)</th><th style="width:19%">备注</th><th style="width:6%"></th>
+        </tr></thead>
+        <tbody id="batchRows"></tbody>
+      </table>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeBatchModal()">取消</button>
+      <button class="btn primary" onclick="saveBatchPrices()">保存全部</button>
     </div>
   </div>
 </div>
@@ -4235,6 +4264,90 @@ function runCalc(){
     +'<div style="font-size:11.5px;color:var(--text-3);margin-top:6px">合计 = 基础价 × '+h+' + 超时 × 费率；'+(p&&p.duration?'该线路标准时长 '+p.duration+'，':'')+(p&&p.distance?'距离约 '+p.distance+' 公里，':'')+(hasQ?'':'录好对外报价后即可自动算利润。')+'</div>';
   $('qcRes').innerHTML=html;
 }
+/* ---- 参考价：成本价批量录入表单 ---- */
+var batchCitySel='';
+function openBatchModal(){
+  const cities=[...new Set((S.prices||[]).map(p=>p.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh'));
+  const sel=$('batchCity');
+  const cur = batchCitySel && cities.includes(batchCitySel) ? batchCitySel : (cities[0]||'北京');
+  sel.innerHTML = cities.map(c=>'<option value="'+escapeHtml(c)+'"'+(c===cur?' selected':'')+'>'+escapeHtml(c)+'</option>').join('')
+    +'<option value="__new__">✚ 新增城市…</option>';
+  $('batchCityNew').style.display='none'; $('batchCityNew').value='';
+  sel.value=cur;
+  $('batchModal').classList.add('open');
+  batchLoadCity(cur);
+}
+function batchOnCityChange(){
+  const v=$('batchCity').value;
+  if(v==='__new__'){
+    $('batchCityNew').style.display=''; $('batchCityNew').focus();
+    $('batchRows').innerHTML=''; addBatchRow(null);
+    $('batchCount').textContent='新城市，等待输入城市名';
+    return;
+  }
+  $('batchCityNew').style.display='none';
+  batchLoadCity(v);
+}
+function batchLoadCity(city){
+  const items=(S.prices||[]).filter(p=>p.city===city);
+  $('batchRows').innerHTML='';
+  if(items.length){ items.forEach(p=>addBatchRow(p)); $('batchCount').textContent=city+' 已有 '+items.length+' 条，可直接修改'; }
+  else { addBatchRow(null); $('batchCount').textContent=city+' 暂无条目，从空行开始录入'; }
+}
+function addBatchRow(p){
+  const tr=document.createElement('tr');
+  const inp=(cls,ph,type,val)=>{ const i=document.createElement('input');
+    i.className=cls; i.type=type||'text'; i.placeholder=ph||'';
+    i.style.cssText='width:100%;box-sizing:border-box;border:1px solid var(--line-2);border-radius:6px;padding:6px 8px;font-size:12.5px;background:var(--card)';
+    if(val!=null) i.value=val; return i; };
+  const td=(el,align)=>{ const c=document.createElement('td'); c.style.verticalAlign='top'; if(align) c.style.textAlign=align; c.appendChild(el); return c; };
+  tr.appendChild(td(inp('bi-route','如 慕田峪 · 机场接送', 'text', p?p.route:'')));
+  tr.appendChild(td(inp('bi-vehicle','五座/七座/九座', 'text', p?p.vehicle:'')));
+  tr.appendChild(td(inp('bi-duration','10小时', 'text', p?p.duration:'')));
+  tr.appendChild(td(inp('bi-distance','', 'text', p?p.distance:'')));
+  tr.appendChild(td(inp('bi-cost','', 'number', p&&p.cost?p.cost:'')));
+  tr.appendChild(td(inp('bi-quote','', 'number', p&&p.quote?p.quote:'')));
+  tr.appendChild(td(inp('bi-note','超时100/h…', 'text', p?p.note:'')));
+  const del=document.createElement('button');
+  del.className='btn danger small'; del.textContent='删';
+  del.style.cssText='padding:4px 8px;font-size:11px;white-space:nowrap';
+  del.onclick=()=>{ const rows=$('batchRows').querySelectorAll('tr'); if(rows.length<=1){ toast('至少保留一行'); return; } tr.remove(); };
+  tr.appendChild(td(del,'center'));
+  $('batchRows').appendChild(tr);
+}
+function closeBatchModal(){ $('batchModal').classList.remove('open'); }
+function getBatchCity(){
+  const v=$('batchCity').value;
+  if(v==='__new__') return $('batchCityNew').value.trim();
+  return v;
+}
+function saveBatchPrices(){
+  const city=getBatchCity();
+  if(!city){ toast('请选择或输入城市'); return; }
+  const rows=$('batchRows').querySelectorAll('tr');
+  if(!rows.length){ toast('没有可保存的行'); return; }
+  const map=new Map();
+  (S.prices||[]).forEach((p,i)=>{ if(p.city===city) map.set((p.route||'')+'||'+(p.vehicle||''), i); });
+  let added=0, updated=0, skipped=0;
+  rows.forEach(tr=>{
+    const route=tr.querySelector('.bi-route').value.trim();
+    if(!route){ skipped++; return; }
+    const vehicle=tr.querySelector('.bi-vehicle').value.trim()||'五座';
+    const key=route+'||'+vehicle;
+    const obj={city, route, vehicle,
+      duration: tr.querySelector('.bi-duration').value.trim(),
+      distance: tr.querySelector('.bi-distance').value.trim(),
+      cost: +tr.querySelector('.bi-cost').value||0,
+      quote: +tr.querySelector('.bi-quote').value||0,
+      note: tr.querySelector('.bi-note').value.trim()};
+    if(map.has(key)){ S.prices[map.get(key)]=obj; updated++; }
+    else { S.prices.push(obj); added++; }
+  });
+  saveState(S); renderPrices(); closeBatchModal();
+  toast('已保存 '+(added+updated)+' 条（新增 '+added+' / 更新 '+updated+(skipped?' / 跳过空行 '+skipped:'')+'）');
+}
+document.getElementById('batchModal').addEventListener('click', e=>{ if(e.target.id==='batchModal') closeBatchModal(); });
+
 /* ---- 参考价：编辑用弹窗（替代 prompt） ---- */
 var editingPriceIdx = -1;
 function addPrice(){ openPriceModal(-1); }
