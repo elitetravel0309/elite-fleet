@@ -497,6 +497,7 @@ textarea{resize:vertical;line-height:1.5}
     <button data-route="inquiries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>询价管理<span class="count" id="inquiryCount"></span></button>
     <button data-route="agent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M9 17h6"/></svg>智能客服<span class="count" id="agentCount"></span><span class="tag">NEW</span></button>
     <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
+    <button data-route="confirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/><path d="M12 6v6l3 2"/></svg>确认单<span class="count" id="confirmCount"></span></button>
     <button data-route="guests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
     <button data-route="hotels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>酒店库</button>
     <button data-route="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>数据看板</button>
@@ -840,6 +841,23 @@ textarea{resize:vertical;line-height:1.5}
         <span id="priceCount" style="font-size:12px;color:var(--text-3)"></span>
       </div>
       <div class="price-grid" id="priceGrid"></div>
+    </section>
+
+    <!-- 确认单 / Voucher -->
+    <section class="view" data-route="confirm">
+      <div class="today-head">
+        <div><h2 class="section">确认单 · Voucher</h2><p class="sub">为已确认订单生成给客人的服务确认单：可预览、复制、下载 HTML、标记已发送</p></div>
+        <div class="spacer" style="flex:1"></div>
+        <label style="font-size:12px;color:var(--text-3)">状态筛选</label>
+        <select id="confirmFilter" onchange="renderConfirmList()" style="min-width:110px">
+          <option value="all">全部</option>
+          <option value="pending">待生成</option>
+          <option value="generated">已生成</option>
+          <option value="sent">已发送</option>
+        </select>
+      </div>
+      <div id="confirmList" style="margin-bottom:16px"></div>
+      <div style="font-size:12px;color:var(--text-3)">提示：确认单内容来自订单字段（客人/日期/线路/价格/司机）。司机与车牌信息通常在服务前一天确认后补录，补录后重新生成即可更新确认单。如需邮件发送，请用「复制英文版」粘贴到邮箱，或「下载 HTML」作为邮件正文/附件。</div>
     </section>
 
     <!-- 报表中心 -->
@@ -1290,6 +1308,8 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn small ghost" onclick="switchConfirmLang()" id="confirmLangBtn">English</button>
         <button class="btn small ghost" onclick="copyServiceConfirm()">复制</button>
         <button class="btn small ghost" onclick="printServiceConfirm()">打印</button>
+        <button class="btn small ghost" onclick="downloadServiceConfirm()" title="下载为独立 HTML 文件，可直接作为邮件正文/附件">下载 HTML</button>
+        <button class="btn small ghost" onclick="markCurrentVoucherSent()" title="标记该确认单已发送给客人">标记已发送</button>
         <button class="close" onclick="closeServiceConfirm()">&times;</button>
       </div>
     </div>
@@ -2802,6 +2822,7 @@ function showView(r){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.dataset.route===r));
   if(r==='schedule') showSchedule(scheduleMode);
   if(r==='orders') renderOrders();
+  if(r==='confirm') renderConfirmList();
   if(r==='guests') renderGuests();
   if(r==='report') renderReport();
   if(r==='fleet') renderFleet();
@@ -4422,8 +4443,10 @@ function loadTkExample(){
    订单编辑弹窗
    ========================================================= */
 let editingId=null;
+let currentOrderId=null;
 function openOrder(id){
   editingId=id||null;
+  currentOrderId=id||null;
   const o = id? S.orders.find(x=>x.id===id) : null;
   $('omTitle').textContent = o? '编辑任务' : '新增任务';
   $('omSub').textContent = o? '订单 '+o.id : '录入新的接送 / 包车任务';
@@ -7749,6 +7772,79 @@ function markQuoteAsSent(quoteNo){
   }
 }
 
+/* ============================================================
+   确认单列表页（Voucher Tab）
+   ============================================================ */
+function renderConfirmList(){
+  const f=$('confirmFilter').value;
+  let rows=(S.orders||[]).filter(o=>['confirmed','done'].includes(o.status));
+  rows.sort((a,b)=>(b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||''));
+  if(f==='pending') rows=rows.filter(o=>!o.voucherTs);
+  if(f==='generated') rows=rows.filter(o=>o.voucherTs && !o.voucherSent);
+  if(f==='sent') rows=rows.filter(o=>o.voucherSent);
+  const pendingCount=(S.orders||[]).filter(o=>['confirmed','done'].includes(o.status) && !o.voucherTs).length;
+  const cnt=$('confirmCount'); if(cnt) cnt.textContent=pendingCount>0?pendingCount:'';
+  const box=$('confirmList');
+  if(!rows.length){ box.innerHTML='<div style="color:var(--text-3);text-align:center;padding:60px 0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto 10px;opacity:.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><div>'+(f==='all'?'暂无可生成确认单的已确认订单':'该状态下没有订单')+'</div></div>'; return; }
+  let html='<table class="order-table"><thead><tr><th>日期</th><th>客人</th><th>线路</th><th>金额</th><th>Voucher 状态</th><th>操作</th></tr></thead><tbody>';
+  rows.forEach(o=>{
+    const st = o.voucherSent? 'sent' : (o.voucherTs? 'generated':'pending');
+    const stMeta = {pending:{l:'待生成',c:'#f39c12',soft:'#fef3e2'},generated:{l:'已生成',c:'var(--confirmed)',soft:'var(--confirmed-soft)'},sent:{l:'已发送',c:'#8c5ce0',soft:'#f3edfd'}}[st];
+    html+='<tr>'
+      +'<td style="white-space:nowrap">'+escapeHtml(o.date||'')+' '+escapeHtml(o.time||'')+'</td>'
+      +'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(o.guest||'')+'</td>'
+      +'<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml((o.route||'').replace(/\n/g,' '))+'</td>'
+      +'<td style="white-space:nowrap;font-weight:600">¥'+(o.quote||0)+'</td>'
+      +'<td><span class="tag" style="background:'+stMeta.soft+';color:'+stMeta.c+';font-size:11px">'+stMeta.l+'</span></td>'
+      +'<td style="white-space:nowrap">'
+      +'<button class="btn ghost small" onclick="openConfirmFor(\''+o.id+'\')">生成/预览</button> '
+      +(o.voucherTs?'<button class="btn '+(o.voucherSent?'ghost':'primary')+' small" onclick="markVoucherSent(\''+o.id+'\','+(o.voucherSent?'false':'true')+')">'+(o.voucherSent?'取消已发送':'标记已发送')+'</button>':'')
+      +'</td></tr>';
+  });
+  html+='</tbody></table>';
+  box.innerHTML=html;
+}
+function openConfirmFor(id){
+  const o=(S.orders||[]).find(x=>x.id===id); if(!o){ toast('订单不存在'); return; }
+  currentOrderId=id;
+  renderServiceConfirm(o);
+  $('serviceConfirmOverlay').classList.add('show');
+}
+function markVoucherSent(id, sent){
+  const o=(S.orders||[]).find(x=>x.id===id); if(!o) return;
+  if(sent){ o.voucherSent=Date.now(); toast('已标记：确认单已发送给客人'); }
+  else { delete o.voucherSent; toast('已取消发送标记'); }
+  o._lastModified=Date.now();
+  saveState(S); renderConfirmList();
+}
+function markCurrentVoucherSent(){
+  const o=S.orders.find(x=>x.id===currentOrderId);
+  if(!o){ toast('订单不存在'); return; }
+  if(o.voucherSent){ delete o.voucherSent; toast('已取消发送标记'); }
+  else { o.voucherSent=Date.now(); toast('已标记：确认单已发送给客人'); }
+  o._lastModified=Date.now();
+  saveState(S);
+  renderConfirmList();
+}
+function confirmVoucherNo(o){
+  const d=(o.date||'').replace(/-/g,'');
+  const seq=(String(o.id).replace(/\D/g,'')||'').slice(-3)||'000';
+  return 'CWT-'+(d||'00000000')+'-'+seq;
+}
+function downloadServiceConfirm(){
+  const o=S.orders.find(x=>x.id===currentOrderId); if(!o){ toast('订单不存在'); return; }
+  const content=$('serviceConfirmContent').innerHTML;
+  const css='.confirm-doc{background:#fff;padding:24px;border-radius:8px;font-size:13px;line-height:1.7;color:#1a1a1a}.confirm-doc h2{text-align:center;font-size:18px;margin:0 0 4px;letter-spacing:1px}.confirm-doc .confirm-sub{text-align:center;color:#666;font-size:12px;margin-bottom:16px}.confirm-doc .confirm-section{margin-bottom:14px}.confirm-doc .confirm-section-title{font-weight:600;font-size:13px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:8px;color:#333}.confirm-doc table{width:100%;border-collapse:collapse;font-size:12px}.confirm-doc table td{padding:4px 8px;border:1px solid #e0e0e0;vertical-align:top}.confirm-doc table td:first-child{background:#f5f5f5;width:35%;font-weight:500;color:#555}.confirm-doc .confirm-footer{margin-top:20px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#888;line-height:1.6}.confirm-doc .confirm-contact{margin-top:14px;padding-top:10px;border-top:1px solid #eee;font-size:11px;color:#555;line-height:1.7;text-align:center}.confirm-doc .confirm-sign{margin-top:24px;display:flex;justify-content:space-between;font-size:12px}';
+  const doc='<!doctype html><html lang="'+(confirmLang==='zh'?'zh-CN':'en')+'"><head><meta charset="utf-8"><title>Service Confirmation - '+escapeHtml(o.guest||'')+'</title><style>body{font-family:Arial,Helvetica,sans-serif;background:#f0f2f5;padding:24px;margin:0}.wrap{max-width:660px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08)} '+css+'</style></head><body><div class="wrap">'+content+'</div></body></html>';
+  const blob=new Blob([doc],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Confirmation_'+(o.guest||'Guest').replace(/\s+/g,'_')+'_'+(o.date||'')+'.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已下载确认单 HTML，可直接作为邮件正文/附件');
+}
+
 function generateServiceConfirmation(){
   if(!currentOrderId){ toast('请先保存订单'); return; }
   const o = S.orders.find(x=>x.id===currentOrderId);
@@ -7769,6 +7865,7 @@ function renderServiceConfirm(o){
       <div class="confirm-doc">
         <h2>Elite Travel 曦驰旅游</h2>
         <div class="confirm-sub">China Wonder Tours · 用车服务确认单</div>
+        <div style="text-align:center;font-size:12px;color:#999;margin-bottom:14px">Voucher No.：${confirmVoucherNo(o)}</div>
         <div class="confirm-section">
           <div class="confirm-section-title">客人信息</div>
           <table>
@@ -7802,13 +7899,17 @@ function renderServiceConfirm(o){
             ${driver.color?`<tr><td>车辆颜色</td><td>${escapeHtml(driver.color||'')}</td></tr>`:''}
             ${driver.note?`<tr><td>司机备注</td><td>${escapeHtml(driver.note||'')}</td></tr>`:''}
           </table>
-        </div>`:''}
+        </div>`:
+        `<div class="confirm-section">
+          <div class="confirm-section-title">司机车辆信息</div>
+          <div style="font-size:12px;color:#888;line-height:1.6">司机与车牌信息将在服务前一天提供。</div>
+        </div>`}
         <div class="confirm-section">
           <div class="confirm-section-title">费用明细</div>
           <table>
             <tr><td>服务费用</td><td>人民币 ${o.quote||0} 元</td></tr>
             ${o.collectAmount?`<tr><td>司机代收</td><td>人民币 ${o.collectAmount} 元</td></tr>`:''}
-            <tr><td>付款方式</td><td>${o.collectAmount?'司机代收现金':'银行转账/微信支付'}</td></tr>
+            <tr><td>付款方式</td><td>${o.collectAmount?'司机代收现金':'50% 定金确认预订，余款服务当日支付（微信 / 支付宝 / PayPal）'}</td></tr>
           </table>
         </div>
         ${o.note?`
@@ -7821,6 +7922,11 @@ function renderServiceConfirm(o){
           <strong>温馨提示：</strong>请保持手机畅通，司机会提前15分钟到达约定地点。如有行程变更请及时联系。<br>
           <strong>紧急联系：</strong>Elite Travel 客服热线
         </div>
+        <div class="confirm-contact">
+          Alice Li · China Wonder Cars / China Wonder Tours<br>
+          E-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823<br>
+          www.chinawondercars.com · www.chinawondertours.com
+        </div>
         <div class="confirm-sign">
           <div>客人签字：____________</div>
           <div>日期：____________</div>
@@ -7832,6 +7938,7 @@ function renderServiceConfirm(o){
       <div class="confirm-doc">
         <h2>Elite Travel</h2>
         <div class="confirm-sub">China Wonder Tours · Private Car Service Confirmation</div>
+        <div style="text-align:center;font-size:12px;color:#999;margin-bottom:14px">Voucher No: ${confirmVoucherNo(o)}</div>
         <div class="confirm-section">
           <div class="confirm-section-title">Guest Information</div>
           <table>
@@ -7865,13 +7972,17 @@ function renderServiceConfirm(o){
             ${driver.color?`<tr><td>Color</td><td>${escapeHtml(driver.color||'')}</td></tr>`:''}
             ${driver.note?`<tr><td>Driver Note</td><td>${escapeHtml(driver.note||'')}</td></tr>`:''}
           </table>
-        </div>`:''}
+        </div>`:
+        `<div class="confirm-section">
+          <div class="confirm-section-title">Driver & Vehicle</div>
+          <div style="font-size:12px;color:#888;line-height:1.6">Driver name and plate number will be provided 1 day before the service date.</div>
+        </div>`}
         <div class="confirm-section">
           <div class="confirm-section-title">Payment</div>
           <table>
             <tr><td>Service Fee</td><td>RMB ${o.quote||0}</td></tr>
             ${o.collectAmount?`<tr><td>Driver Collect</td><td>RMB ${o.collectAmount}</td></tr>`:''}
-            <tr><td>Payment Method</td><td>${o.collectAmount?'Cash to Driver':'Bank Transfer / WeChat Pay'}</td></tr>
+            <tr><td>Payment Method</td><td>${o.collectAmount?'Cash to Driver':'50% deposit to confirm the booking; balance payable on the service day (WeChat / Alipay / PayPal accepted)'}</td></tr>
           </table>
         </div>
         ${o.note?`
@@ -7883,6 +7994,11 @@ function renderServiceConfirm(o){
           <strong>Cancellation Policy:</strong> Free cancellation 24h before departure; 50% charge within 24h; full charge after departure.<br>
           <strong>Reminder:</strong> Please keep your phone on. Driver will arrive 15 minutes early. Contact us for any changes.<br>
           <strong>Emergency Contact:</strong> Elite Travel Customer Service
+        </div>
+        <div class="confirm-contact">
+          Alice Li · China Wonder Cars / China Wonder Tours<br>
+          E-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823<br>
+          www.chinawondercars.com · www.chinawondertours.com
         </div>
         <div class="confirm-sign">
           <div>Guest Signature: ____________</div>
@@ -7916,11 +8032,13 @@ function printServiceConfirm(){
 function saveServiceConfirm(){
   const o = S.orders.find(x=>x.id===currentOrderId);
   if(o){
+    if(!o.voucherTs) o.voucherTs = Date.now();
     const confirmNote = '【服务确认单已生成】'+new Date().toLocaleString('zh-CN');
     o.note = (o.note?o.note+'\n':'')+confirmNote;
     o._lastModified = Date.now();
     saveState(S);
     renderOrders();
+    renderConfirmList();
   }
   closeServiceConfirm();
   toast('服务确认单已保存到订单备注');
