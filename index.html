@@ -994,6 +994,7 @@ textarea{resize:vertical;line-height:1.5}
           <div class="stack">
             <button class="btn primary" onclick="openFeishuImportModal()">导入飞书询盘（JSON）</button>
             <button class="btn ghost" onclick="fsExportStatus()">导出状态回写（JSON）</button>
+            <button class="btn ghost" onclick="exportLedgerJson()" title="导出订单/收款/参考价台账 JSON → 运行 scripts/push_feishu_ledger.py 同步到飞书多维表格（订单台账/收款记录/参考价库）">导出台账 JSON</button>
             <button class="btn ghost" onclick="showView('agent')">打开智能客服</button>
             <div id="fsSyncStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
           </div>
@@ -8473,6 +8474,22 @@ function exportReceiptJson(){
   a.click();
   URL.revokeObjectURL(a.href);
   toast('已导出 qa-receipt.json → 运行 scripts/send_receipt.ps1 发 PDF 邮件');
+}
+/* 台账导出 JSON（供 scripts/push_feishu_ledger.py 同步飞书台账：订单台账/收款记录/参考价库） */
+function exportLedgerJson(){
+  const payload = {
+    exportedAt: todayStr(),
+    orders: S.orders || [],
+    payments: S.payments || [],
+    prices: S.prices || []
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'elite-fleet-ledger.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出 elite-fleet-ledger.json → 运行 scripts/push_feishu_ledger.py 同步飞书台账');
 }
 function saveReceipt(){
   const o = S.orders.find(x=>x.id===currentOrderId);
