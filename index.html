@@ -751,9 +751,9 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn ghost" onclick="openGuestPaste()" title="从微信/表格/文件粘贴客人信息批量导入">粘贴导入</button>
         <button class="btn primary" onclick="openGuestModal('')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加客人</button>
       </div>
+      <div id="followupPanel" style="margin-bottom:14px"></div>
       <div id="guestList"></div>
     </section>
-
     <!-- 车队与司机 -->
     <section class="view" data-route="hotels">
       <h2 class="section">酒店库</h2>
@@ -858,7 +858,7 @@ textarea{resize:vertical;line-height:1.5}
         </select>
       </div>
       <div id="confirmList" style="margin-bottom:16px"></div>
-      <div style="font-size:12px;color:var(--text-3)">提示：确认单内容来自订单字段（客人/日期/线路/价格/司机）。司机与车牌信息通常在服务前一天确认后补录，补录后重新生成即可更新确认单。如需邮件发送，请用「复制英文版」粘贴到邮箱，或「下载 HTML」作为邮件正文/附件。</div>
+      <div style="font-size:12px;color:var(--text-3)">提示：确认单内容来自订单字段（客人/日期/线路/价格/司机）。司机与车牌信息通常在服务前一天确认后补录，补录后重新生成即可更新确认单。收款单（Receipt）按订单「已收定金/已收款项」生成；如客人已付全款，勾选「全款已结清」后生成全额收款单。Voucher 与 Receipt 均可复制/下载 HTML 后通过 booking@chinawondercars.com 邮箱发送。</div>
     </section>
 
     <!-- 报表中心 -->
@@ -1322,6 +1322,29 @@ textarea{resize:vertical;line-height:1.5}
   </div>
 </div>
 
+<!-- 收款确认单弹窗（Payment Receipt） -->
+<div class="overlay" id="receiptOverlay">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-head">
+      <h3>收款确认单 · Payment Receipt</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn small ghost" onclick="switchReceiptLang()" id="receiptLangBtn">English</button>
+        <button class="btn small ghost" onclick="copyReceipt()">复制</button>
+        <button class="btn small ghost" onclick="printReceipt()">打印</button>
+        <button class="btn small ghost" onclick="downloadReceipt()" title="下载为独立 HTML 文件，可直接作为邮件正文/附件">下载 HTML</button>
+        <button class="btn small ghost" onclick="exportReceiptJson()" title="导出 qa-receipt.json，配合脚本一键发 PDF 邮件">导出邮件 JSON</button>
+        <button class="btn small ghost" onclick="markCurrentReceiptSent()" title="标记该收款单已发送给客人">标记已发送</button>
+        <button class="close" onclick="closeReceipt()">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body" id="receiptContent" style="max-height:70vh;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeReceipt()">关闭</button>
+      <button class="btn primary" onclick="saveReceipt()">保存到订单备注</button>
+    </div>
+  </div>
+</div>
+
 <!-- 报价单模板设置弹窗 -->
 <div class="overlay" id="quoteTemplateOverlay">
   <div class="modal" style="max-width:640px">
@@ -1485,6 +1508,20 @@ textarea{resize:vertical;line-height:1.5}
       <div class="fgroup"><label>对外报价（元）</label><input type="number" id="oQuote" min="0" placeholder="给客户的价"></div>
       <div class="fgroup"><label>成本价（元）</label><input type="number" id="oCost" min="0" placeholder="车队报价"></div>
       <div class="fgroup"><label>司机代收（元）</label><input type="number" id="oCollect" min="0" placeholder="司机向客人收的车费"></div>
+      <div class="fgroup"><label>已收定金 / 已收款项（元）</label><input type="number" id="oDeposit" min="0" placeholder="客人已付金额，用于生成收款单"></div>
+      <div class="fgroup"><label>收款方式</label>
+        <select id="oPayMethod">
+          <option value="">—</option>
+          <option value="微信支付">微信支付</option>
+          <option value="支付宝">支付宝</option>
+          <option value="PayPal">PayPal</option>
+          <option value="现金">现金</option>
+          <option value="银行转账">银行转账</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>收款日期</label><input type="date" id="oPayDate"></div>
+      <div class="fgroup" style="align-self:flex-end"><label style="display:flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" id="oPaidFull" style="width:auto"> 全款已结清</label></div>
       <div class="fgroup" style="align-self:flex-end;display:flex;gap:5px">
       <button class="btn ghost small" type="button" onclick="autoPrice()" title="按线路/车型从参考价库自动带出报价与成本">自动计价</button>
       <button class="btn primary small" type="button" onclick="showSmartPriceDetail()" title="智能报价分析，含利润明细和建议">智能报价</button>
@@ -1511,6 +1548,7 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn ghost" onclick="quoteMsg(editingId)" title="生成给客人的中英文报价单，可复制发微信/WhatsApp">生成报价单</button>
       <button class="btn ghost" onclick="serviceMsg(editingId)" title="生成给客人的司机服务信息（车型/车牌/司机/电话），一键复制">服务信息</button>
       <button class="btn ghost" onclick="generateServiceConfirmation()" title="生成中英文服务确认单，可复制/打印">服务确认单</button>
+      <button class="btn ghost" onclick="generatePaymentReceipt()" title="按已收款项生成中英文收款确认单（Payment Receipt），可复制/打印">收款确认单</button>
       <button class="btn ghost" onclick="openDriverRating()" title="给司机服务打分评价">评价司机</button>
       <button class="btn ghost" onclick="openCommunicationModal('guest', editingId, $('oGuest').value)" title="记录与客人的沟通内容">沟通记录</button>
       <button class="btn ghost" onclick="openTemplateModal()" title="从模板快速填充订单信息">订单模板</button>
@@ -3238,6 +3276,9 @@ function renderOrders(){
     if(c!=null) pxCell+='<div style="color:var(--text-2)">成 ¥'+c+'</div>';
     if(pr!=null) pxCell+='<div style="color:'+(pr>=0?'var(--done)':'var(--cancel)')+';font-weight:600">利 ¥'+pr+(m!=null?' ('+m.toFixed(1)+'%)':'')+'</div>';
     if(o.collectAmount) pxCell+='<div style="font-size:10.5px;color:#d48806">代收 ¥'+o.collectAmount+'</div>';
+    const opaid=paidOf(o);
+    if(opaid!=null && opaid>0) pxCell+='<div style="font-size:11px;color:var(--confirmed)">已收 ¥'+opaid.toLocaleString()+(o.paidFull?'（全清）':'')+'</div>';
+    if(o.quote && !o.paidFull && opaid<(+o.quote||0)) pxCell+='<div style="font-size:11px;color:#d48806">待收 ¥'+((+o.quote||0)-opaid).toLocaleString()+'</div>';
     if(!pxCell && px!=null) pxCell='¥'+px;
     const isUrgent = !o.driver && o.date>=todayStr() && o.date<=addDays(todayStr(),3);
     const _checked = selectedOrders.has(o.id)?'checked':'';
@@ -3259,6 +3300,7 @@ function renderOrders(){
       +'<td><span class="st" style="background:'+st.soft+';color:'+st.color+'">'+st.label+'</span></td>'
       +'<td style="white-space:nowrap">'
       +((['cancelled','done'].indexOf(o.status)<0)?'<button class="iconbtn rowbtn" style="color:var(--accent)" onclick="event.stopPropagation();fleetMsg(\''+o.id+'\')" title="派车：生成派车消息发给车队"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-6a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 7l2 6"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a1.5 1.5 0 0 1-1.5-1.5V16h-13v.5A1.5 1.5 0 0 1 3 18H2a1 1 0 0 1-1-1v-4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg></button>':'')
+      +((o.status==='confirmed'||o.status==='sent'||o.status==='done')?'<button class="iconbtn rowbtn" style="color:#2e7d32" onclick="event.stopPropagation();openPayment(\'receive\',\''+o.id+'\')" title="登记收款"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></button>':'')
       +'<button class="iconbtn rowbtn" onclick="event.stopPropagation();delOrder(\''+o.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>'
       +'</tr>';
   });
@@ -3266,6 +3308,14 @@ function renderOrders(){
   $('ordersWrap').innerHTML=html;
 }
 function clearFilters(){ ['fFrom','fTo','fType','fStatus','fCity','fKw'].forEach(id=>{ if($(id)) $(id).value=''; }); if($('fNoDriver')) $('fNoDriver').checked=false; if($('fInquiry')) $('fInquiry').checked=false; renderOrders(); }
+/* 订单已收金额：deposit 与财务收款记录取大（含全清标记） */
+function paidOf(o){
+  if(!o) return 0;
+  const dep=+o.deposit||0;
+  const recv=(S.payments||[]).filter(p=>p.type==='receive'&&p.orderId===o.id&&p.status!=='cancelled').reduce((t,p)=>t+(+p.amount||0),0);
+  if(o.paidFull) return Math.max(+o.quote||0, dep, recv);
+  return Math.max(dep, recv);
+}
 function delOrder(id){
   if(!confirm('确定删除该订单？')) return;
   S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderGuests(); renderKpis();
@@ -3373,6 +3423,7 @@ function guestOrders(g){
 }
 function renderGuests(){
   ensureGuests();
+  renderFollowupPanel();
   // 客人名字点击查看档案（通过事件委托）
   setTimeout(()=>{ const gw=$('guestsWrap'); if(gw && !gw._detailBound){ gw.addEventListener('click',e=>{ const t=e.target.closest('[data-guest-name]'); if(t){ e.stopPropagation(); showGuestDetail(t.dataset.guestName); } }); gw._detailBound=true; } },0);
   const kw=($('guestKw')?$('guestKw').value:'').trim().toLowerCase();
@@ -3390,6 +3441,7 @@ function renderGuests(){
     const os=guestOrders(g);
     const total=os.reduce((s,o)=>s+((+o.quote)||0),0);
     const last=os.length? os[os.length-1].date : '';
+    const due=guestFollowup(g);
     return '<div class="fleet-row">'
       +'<div class="avatar" style="background:var(--charter);color:#fff;cursor:pointer" onclick="openGuestDetail(\''+g.id+'\')" title="查看详情">'+escapeHtml((g.name||'?').slice(0,1).toUpperCase())+'</div>'
       +'<div class="info"><b style="cursor:pointer;color:var(--accent)" onclick="openGuestDetail(\''+g.id+'\')" title="查看详情">'+escapeHtml(g.name)+'</b>'
@@ -3397,6 +3449,7 @@ function renderGuests(){
       +'<span style="color:var(--text-3);font-size:11.5px">'+(g.phone?'电话 '+escapeHtml(g.phone):'')+(g.wechat?' · 微信 '+escapeHtml(g.wechat):'')+(g.contact&&!g.phone&&!g.wechat?' · '+escapeHtml(g.contact):'')+'</span></div>'
       +'<span class="type-pill">'+os.length+' 单 · ¥'+total+'</span>'
       +(last?'<span style="font-size:11px;color:var(--text-3);margin-left:6px">最近 '+last+'</span>':'')
+      +(due?'<span class="tag" style="background:rgba(245,166,35,.15);color:#d48806;font-size:11px;margin-left:6px" title="'+escapeHtml(due)+'">待跟进</span>':'')
       +'<button class="iconbtn" onclick="event.stopPropagation();showGuestDetail(\''+escapeHtml(g.name).replace(/'/g,"\\'")+'\')" title="查看档案"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>'
       +'<button class="iconbtn" onclick="event.stopPropagation();openGuestModal(\''+g.id+'\')" title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>'
       +'<button class="iconbtn" onclick="event.stopPropagation();delGuest(\''+g.id+'\')" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
@@ -4473,6 +4526,10 @@ function openOrder(id){
   $('oQuote').value = o? (o.quote || o.price || '') : '';
   $('oCost').value = o? (o.cost||'') : '';
   $('oCollect').value = o? (o.collectAmount||'') : '';
+  $('oDeposit').value = o? (o.deposit||'') : '';
+  $('oPayMethod').value = o? (o.payMethod||'') : '';
+  $('oPayDate').value = o? (o.payDate||'') : '';
+  $('oPaidFull').checked = o? !!o.paidFull : false;
   $('oStatus').value = o? o.status : 'confirmed';
   $('oNote').value = o? (o.note||'') : '';
   // 路线 datalist
@@ -4666,6 +4723,10 @@ function saveOrder(){
     quote:+$('oQuote').value||0,
     cost:+$('oCost').value||0,
     collectAmount:+$('oCollect').value||0,
+    deposit:+$('oDeposit').value||0,
+    payMethod:$('oPayMethod').value,
+    payDate:$('oPayDate').value,
+    paidFull:$('oPaidFull').checked,
     status:$('oStatus').value,
     note:$('oNote').value.trim()
   };
@@ -7186,9 +7247,21 @@ function savePayment(){
   if(!S.payments) S.payments = [];
   const idx = S.payments.findIndex(p=>p.id===data.id);
   if(idx>=0) S.payments[idx] = data; else S.payments.push(data);
+  // 收款关联订单时，同步订单已收金额/方式/日期/全清状态
+  if(data.type==='receive' && data.orderId){
+    const od=S.orders.find(x=>x.id===data.orderId);
+    if(od){
+      const recv=(S.payments||[]).filter(p=>p.type==='receive'&&p.orderId===od.id&&p.status!=='cancelled').reduce((t,p)=>t+(+p.amount||0),0);
+      od.deposit=recv; od.payMethod=data.method; od.payDate=data.date;
+      od.paidFull = recv>0 && recv>=(+od.quote||0);
+      od._lastModified=Date.now();
+      addOperationLog('订单收款', od.guest||od.id, '收款 ¥'+recv+' · '+data.method+' · '+data.date);
+    }
+  }
   saveState(S);
   renderFinance();
   closePayment();
+  if(currentOrderId) renderOrders();
   toast(currentPaymentId?'记录已更新':'记录已添加');
 }
 
@@ -7547,6 +7620,7 @@ function saveHotel(){
    服务确认单自动生成
    ============================================================ */
 let confirmLang = 'zh';
+let receiptLang = 'zh';
 
 /* ---- 报价单模板设置 ---- */
 function getQuoteTemplate(){
@@ -7834,19 +7908,24 @@ function renderConfirmList(){
   const cnt=$('confirmCount'); if(cnt) cnt.textContent=pendingCount>0?pendingCount:'';
   const box=$('confirmList');
   if(!rows.length){ box.innerHTML='<div style="color:var(--text-3);text-align:center;padding:60px 0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto 10px;opacity:.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><div>'+(f==='all'?'暂无可生成确认单的已确认订单':'该状态下没有订单')+'</div></div>'; return; }
-  let html='<table class="order-table"><thead><tr><th>日期</th><th>客人</th><th>线路</th><th>金额</th><th>Voucher 状态</th><th>操作</th></tr></thead><tbody>';
+  let html='<table class="order-table"><thead><tr><th>日期</th><th>客人</th><th>线路</th><th>金额</th><th>Voucher</th><th>Receipt</th><th>操作</th></tr></thead><tbody>';
   rows.forEach(o=>{
     const st = o.voucherSent? 'sent' : (o.voucherTs? 'generated':'pending');
     const stMeta = {pending:{l:'待生成',c:'#f39c12',soft:'#fef3e2'},generated:{l:'已生成',c:'var(--confirmed)',soft:'var(--confirmed-soft)'},sent:{l:'已发送',c:'#8c5ce0',soft:'#f3edfd'}}[st];
+    const rs = o.receiptSent? 'sent' : (o.receiptTs? 'generated':'pending');
+    const rsMeta = {pending:{l:'未生成',c:'#999',soft:'#f0f0f0'},generated:{l:'已生成',c:'var(--confirmed)',soft:'var(--confirmed-soft)'},sent:{l:'已发送',c:'#8c5ce0',soft:'#f3edfd'}}[rs];
+    const hasPay = (+o.deposit||0)>0 || !!o.paidFull;
     html+='<tr>'
       +'<td style="white-space:nowrap">'+escapeHtml(o.date||'')+' '+escapeHtml(o.time||'')+'</td>'
       +'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(o.guest||'')+'</td>'
-      +'<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml((o.route||'').replace(/\n/g,' '))+'</td>'
+      +'<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml((o.route||'').replace(/\n/g,' '))+'</td>'
       +'<td style="white-space:nowrap;font-weight:600">¥'+(o.quote||0)+'</td>'
       +'<td><span class="tag" style="background:'+stMeta.soft+';color:'+stMeta.c+';font-size:11px">'+stMeta.l+'</span></td>'
+      +'<td>'+(hasPay?('<span class="tag" style="background:'+rsMeta.soft+';color:'+rsMeta.c+';font-size:11px">'+rsMeta.l+'</span>'):'<span style="font-size:11px;color:#bbb">未收款</span>')+'</td>'
       +'<td style="white-space:nowrap">'
-      +'<button class="btn ghost small" onclick="openConfirmFor(\''+o.id+'\')">生成/预览</button> '
-      +(o.voucherTs?'<button class="btn '+(o.voucherSent?'ghost':'primary')+' small" onclick="markVoucherSent(\''+o.id+'\','+(o.voucherSent?'false':'true')+')">'+(o.voucherSent?'取消已发送':'标记已发送')+'</button>':'')
+      +'<button class="btn ghost small" onclick="openConfirmFor(\''+o.id+'\')">确认单</button> '
+      +(hasPay?'<button class="btn ghost small" onclick="openReceiptFor(\''+o.id+'\')">收款单</button> ':'')
+      +(o.voucherTs?'<button class="btn '+(o.voucherSent?'ghost':'primary')+' small" onclick="markVoucherSent(\''+o.id+'\','+(o.voucherSent?'false':'true')+')">'+(o.voucherSent?'取消发送':'标记发送')+'</button>':'')
       +'</td></tr>';
   });
   html+='</tbody></table>';
@@ -7857,6 +7936,12 @@ function openConfirmFor(id){
   currentOrderId=id;
   renderServiceConfirm(o);
   $('serviceConfirmOverlay').classList.add('show');
+}
+function openReceiptFor(id){
+  const o=(S.orders||[]).find(x=>x.id===id); if(!o){ toast('订单不存在'); return; }
+  currentOrderId=id;
+  renderReceipt(o);
+  $('receiptOverlay').classList.add('show');
 }
 function markVoucherSent(id, sent){
   const o=(S.orders||[]).find(x=>x.id===id); if(!o) return;
@@ -8090,6 +8175,194 @@ function saveServiceConfirm(){
   }
   closeServiceConfirm();
   toast('服务确认单已保存到订单备注');
+}
+
+/* ============================================================
+   收款确认单（Payment Receipt）
+   ============================================================ */
+function generatePaymentReceipt(){
+  if(!currentOrderId){ toast('请先保存订单'); return; }
+  const o = S.orders.find(x=>x.id===currentOrderId);
+  if(!o){ toast('订单不存在'); return; }
+  if(!(+o.deposit||0) && !o.paidFull){ toast('请先在订单里填写「已收定金/已收款项」或勾选「全款已结清」'); return; }
+  if(!(+o.quote||0)){ toast('订单还没有对外报价（quote），请先填写'); return; }
+  renderReceipt(o);
+  $('receiptOverlay').classList.add('show');
+}
+function confirmReceiptNo(o){
+  const d=(o.date||'').replace(/-/g,'');
+  const seq=(String(o.id).replace(/\D/g,'')||'').slice(-3)||'000';
+  return 'RCPT-'+(d||'00000000')+'-'+seq;
+}
+function renderReceipt(o){
+  const guest = S.guests.find(g=>g.name===o.guest) || {};
+  const paid = o.paidFull ? (+o.quote||0) : (+o.deposit||0);
+  const balance = (+o.quote||0) - paid;
+  const method = o.payMethod || (o.paidFull?'PayPal / 其他':'待确认');
+  const payDate = o.payDate || (o.paidFull?'':'');
+
+  if(receiptLang==='zh'){
+    $('receiptLangBtn').textContent = 'English';
+    $('receiptContent').innerHTML = `
+      <div class="confirm-doc">
+        <h2>Elite Travel 曦驰旅游</h2>
+        <div class="confirm-sub">China Wonder Tours · 收款确认单（Payment Receipt）</div>
+        <div style="text-align:center;font-size:12px;color:#999;margin-bottom:14px">Receipt No.：${confirmReceiptNo(o)}</div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">客人信息</div>
+          <table>
+            <tr><td>客人姓名</td><td>${escapeHtml(o.guest||'')}</td></tr>
+            <tr><td>联系方式</td><td>${escapeHtml(o.contact||guest.contact||'')}</td></tr>
+            <tr><td>人数</td><td>${o.pax||''}人</td></tr>
+          </table>
+        </div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">服务详情</div>
+          <table>
+            <tr><td>服务日期</td><td>${o.date||''} ${o.time||''}</td></tr>
+            <tr><td>行程线路</td><td>${escapeHtml(o.route||'')}</td></tr>
+            <tr><td>服务费用</td><td>人民币 ${o.quote||0} 元</td></tr>
+          </table>
+        </div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">收款明细</div>
+          <table>
+            <tr><td>本次实收</td><td>人民币 ${paid} 元</td></tr>
+            <tr><td>收款方式</td><td>${escapeHtml(method||'')}</td></tr>
+            <tr><td>收款日期</td><td>${payDate||'—'}</td></tr>
+            ${balance>0?`<tr><td style="color:#d48806">待收余额</td><td style="color:#d48806">人民币 ${balance} 元（服务当日支付）</td></tr>`:`<tr><td>付款状态</td><td style="color:var(--confirmed);font-weight:600">已全额付清 ✓</td></tr>`}
+          </table>
+        </div>
+        <div class="confirm-footer">
+          <strong>说明：</strong>本凭证确认已收到上述款项，作为您的付款记录。余额请在服务当日支付给司机或按约定方式支付。<br>
+          <strong>温馨提示：</strong>如通过 PayPal 付款，实际到账金额可能因手续费略有差异。如有疑问请随时联系我们。
+        </div>
+        <div class="confirm-contact">
+          Alice Li · China Wonder Cars / China Wonder Tours<br>
+          E-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823<br>
+          www.chinawondercars.com · www.chinawondertours.com
+        </div>
+      </div>`;
+  } else {
+    $('receiptLangBtn').textContent = '中文';
+    $('receiptContent').innerHTML = `
+      <div class="confirm-doc">
+        <h2>Elite Travel</h2>
+        <div class="confirm-sub">China Wonder Tours · Payment Receipt</div>
+        <div style="text-align:center;font-size:12px;color:#999;margin-bottom:14px">Receipt No: ${confirmReceiptNo(o)}</div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">Guest Information</div>
+          <table>
+            <tr><td>Guest Name</td><td>${escapeHtml(o.guest||'')}</td></tr>
+            <tr><td>Contact</td><td>${escapeHtml(o.contact||guest.contact||'')}</td></tr>
+            <tr><td>Passengers</td><td>${o.pax||''} pax</td></tr>
+          </table>
+        </div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">Service Details</div>
+          <table>
+            <tr><td>Service Date</td><td>${o.date||''} ${o.time||''}</td></tr>
+            <tr><td>Route</td><td>${escapeHtml(o.route||'')}</td></tr>
+            <tr><td>Service Fee</td><td>RMB ${o.quote||0}</td></tr>
+          </table>
+        </div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">Payment Details</div>
+          <table>
+            <tr><td>Amount Received</td><td>RMB ${paid}</td></tr>
+            <tr><td>Payment Method</td><td>${escapeHtml(method||'')}</td></tr>
+            <tr><td>Payment Date</td><td>${payDate||'—'}</td></tr>
+            ${balance>0?`<tr><td style="color:#d48806">Balance Due</td><td style="color:#d48806">RMB ${balance} (payable on the service day)</td></tr>`:`<tr><td>Payment Status</td><td style="color:var(--confirmed);font-weight:600">Fully Paid ✓</td></tr>`}
+          </table>
+        </div>
+        <div class="confirm-footer">
+          <strong>Note:</strong> This receipt confirms the payment received above. Any balance is payable on the service day to the driver or as agreed.<br>
+          <strong>Reminder:</strong> If paid via PayPal, the amount received may differ slightly due to transaction fees. Please contact us with any questions.
+        </div>
+        <div class="confirm-contact">
+          Alice Li · China Wonder Cars / China Wonder Tours<br>
+          E-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823<br>
+          www.chinawondercars.com · www.chinawondertours.com
+        </div>
+      </div>`;
+  }
+}
+function switchReceiptLang(){
+  receiptLang = (receiptLang==='zh')?'en':'zh';
+  const o = S.orders.find(x=>x.id===currentOrderId);
+  if(o) renderReceipt(o);
+}
+function closeReceipt(){ $('receiptOverlay').classList.remove('show'); }
+function copyReceipt(){
+  const text = $('receiptContent').innerText;
+  navigator.clipboard.writeText(text).then(()=>toast('已复制到剪贴板')).catch(()=>toast('复制失败，请手动选择'));
+}
+function printReceipt(){
+  const content = $('receiptContent').innerHTML;
+  const w = window.open('', '_blank');
+  w.document.write('<html><head><title>Payment Receipt</title><style>body{font-family:Arial,sans-serif;padding:20px} .confirm-doc{max-width:600px;margin:0 auto}</style></head><body>'+content+'</body></html>');
+  w.document.close();
+}
+function downloadReceipt(){
+  const o=S.orders.find(x=>x.id===currentOrderId); if(!o){ toast('订单不存在'); return; }
+  const content=$('receiptContent').innerHTML;
+  const css='.confirm-doc{background:#fff;padding:24px;border-radius:8px;font-size:13px;line-height:1.7;color:#1a1a1a}.confirm-doc h2{text-align:center;font-size:18px;margin:0 0 4px;letter-spacing:1px}.confirm-doc .confirm-sub{text-align:center;color:#666;font-size:12px;margin-bottom:16px}.confirm-doc .confirm-section{margin-bottom:14px}.confirm-doc .confirm-section-title{font-weight:600;font-size:13px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:8px;color:#333}.confirm-doc table{width:100%;border-collapse:collapse;font-size:12px}.confirm-doc table td{padding:4px 8px;border:1px solid #e0e0e0;vertical-align:top}.confirm-doc table td:first-child{background:#f5f5f5;width:35%;font-weight:500;color:#555}.confirm-doc .confirm-footer{margin-top:20px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#888;line-height:1.6}.confirm-doc .confirm-contact{margin-top:14px;padding-top:10px;border-top:1px solid #eee;font-size:11px;color:#555;line-height:1.7;text-align:center}';
+  const doc='<!doctype html><html lang="'+(receiptLang==='zh'?'zh-CN':'en')+'"><head><meta charset="utf-8"><title>Payment Receipt - '+escapeHtml(o.guest||'')+'</title><style>body{font-family:Arial,Helvetica,sans-serif;background:#f0f2f5;padding:24px;margin:0}.wrap{max-width:660px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08)} '+css+'</style></head><body><div class="wrap">'+content+'</div></body></html>';
+  const blob=new Blob([doc],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Receipt_'+(o.guest||'Guest').replace(/\s+/g,'_')+'_'+(o.date||'')+'.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已下载收款单 HTML，可直接作为邮件正文/附件');
+}
+/* 收据导出 JSON（供 scripts/send_receipt.ps1 邮件外发 PDF） */
+function exportReceiptJson(){
+  const o=S.orders.find(x=>x.id===currentOrderId); if(!o){ toast('订单不存在'); return; }
+  const guest=S.guests.find(g=>g.name===o.guest)||{};
+  const paid=paidOf(o);
+  const balance=(+o.quote||0)-paid;
+  const method=o.payMethod||(o.paidFull?'PayPal / 其他':'待确认');
+  const payDate=o.payDate||'';
+  const typeZh={arrival:'机场接机',departure:'机场送机',charter:'包车',transfer:'市内接送'};
+  const service={date:o.date||'',time:o.time||'',type:typeZh[o.type]||o.type||'',route:o.route||'',vehicle:o.vehicle||'',pax:o.pax||1,quote:+o.quote||0,cost:+o.cost||0};
+  const textZh='Elite Travel 曦驰旅游 · 收款确认单\n收款单号：'+confirmReceiptNo(o)+'\n客人：'+(o.guest||'')+'\n服务日期：'+service.date+(service.time?' '+service.time:'')+'\n行程线路：'+(o.route||'')+'\n服务费用：人民币 '+service.quote+' 元\n本次实收：人民币 '+paid+' 元\n收款方式：'+method+'\n收款日期：'+(payDate||'—')+'\n'+(balance>0?'待收余额：人民币 '+balance+' 元（服务当日支付）':'付款状态：已全额付清 ✓')+'\n\nAlice Li · China Wonder Cars / China Wonder Tours\nE-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823\nwww.chinawondercars.com · www.chinawondertours.com';
+  const textEn='Elite Travel · Payment Receipt\nReceipt No: '+confirmReceiptNo(o)+'\nGuest: '+(o.guest||'')+'\nService Date: '+service.date+(service.time?' '+service.time:'')+'\nRoute: '+(o.route||'')+'\nService Fee: RMB '+service.quote+'\nAmount Received: RMB '+paid+'\nPayment Method: '+method+'\nPayment Date: '+(payDate||'—')+'\n'+(balance>0?'Balance Due: RMB '+balance+' (payable on service day)':'Payment Status: Fully Paid ✓')+'\n\nAlice Li · China Wonder Cars / China Wonder Tours\nE-mail: booking@chinawondertours.com · WhatsApp: +86 15347723823\nwww.chinawondercars.com · www.chinawondertours.com';
+  const payload={
+    receiptNo:confirmReceiptNo(o), date:todayStr(), guest:o.guest||'', contact:o.contact||guest.contact||'',
+    email:o.email||guest.email||'', service, paid, balance, method, payDate,
+    text_zh:textZh, text_en:textEn, orderId:o.id, _fsRecordId:o._fsRecordId||''
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='qa-receipt.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出 qa-receipt.json → 运行 scripts/send_receipt.ps1 发 PDF 邮件');
+}
+function saveReceipt(){
+  const o = S.orders.find(x=>x.id===currentOrderId);
+  if(o){
+    if(!o.receiptTs) o.receiptTs = Date.now();
+    const note = '【收款确认单已生成】'+new Date().toLocaleString('zh-CN');
+    o.note = (o.note?o.note+'\n':'')+note;
+    o._lastModified = Date.now();
+    saveState(S);
+    renderOrders();
+    renderConfirmList();
+  }
+  closeReceipt();
+  toast('收款确认单已保存到订单备注');
+}
+function markCurrentReceiptSent(){
+  const o=S.orders.find(x=>x.id===currentOrderId);
+  if(!o){ toast('订单不存在'); return; }
+  if(o.receiptSent){ delete o.receiptSent; toast('已取消发送标记'); }
+  else { o.receiptSent=Date.now(); toast('已标记：收款单已发送给客人'); }
+  o._lastModified=Date.now();
+  saveState(S);
+  renderConfirmList();
 }
 
 /* ============================================================

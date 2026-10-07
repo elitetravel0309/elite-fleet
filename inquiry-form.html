@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Private Car & Chauffeur Request · China Wonder Cars</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F766E'/%3E%3Cpath d='M14 34l6-14h24l6 14v14a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-2H19v2a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2z' fill='white'/%3E%3Ccircle cx='23' cy='40' r='3' fill='%230F766E'/%3E%3Ccircle cx='41' cy='40' r='3' fill='%230F766E'/%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f0f4f3; color: #1f2937; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .topbar { background: #0f766e; color: #fff; padding: 18px 20px; }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; max-width: 640px; margin: 0 auto; }
+  .topbar .brand svg { flex: none; }
+  .topbar h1 { font-size: 17px; font-weight: 700; letter-spacing: .3px; }
+  .topbar p { font-size: 12.5px; opacity: .92; margin-top: 1px; }
+  .langswitch { margin-left: auto; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); color: #fff; padding: 6px 12px; border-radius: 999px; font-size: 12.5px; cursor: pointer; min-height: 34px; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 48px; }
+  .card { background: #fff; border-radius: 14px; padding: 22px 20px; box-shadow: 0 1px 4px rgba(15,118,110,.08); }
+  .note { font-size: 13px; color: #4b5563; margin-bottom: 16px; }
+  .section-title { font-size: 13px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: .5px; margin: 18px 0 10px; }
+  .section-title:first-child { margin-top: 0; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13.5px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+  .field label .req { color: #dc2626; }
+  .field .hint { font-size: 11.5px; color: #9ca3af; margin-top: 3px; }
+  input, select, textarea { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 16px; color: #1f2937; background: #fff; min-height: 44px; }
+  textarea { min-height: 88px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15,118,110,.12); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+  .hp { position: absolute; left: -9999px; opacity: 0; height: 0; width: 0; }
+  .submit { width: 100%; background: #0f766e; color: #fff; border: 0; border-radius: 12px; padding: 15px; font-size: 16.5px; font-weight: 700; cursor: pointer; margin-top: 8px; min-height: 52px; }
+  .submit:hover { background: #115e59; }
+  .submit:disabled { opacity: .6; cursor: not-allowed; }
+  .privacy { font-size: 11.5px; color: #9ca3af; text-align: center; margin-top: 12px; }
+  .contact { text-align: center; font-size: 12.5px; color: #4b5563; margin-top: 22px; line-height: 1.9; }
+  .contact strong { color: #0f766e; }
+  .ok { display: none; text-align: center; padding: 40px 16px; }
+  .ok .tick { width: 56px; height: 56px; border-radius: 50%; background: #0f766e; color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .ok h2 { font-size: 19px; margin-bottom: 8px; }
+  .ok p { font-size: 14px; color: #4b5563; }
+  .err { display: none; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 10px; padding: 11px 14px; font-size: 13.5px; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 64 64" width="34" height="34" fill="none"><rect width="64" height="64" rx="14" fill="rgba(255,255,255,.18)"/><path d="M14 34l6-14h24l6 14v14a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-2H19v2a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2z" fill="#fff"/><circle cx="23" cy="40" r="3.4" fill="#0f766e"/><circle cx="41" cy="40" r="3.4" fill="#0f766e"/></svg>
+    <div>
+      <h1 data-i="brandTitle">Private Car &amp; Chauffeur Request</h1>
+      <p data-i="brandSub">China Wonder Cars · China Wonder Tours</p>
+    </div>
+    <button class="langswitch" id="langBtn" onclick="toggleLang()">中文</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="card" id="formCard">
+    <div class="err" id="errBox"></div>
+    <p class="note" data-i="note">Please fill in your trip details below. Our team will reply within 24 hours with a quotation via WhatsApp or email. No payment is needed now.</p>
+
+    <div class="section-title" data-i="s1">Trip Details</div>
+
+    <div class="field">
+      <label data-i="lType">Service Type <span class="req">*</span></label>
+      <select id="service_type">
+        <option value="airport" data-i="optAirport">Airport Pickup (pick me up at the airport)</option>
+        <option value="city" data-i="optCity">Private Charter / City Tour (full day)</option>
+        <option value="business" data-i="optBusiness">Business / Meeting Transfer</option>
+        <option value="multiday" data-i="optMultiday">Multi-Day Package</option>
+        <option value="general" data-i="optGeneral">Other / Not sure yet</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label data-i="lCity">City <span class="req">*</span></label>
+        <select id="city">
+          <option value="Beijing">Beijing 北京</option>
+          <option value="Shanghai">Shanghai 上海</option>
+          <option value="Xi'an">Xi'an 西安</option>
+          <option value="Chengdu">Chengdu 成都</option>
+          <option value="Hangzhou">Hangzhou 杭州</option>
+          <option value="Zhangjiajie">Zhangjiajie 张家界</option>
+          <option value="Guilin/Yangshuo">Guilin / Yangshuo 桂林阳朔</option>
+          <option value="Lijiang">Lijiang 丽江</option>
+          <option value="Shangri-La">Shangri-La 香格里拉</option>
+          <option value="Other">Other 其他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i="lDate">Service Date <span class="req">*</span></label>
+        <input type="date" id="service_date" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label data-i="lTime">Pickup / Start Time <span class="req">*</span></label>
+        <input type="time" id="service_time" required>
+      </div>
+      <div class="field" id="flightField">
+        <label data-i="lFlight">Flight No. (if airport)</label>
+        <input type="text" id="flight" placeholder="e.g. LX188 / CA1831">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field" id="airportField">
+        <label data-i="lAirport">Airport (if airport pickup/drop-off)</label>
+        <select id="airport">
+          <option value="">—</option>
+          <option value="PEK">Beijing Capital PEK 首都机场</option>
+          <option value="PKX">Beijing Daxing PKX 大兴机场</option>
+          <option value="PVG">Shanghai Pudong PVG 浦东机场</option>
+          <option value="SHA">Shanghai Hongqiao SHA 虹桥机场</option>
+          <option value="XIY">Xi'an Xianyang XIY 西安咸阳</option>
+          <option value="CTU">Chengdu Shuangliu CTU 双流机场</option>
+          <option value="Other">Other 其他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i="lPax">Passengers <span class="req">*</span></label>
+        <input type="number" id="passengers" min="1" max="50" value="2" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label data-i="lPickup">Pickup Location <span class="req">*</span></label>
+      <input type="text" id="pickup" placeholder="e.g. Hotel name / address / terminal" required>
+      <div class="hint" data-i="hPickup">Hotel name &amp; address, or airport terminal</div>
+    </div>
+
+    <div class="field">
+      <label data-i="lDest">Destination / Route</label>
+      <input type="text" id="destination" placeholder="e.g. Mutianyu Great Wall, then back to hotel">
+      <div class="hint" data-i="hDest">Where you want to go, or your planned route</div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label data-i="lLuggage">Luggage</label>
+        <input type="text" id="luggage" placeholder="e.g. 2 large suitcases">
+      </div>
+      <div class="field">
+        <label data-i="lVehicle">Vehicle Preference</label>
+        <select id="vehicle">
+          <option value="">No preference</option>
+          <option value="5-seat sedan">5-seat sedan 五座轿车</option>
+          <option value="7-seat MPV">7-seat MPV 七座商务车</option>
+          <option value="9-seat van">9-seat van 九座车</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label data-i="lSpecial">Special Requests</label>
+      <textarea id="special" data-i="phSpecial" placeholder="Child seat, name sign at arrivals, English-speaking driver, wheelchair, etc."></textarea>
+    </div>
+
+    <div class="section-title" data-i="s2">Your Contact</div>
+
+    <div class="field">
+      <label data-i="lName">Full Name <span class="req">*</span></label>
+      <input type="text" id="name" required autocomplete="name">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label data-i="lWA">WhatsApp Number</label>
+        <input type="text" id="whatsapp" placeholder="+44 1234 567890" autocomplete="tel">
+        <div class="hint" data-i="hWA">Recommended — we reply fastest here</div>
+      </div>
+      <div class="field">
+        <label data-i="lEmail">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+    </div>
+
+    <input type="text" class="hp" id="_company" tabindex="-1" autocomplete="off">
+
+    <button class="submit" id="submitBtn" onclick="submitForm()" data-i="submit">Submit Request</button>
+    <div class="privacy" data-i="privacy">Your information is only used to prepare your quotation. We never share your data.</div>
+  </div>
+
+  <div class="card ok" id="okCard">
+    <div class="tick"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <h2 data-i="okTitle">Request Received!</h2>
+    <p data-i="okBody">Thank you. Our team will reply within 24 hours with a quotation.<br>For urgent needs, WhatsApp us: +86 153 4772 3823</p>
+  </div>
+
+  <div class="contact">
+    <strong>China Wonder Cars / China Wonder Tours</strong><br>
+    Email: booking@chinawondertours.com · WhatsApp: +86 153 4772 3823<br>
+    www.chinawondercars.com · www.chinawondertours.com
+  </div>
+</div>
+
+<script>
+var I = {
+  en: {
+    brandTitle: 'Private Car & Chauffeur Request',
+    brandSub: 'China Wonder Cars · China Wonder Tours',
+    note: 'Please fill in your trip details below. Our team will reply within 24 hours with a quotation via WhatsApp or email. No payment is needed now.',
+    s1: 'Trip Details', s2: 'Your Contact',
+    lType: 'Service Type *', lCity: 'City *', lDate: 'Service Date *', lTime: 'Pickup / Start Time *',
+    lFlight: 'Flight No. (if airport)', lAirport: 'Airport (if airport pickup/drop-off)', lPax: 'Passengers *',
+    lPickup: 'Pickup Location *', lDest: 'Destination / Route', lLuggage: 'Luggage', lVehicle: 'Vehicle Preference',
+    lSpecial: 'Special Requests', lName: 'Full Name *', lWA: 'WhatsApp Number', lEmail: 'Email',
+    hPickup: 'Hotel name & address, or airport terminal', hDest: 'Where you want to go, or your planned route', hWA: 'Recommended — we reply fastest here',
+    phSpecial: 'Child seat, name sign at arrivals, English-speaking driver, wheelchair, etc.',
+    submit: 'Submit Request', privacy: 'Your information is only used to prepare your quotation. We never share your data.',
+    okTitle: 'Request Received!', okBody: 'Thank you. Our team will reply within 24 hours with a quotation.\nFor urgent needs, WhatsApp us: +86 153 4772 3823'
+  },
+  zh: {
+    brandTitle: '私人用车需求表单',
+    brandSub: '中国奇妙用车 · 中国奇妙旅行',
+    note: '请填写您的用车需求，我们将在 24 小时内通过 WhatsApp 或邮件回复报价。现在无需付款。',
+    s1: '行程信息', s2: '您的联系方式',
+    lType: '服务类型 *', lCity: '城市 *', lDate: '服务日期 *', lTime: '接车 / 出发时间 *',
+    lFlight: '航班号（机场接送时）', lAirport: '机场（机场接送时）', lPax: '人数 *',
+    lPickup: '接车地点 *', lDest: '目的地 / 路线', lLuggage: '行李', lVehicle: '车型偏好',
+    lSpecial: '特殊需求', lName: '姓名 *', lWA: 'WhatsApp 号码', lEmail: '邮箱',
+    hPickup: '酒店名称及地址，或机场航站楼', hDest: '您要去的地方，或计划路线', hWA: '推荐填写 — 回复最快',
+    phSpecial: '儿童座椅、到达厅举牌、英文司机、轮椅等',
+    submit: '提交需求', privacy: '您的信息仅用于为您准备报价，我们绝不外泄。',
+    okTitle: '已收到您的需求！', okBody: '感谢您的提交。我们将在 24 小时内回复报价。\n紧急需求请 WhatsApp：+86 153 4772 3823'
+  }
+};
+var lang = 'en';
+function toggleLang(){
+  lang = (lang === 'en') ? 'zh' : 'en';
+  document.getElementById('langBtn').textContent = (lang === 'en') ? '中文' : 'English';
+  document.querySelectorAll('[data-i]').forEach(function(el){
+    var k = el.getAttribute('data-i');
+    if (I[lang][k] !== undefined) el.textContent = I[lang][k];
+  });
+}
+document.querySelectorAll('[data-i]').forEach(function(el){
+  var k = el.getAttribute('data-i');
+  if (I.en[k] !== undefined && el.tagName !== 'OPTION') el.setAttribute('data-en', I.en[k]);
+});
+document.getElementById('service_type').addEventListener('change', function(){
+  var v = this.value;
+  var isAirport = (v === 'airport');
+  document.getElementById('flightField').style.display = isAirport ? '' : 'none';
+  document.getElementById('airportField').style.display = isAirport ? '' : 'none';
+});
+function showErr(msg){ var b = document.getElementById('errBox'); b.style.display = 'block'; b.textContent = msg; }
+function submitForm(){
+  var err = document.getElementById('errBox'); err.style.display = 'none';
+  var name = document.getElementById('name').value.trim();
+  var whatsapp = document.getElementById('whatsapp').value.trim();
+  var email = document.getElementById('email').value.trim();
+  var date = document.getElementById('service_date').value;
+  var time = document.getElementById('service_time').value;
+  var pickup = document.getElementById('pickup').value.trim();
+  if (!name) { showErr(lang === 'en' ? 'Please enter your name.' : '请填写姓名。'); return; }
+  if (!whatsapp && !email) { showErr(lang === 'en' ? 'Please provide at least a WhatsApp number or email.' : '请至少填写 WhatsApp 号码或邮箱。'); return; }
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showErr(lang === 'en' ? 'Email format looks incorrect.' : '邮箱格式不正确。'); return; }
+  if (!date) { showErr(lang === 'en' ? 'Please choose the service date.' : '请选择服务日期。'); return; }
+  if (!time) { showErr(lang === 'en' ? 'Please choose the pickup time.' : '请选择接车时间。'); return; }
+  if (!pickup) { showErr(lang === 'en' ? 'Please enter the pickup location.' : '请填写接车地点。'); return; }
+  var special = document.getElementById('special').value.trim();
+  var dest = document.getElementById('destination').value.trim();
+  var extra = [];
+  if (dest) extra.push('Destination/Route: ' + dest);
+  if (special) extra.push('Special: ' + special);
+  var payload = {
+    name: name, whatsapp: whatsapp, email: email,
+    service_date: date, service_time: time,
+    city: document.getElementById('city').value,
+    airport: document.getElementById('airport').value,
+    flight: document.getElementById('flight').value.trim(),
+    passengers: document.getElementById('passengers').value,
+    luggage: document.getElementById('luggage').value.trim(),
+    vehicle: document.getElementById('vehicle').value,
+    service_type: document.getElementById('service_type').value,
+    pickup: pickup,
+    destination: dest,
+    message: extra.join('\n'),
+    _company: document.getElementById('_company').value
+  };
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = (lang === 'en') ? 'Submitting…' : '提交中…';
+  fetch('/api/inquiry', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d && d.ok) {
+      document.getElementById('formCard').style.display = 'none';
+      document.getElementById('okCard').style.display = 'block';
+      window.scrollTo(0, 0);
+    } else {
+      btn.disabled = false;
+      btn.textContent = (lang === 'en') ? 'Submit Request' : '提交需求';
+      showErr((d && d.error) ? d.error : (lang === 'en' ? 'Submit failed, please try again.' : '提交失败，请重试。'));
+    }
+  }).catch(function(){
+    btn.disabled = false;
+    btn.textContent = (lang === 'en') ? 'Submit Request' : '提交需求';
+    showErr(lang === 'en' ? 'Network error, please try again.' : '网络错误，请重试。');
+  });
+}
+</script>
+</body>
+</html>
