@@ -146,6 +146,15 @@
   </div>
 
   <div class="card no-print">
+    <div class="step-t"><span class="step-n">⚡</span><h2>粘贴客户消息自动解析</h2><span class="hint">WhatsApp / 微信 / 邮件原文</span></div>
+    <textarea id="inRaw" rows="3" placeholder="例如：Hi, we are 3 people, need airport pickup at Shanghai Pudong on Oct 20, flight CA123 at 14:30, to Grand Kempinski Hotel. 7-seater please." style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn" onclick="autoParse()">自动解析并填表</button>
+      <span class="hint" id="autoParseHint"></span>
+    </div>
+  </div>
+
+  <div class="card no-print">
     <div class="step-t"><span class="step-n">0</span><h2>从工作台订单生成</h2><span class="hint" id="orderCount"></span></div>
     <label class="f">选择已有订单（自动带出客人/日期/行程/车型）</label>
     <select id="selOrder"><option value="">加载中…</option></select>
@@ -323,6 +332,129 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   function todayStr(){ var d=new Date(); var m=('0'+(d.getMonth()+1)).slice(-2),dd=('0'+d.getDate()).slice(-2); return d.getFullYear()+'-'+m+'-'+dd; }
   function money(n){ return Math.round(Number(n)||0); }
 
+  /* ---- 粘贴消息自动解析 ---- */
+  function qaNorm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
+  function qaExtractCity(t){
+    var citySet={};
+    cities.forEach(function(c){ citySet[c]=1; });
+    var extra=['深圳','珠海','中山','东莞','成都','重庆','南京','苏州','无锡','青岛','大连','厦门','三亚','丽江','桂林','张家界','宜昌','郑州','济南','天津','沈阳','长春','哈尔滨','武汉','长沙','南昌','福州','泉州','南宁','海口','贵阳','兰州','西宁','银川','乌鲁木齐','呼和浩特','太原','石家庄','香港','澳门','宁波','威海','宜兴','同里'];
+    extra.forEach(function(c){ citySet[c]=1; });
+    for(var c in citySet){ if(t.indexOf(c)>=0) return c; }
+    var enCity={shanghai:'上海',beijing:'北京',guangzhou:'广州',shenzhen:'深圳',hangzhou:'杭州',xian:'西安',chengdu:'成都',chongqing:'重庆',kunming:'昆明',qingdao:'青岛',dalian:'大连',xiamen:'厦门',sanya:'三亚',nanjing:'南京',suzhou:'苏州',wuxi:'无锡',zhengzhou:'郑州',jinan:'济南',tianjin:'天津',shenyang:'沈阳',wuhan:'武汉',changsha:'长沙',guilin:'桂林',lijiang:'丽江',zhuhai:'珠海',zhongshan:'中山',foshan:'佛山',dongguan:'东莞',ningbo:'宁波',weihai:'威海',yixing:'宜兴',tongli:'同里',luoyang:'洛阳',datong:'大同',macau:'澳门',hongkong:'香港'};
+    var lower=t.toLowerCase();
+    for(var k in enCity){ if(new RegExp('\\b'+k+'\\b','i').test(lower)) return enCity[k]; }
+    var air={pudong:'上海',hongqiao:'上海',sha:'上海',pvg:'上海',daxing:'北京',capital:'北京',pek:'北京',baiyun:'广州',can:'广州',baoan:'深圳',xiaoshan:'杭州',hgh:'杭州',lukou:'南京',nkg:'南京',tianfu:'成都',tfu:'成都',xianyang:'西安',xiy:'西安'};
+    for(var a in air){ if(new RegExp('\\b'+a+'\\b','i').test(lower)) return air[a]; }
+    if(/虹桥|浦东|首都|白云|宝安|萧山|禄口|大兴|天府|咸阳/.test(t)) return '上海';
+    return '';
+  }
+  function qaExtractVehicle(t){
+    if(/大巴|bus|coach|minibus/.test(t)) return '大巴';
+    if(/考斯特|coaster/.test(t)) return '考斯特';
+    if(/九座|9\s*-?\s*seats?|van|mpv|mbv|sprinter/.test(t)) return '九座';
+    if(/七座|7\s*-?\s*seats?/.test(t)) return '七座';
+    if(/五座|5\s*-?\s*seats?|sedan|saloon|limousine/.test(t)) return '五座';
+    return '';
+  }
+  function qaExtractPax(t){
+    var m=t.match(/(\d{1,2})\s*(pax|persons?|people|guests?|passengers?|adults?|人|位|名|客)/i);
+    return m?parseInt(m[1],10):1;
+  }
+  function qaYmd(d){ var m=('0'+(d.getMonth()+1)).slice(-2),dd=('0'+d.getDate()).slice(-2); return d.getFullYear()+'-'+m+'-'+dd; }
+  function qaAddDays(d,n){ var r=new Date(d); r.setDate(r.getDate()+n); return r; }
+  function qaExtractDate(t){
+    var m=t.match(/(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if(m) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+    m=t.match(/(\d{1,2})月(\d{1,2})[日号]?/);
+    if(m) return qaYmd(new Date(new Date().getFullYear(),parseInt(m[1],10)-1,parseInt(m[2],10)));
+    m=t.match(/(\d{1,2})[-/.](\d{1,2})(?:[-/.]20\d{2})?/);
+    if(m) return qaYmd(new Date(new Date().getFullYear(),parseInt(m[1],10)-1,parseInt(m[2],10)));
+    var mm={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+    m=t.match(/(?:on\s+|the\s+)?(\d{1,2})(?:st|nd|rd|th)?\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/i);
+    if(m) return qaYmd(new Date(new Date().getFullYear(),mm[m[2].toLowerCase()]-1,parseInt(m[1],10)));
+    m=t.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?/i);
+    if(m) return qaYmd(new Date(new Date().getFullYear(),mm[m[1].toLowerCase()]-1,parseInt(m[2],10)));
+    if(/后天/.test(t)) return qaYmd(qaAddDays(new Date(),2));
+    if(/明天|tomorrow/i.test(t)) return qaYmd(qaAddDays(new Date(),1));
+    if(/今天|today/i.test(t)) return qaYmd(new Date());
+    var wd={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,周日:0,星期一:1,周一:1,星期二:2,周二:2,星期三:3,周三:3,星期四:4,周四:4,星期五:5,周五:5,星期六:6,周六:6};
+    m=t.match(/(next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|周日|星期一|周一|星期二|周二|星期三|周三|星期四|周四|星期五|周五|星期六|周六)/i);
+    if(m){ var want=wd[m[2].toLowerCase()]; var diff=(want-new Date().getDay()+7)%7; if(diff===0) diff=7; if(/next\s+/i.test(m[1]||'')) diff+=7; return qaYmd(qaAddDays(new Date(),diff)); }
+    return '';
+  }
+  function qaExtractTime(t){ var m=t.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/); return m?m[1].padStart(2,'0')+':'+m[2]:''; }
+  function qaExtractFlight(t){ var m=t.match(/\b([A-Z]{2}\d{3,4})\b/); return m?m[1]:''; }
+  function qaExtractGuest(t){
+    var m=t.match(/(?:my name is|i am|i'm|this is|guest(?: name)? is|我是|客人|名字是)\s+([A-Za-z\u4e00-\u9fa5]{2,30})/i);
+    if(m && !/^(from|please|thank|thanks|hello|hi|we|our)$/i.test(m[1])) return m[1];
+    m=t.match(/^(?:hi|hello|hey|good\s*(?:morning|afternoon|evening))\s*[,!]?\s*([A-Z][a-zA-Z]+)/i);
+    if(m && !/^(We|I|Please|Hello|Hi|Hey|Good|Dear|Our|The|A)$/i.test(m[1])) return m[1];
+    return '';
+  }
+  function qaDetectService(t){
+    if(/接机|pickup|airport transfer|arrival|接站|meet.*airport/.test(t)) return '接机';
+    if(/送机|drop-?\s*off|departure|送站/.test(t)) return '送机';
+    if(/包车|charter|city tour|一日游|全天|private hire|rental/.test(t)) return '包车';
+    if(/接送|transfer/.test(t)) return '接送';
+    return '';
+  }
+  function autoParse(){
+    var t=qaNorm($('inRaw').value);
+    if(!t){ toast('请先粘贴客户消息'); return; }
+    var city=qaExtractCity(t);
+    var pax=qaExtractPax(t);
+    var veh=qaExtractVehicle(t)||(pax>=9?'九座':(pax>=7?'七座':'五座'));
+    var date=qaExtractDate(t);
+    var time=qaExtractTime(t);
+    var flight=qaExtractFlight(t);
+    var guest=qaExtractGuest(t);
+    var svc=qaDetectService(t);
+    // 匹配线路
+    var bestRoute='', bestScore=0;
+    var routes=Object.keys(city?routesByCity[city]||{}:{});
+    routes.forEach(function(r){
+      var score=0;
+      if(svc==='接机'&&(/接机/.test(r)||/机场/.test(r))) score+=3;
+      if(svc==='送机'&&/送机/.test(r)) score+=3;
+      if(svc==='包车'&&/包车/.test(r)) score+=3;
+      var keys=r.split(/[→·\s,，、/（）()]+/).filter(function(k){return k.length>=2;});
+      keys.forEach(function(k){ if(t.indexOf(k)>=0) score+=k.length; });
+      if(score>bestScore){ bestScore=score; bestRoute=r; }
+    });
+    if(guest) $('inGuest').value=guest;
+    $('inPax').value=pax;
+    if(date) $('inDate').value=date;
+    if(time) $('inTime').value=time;
+    var note=[];
+    if(svc) note.push(svc);
+    if(flight) note.push('航班 '+flight);
+    note.push(t);
+    $('inNote').value=note.join('；');
+    var hint=[];
+    if(city) hint.push('城市 '+city); else hint.push('城市未识别');
+    if(bestRoute) hint.push('线路 '+bestRoute); else hint.push('线路未匹配（请手动选择）');
+    $('autoParseHint').textContent='✓ '+hint.join(' · ');
+    $('autoParseHint').style.color='var(--green)';
+    // 自动选城市和线路
+    if(city&&cities.indexOf(city)>=0){
+      state.city=city;
+      $('selCity').value=city;
+      renderRoutes();
+      $('cardRoute').classList.remove('hidden');
+      if(bestRoute){
+        state.route=bestRoute;
+        renderRoutes();
+        renderVeh();
+        $('cardVeh').classList.remove('hidden');
+      }
+      showCard('cardRoute');
+    }else{
+      toast('城市未识别，请手动选择');
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  window.autoParse = autoParse;
+
   /* ---------- data ---------- */
   var cities=[], routesByCity={}, vehByRoute={};
   var CLOUD_ORDERS=[];
@@ -333,7 +465,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     }).filter(function(p){return p.c&&(p.cost>0||p.q>0);});
   }
   function loadCloud(){
-    var url='https://elitetravel0309.github.io/elite-fleet/data/elite-fleet-data.json';
+    var url = location.protocol==='file:' ? 'https://elitetravel0309.github.io/elite-fleet/data/elite-fleet-data.json' : ('/api/public-data?t='+Date.now());
     var xhr=new XMLHttpRequest();
     xhr.open('GET',url,true);
     xhr.timeout=8000;

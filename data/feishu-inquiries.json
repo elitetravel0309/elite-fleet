@@ -1,0 +1,1024 @@
+﻿{
+    "records":  [
+                    {
+                        "recordId":  "reczz28JkKbD0fV3",
+                        "fields":  {
+                                       "服务日期":  "10/20-23",
+                                       "需求要点":  "威海10/20-22机场接机+供应商/工厂参观3天，10/22晚送机；宁波10/22深夜接机、10/23全天服务（Sunfine Marine参观）后送机场晚班机；10/24无服务",
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "Johannes Drost",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "备注":  "客人要求按新行程修订报价（宁波改10/22晚离威）；司机须能英文交流（已回复确认口径）",
+                                       "城市/线路":  "威海 · 宁波",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbD0Vvw",
+                        "fields":  {
+                                       "服务日期":  "10/13-16",
+                                       "需求要点":  "私享团无购物；13日宜兴竹海缆车→同里古镇；14日同里退思园摇橹船→上海新天地外滩；15日豫园→陆家嘴上海之巅；16日送浦东机场（VN525 15:10）",
+                                       "人数":  3,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "定金":  3390,
+                                       "客户名称":  "宜兴·同里·上海 3人家庭",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  11300,
+                                       "备注":  "车4,800（7座MPV 13-15全天+16半天送机）+导4,850（3天）+门票1,650；ERA可选580/人最晚10/12确认；酒店客人自理；客户问过整团/人均口径",
+                                       "城市/线路":  "宜兴 · 同里 · 上海",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbD13Qk",
+                        "fields":  {
+                                       "服务日期":  "11/3-4",
+                                       "需求要点":  "上海2日私享游，无购物；St Regis（北京西路）接送；同司机同导游；含小费",
+                                       "人数":  2,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "Rob (Shanghai 2-day)",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  4500,
+                                       "备注":  "车+导合并4,500整团（人均2,250）；门票200+可选活动1,660单列；报价单HTML+PDF已交付",
+                                       "城市/线路":  "上海",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbCzvHH",
+                        "fields":  {
+                                       "服务日期":  "11/4",
+                                       "需求要点":  "14:11昆明南站接→石林游览约2.5h→晚餐→长水机场（23:55航班）；8人8个20-24寸行李箱；问费用是否含司机/油费/过路/停车",
+                                       "人数":  8,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "韩国客人（昆明石林）",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "已建议大9座长轴高顶（大通V90/全顺等）；报价待定（参考约1,300待确认）",
+                                       "城市/线路":  "昆明 · 石林",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbCyQfb",
+                        "fields":  {
+                                       "服务日期":  "待定",
+                                       "需求要点":  "9座包车8人无行李；丽江酒店→茶马客栈→中途客栈→上虎跳→返丽江酒店；含司机/油费/过路/停车",
+                                       "人数":  8,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "台湾客人（丽江虎跳峡）",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "大9座全包约1,400估算待定价；门票45-65/人不含；待出行日期",
+                                       "城市/线路":  "丽江 · 虎跳峡",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbD008M",
+                        "fields":  {
+                                       "服务日期":  "2027/11/3-4",
+                                       "需求要点":  "邮轮岸上游2日；妻子行动受限需少台阶少步行；上海之巅118F/豫园/外滩/新天地法租界；含中式午餐；船不能靠岸需全额退款条款",
+                                       "人数":  2,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "Marc Bocxstael \u0026 Carine Duchesne (Noordam)",
+                                       "国家/地区":  "比利时",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  5720,
+                                       "备注":  "车导4,800+门票440+午餐480；含小费；报价单HTML+PDF已交付；价格口径待老板确认",
+                                       "城市/线路":  "上海（吴淞口邮轮港）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbCy9wc",
+                        "fields":  {
+                                       "服务日期":  "11/27",
+                                       "需求要点":  "HU7996 06:50抵PEK→慕田峪（游玩时司机等待）→北京城内下车；询问机场可否存行李（已答复可存或放车上）",
+                                       "人数":  2,
+                                       "成交金额":  850,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "Jasper (Beijing Mutianyu)",
+                                       "状态":  [
+                                                  "已确认"
+                                              ],
+                                       "报价金额":  850,
+                                       "备注":  "5座轿车全包固定价；确认件草稿已给；待补北京城内下车地址",
+                                       "城市/线路":  "北京 · 慕田峪",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbD19u2",
+                        "fields":  {
+                                       "需求要点":  "两程跨城酒店间接送：10/21杭州西子湖四季→乌镇阿丽拉（12:15接）；10/22乌镇阿丽拉→上海浦东丽思卡尔顿（12:00接）；7座商务MPV同车",
+                                       "定金":  990,
+                                       "询盘日期":  "2026-10-02T00:00:00.000+08:00",
+                                       "邮箱":  "steve@wheelerproductions.com",
+                                       "服务日期":  "10/21-22",
+                                       "备注":  "50%定金USD 153已收（PayPal≈RMB 990）；余额990服务结束付（支付宝/微信/PayPal）；48小时前免费取消；确认邮件已发；微信wxid_0wouqf0uqsjt12",
+                                       "客户名称":  "Steve Wheeler",
+                                       "沟通记录":  [
+                                                    {
+                                                        "id":  "reczz28KAdeF0t0S"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEz1iD"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEz2c0"
+                                                    }
+                                                ],
+                                       "人数":  2,
+                                       "成交金额":  1980,
+                                       "来源渠道":  [
+                                                    "WhatsApp"
+                                                ],
+                                       "报价金额":  1980,
+                                       "状态":  [
+                                                  "已收款"
+                                              ],
+                                       "城市/线路":  "杭州 · 乌镇 · 上海"
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbCzY1Z",
+                        "fields":  {
+                                       "服务日期":  "10/14-27",
+                                       "需求要点":  "广交会秋季全程高端专车14天：10/14机场接机；15-27全天候服务（展会待命、商务会议、餐厅、工厂拜访佛山东莞深圳）；同车同司机；需车型照片、每日小时/公里、超时费、司机英语等",
+                                       "人数":  3,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "Julie Jordanova (Azimuth / Canton Fair)",
+                                       "国家/地区":  "保加利亚",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "联系人Julie Jordanova（Marketing\u0026PR），电话+359 8967 525 29；待报价",
+                                       "城市/线路":  "广州 · 佛山 · 东莞 · 深圳",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkKbD0K31",
+                        "fields":  {
+                                       "服务日期":  "10/16",
+                                       "需求要点":  "09:25大同南站接→酒店放行李→云冈石窟游览约3小时（司机等待）→约14:00返大同；无需导游",
+                                       "人数":  5,
+                                       "邮箱":  "unorauluno@yahoo.com",
+                                       "询盘日期":  "2026-09-10T00:00:00.000+08:00",
+                                       "客户名称":  "Raul Arizpe B. (Datong Yungang)",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  700,
+                                       "备注":  "6/7座GL8同级全包固定价700（含车/司机/过路/油/停车/接送/等待/司机补贴）；客人另询按时计费备选报价；需回复确认车型/同车同司机/火车晚点是否加费",
+                                       "城市/线路":  "大同 · 云冈石窟",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5WiLD",
+                        "fields":  {
+                                       "需求要点":  "主题：Shanghai Wonder Tours x Travel With Terry P\nHi Shanghai Wonder Tours team,\n\nFollowing up on my earlier collaboration note. I’m locking my China route\naround 2026-09-17 and would still love to explore a collaboration with\nShanghai Wonder Tours.\n\nI create immersive, people-first travel stories for 224K+ followers across\nTikTok, Instagram, YouTube and Facebook.\n\nMedia kit: [https://terrypernell.com/media-kit](https://terrypernell.com/media-kit)\n\nIf there’s interest, I can send dates and deliverables right away.\n\nBest,\nTerry Pernell\nTravel With Terry P.",
+                                       "邮箱":  "terry@terrypernell.com",
+                                       "询盘日期":  "2026-09-07T00:05:26.000+08:00",
+                                       "客户名称":  "Terry Pernell",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c[CAFGxeHCrOubPCMKqWxcQHX24jt+N5v0a9_1XyH-71nnius6LWQ@mail.gmail.com](mailto:CAFGxeHCrOubPCMKqWxcQHX24jt+N5v0a9_1XyH-71nnius6LWQ@mail.gmail.com)\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5Utlx",
+                        "fields":  {
+                                       "需求要点":  "主题：Transportation to Yungang Grottoes – October 16, 2026 / 2026年10月16日云冈石窟接送服务\nHello,\n\nWe are 5 passengers and will be staying at Moshang Light Luxury Hotel (Datong Ancient City Huayan Temple) on October 16, 2026.\n\nWe need a private 6- or 7-seater vehicle with driver for the following itinerary:\n\n10:30 AM – Pick us up at the hotel\n11:15 AM – Arrive at Yungang Grottoes\n11:15 AM–2:15 PM – Driver waits for us while we visit Yungang\n2:15 PM – Pick us up at Yungang and return us to Datong\n\nPlease quote your BEST TOTAL PRICE for the entire service, including:\n   \n   - Vehicle and driver\n   - 3 hours waiting time\n   - Fuel\n   - Parking\n   - Tolls\n   - Any other fees\n\nWe do not need a tour guide; we only need transportation and the driver to wait for us.\n\nPlease also confirm the exact vehicle model and number of seats.\n\nThank you!",
+                                       "邮箱":  "unorauluno@yahoo.com",
+                                       "询盘日期":  "2026-09-10T01:58:35.000+08:00",
+                                       "客户名称":  "Raul Arizpe B.",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c1473751761.2237272.1789005515849@mail.yahoo.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5WsIJ",
+                        "fields":  {
+                                       "需求要点":  "主题：11月24日: 北京往返慕田峪长城\n您好！\r\n我是从网上找到你们的联系。\r\n我们是从新加坡的一家人， 有6人想预订北京往返慕田峪长城的私人包车一日游。\r\n日期：11月24日，星期一\r\n旅店地址：北京朝阳区工人体育场北路13号院2号楼3单元\r\n时间出发：0700 早上出发\r\n人数及情况：\r\n• 4位成人，其中2位老人，67岁和69岁\r\n• 1名7岁儿童\r\n• 1名3岁半儿童，\r\n请提供包车总价，并明确列出包含和不包含哪些项目，谢谢！\r\nDerek Lydia",
+                                       "邮箱":  "dkly@outlook.sg",
+                                       "询盘日期":  "2026-09-13T14:48:49.000+08:00",
+                                       "客户名称":  "Derek Lydia",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cSEZPR01MB47575EDCBDB3AC86F134E65FB3BC2@SEZPR01MB4757.apcprd01.prod.exchangelabs.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5X1HQ",
+                        "fields":  {
+                                       "需求要点":  "主题：Fwd: Tang family trip\n\u003e Subject: Tang family trip\n\u003e \n\u003e ﻿\n\u003e Hello,\n\u003e \n\u003e We are a group of 6 adults visiting Zhangjiajie in October 2026.\n\u003e \n\u003e Our accommodation is already booked:\n\u003e \n\u003e 17–20 October:\n\u003e Howard Johnson Neodalle Resort, Wulingyuan\n\u003e \n\u003e 21 October onwards:\n\u003e Zhangjiajie Yunfu Garden Hotel\n\u003e \n\u003e We would like you to organise a private sightseeing tour for the 6 of us, starting from the Howard Johnson hotel on 17 October.\n\u003e \n\u003e We would also like you to arrange for our luggage to be collected from the Howard Johnson Neodalle Resort on 20 October and transferred safely to the Zhangjiajie Yunfu Garden Hotel, ready for us when we arrive on 21 October.\n\u003e \n\u003e We would like to visit:\n\u003e \n\u003e • Zhangjiajie National Forest Park\n\u003e • Yuanjiajie / Avatar Mountains\n\u003e • Tianzi Mountain\n\u003e • Bailong Elevator\n\u003e • Golden Whip Stream\n\u003e • Zhangjiajie Grand Canyon and Glass Bridge\n\u003e • Tianmen Mountain\n\u003e • Tianmen cable car and glass skywalk\n\u003e \n\u003e Please arrange the itinerary in the best order according to weather and crowds.\n\u003e \n\u003e We require:\n\u003e \n\u003e • Private vehicle suitable for 6 people\n\u003e • English-speaking guide\n\u003e • All entrance tickets\n\u003e • Cable cars and elevators\n\u003e • Grand Canyon/Glass Bridge tickets\n\u003e • Luggage transfer from Howard Johnson to Yunfu Garden Hotel\n\u003e • All sightseeing and local transfers\n\u003e \n\u003e Our accommodation is already booked, so please do not include hotels in the price.\n\u003e \n\u003e Please give us your best total price for all 6 people and clearly explain what is included and excluded.\n\u003e \n\u003e Thank you.\n\u003e \n\u003e Mr \u0026 Mrs Tang\n\u003e \n\u003e",
+                                       "邮箱":  "pantang@icloud.com",
+                                       "询盘日期":  "2026-09-13T19:04:37.000+08:00",
+                                       "客户名称":  "Pan Tang",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c0F2D64C5-2865-4550-95EC-3D69713A119C@icloud.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5V9VW",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Derek Lydia 回复：11月24日: 北京往返慕田峪长城\n您好，谢谢您的回复！\r\n补充一些信息，方便您帮我们确认具体安排：\r\n儿童身高：\r\n• 7岁儿童 Zayn：126cm\r\n• 3岁半儿童 Xavier：92cm\r\n我们对语言没有特别限制。中文导游完全可以，我们也可以用中文沟通。\r\n不过，如果安排导游，我们比较重视导游的专业程度。希望是对长城及北京历史文化比较熟悉、讲解详细而且生动有趣的导游，不是只负责带路和买票。我们希望在游览过程中能够听到比较深入、容易理解的历史背景和故事。\r\n另外，我们同行有两位老人（67岁和69岁），所以希望司机/导游能够比较耐心，并在需要的时候协助老人使用景区摆渡车、缆车/索道等。\r\n如果可以的话，也请告诉我们：\r\n\r\n  1.\r\n推荐什么车型？8个人乘坐是否舒适、空间是否足够？\r\n  2.\r\n是否可以安排中文专业导游？\r\n  3.\r\n导游是否会全程陪同并详细讲解？\r\n  4.\r\n老人和小孩乘坐缆车/索道、摆渡车等是否方便？\r\n  5.\r\n126cm和92cm的小朋友分别可以参加哪些项目（例如缆车、滑道/雪橇等）？\r\n  6.\r\n全天包车+司机+导游的总价是多少？\r\n  7.\r\n价格包含和不包含哪些费用？\r\n  8.\r\n是否可以保证不安排购物店？\r\n\r\n谢谢！\r\nDerek \u0026 Lydia\r\n\r\n________________________________\r\nFrom: China Wonder Tou \u003cbooking@chinawondertours.com\u003e\r\nSent: Sunday, 13 September 2026 10:55 pm\r\nTo: Derek Lydia \u003cdkly@outlook.sg\u003e\r\nSubject: 回复：11月24日: 北京往返慕田峪长城\r\n\r\nHi\r\n\r\n日期：11月24日，星期一\r\n旅店地址：北京朝阳区工人体育场北路13号院2号楼3单元\r\n时间出发：0700 早上出发\r\n人数及情况：\r\n• 4位成人，其中2位老人，67岁和69岁\r\n• 1名7岁儿童\r\n• 1名3岁半儿童，\r\n请提供包车总价，并明确列出包含和不包含哪些项目，谢谢！\r\n\r\nFor Mutianyu One Day Excursion\r\n●Vehicle: 7-seater business van / MPV\r\n●Price: RMB 1000 (fixed price, no additional charges)\r\n●Inclusions: car, driver, tolls, fuel, parking, pick-up, and drop-off, driver meal allowance\r\n●Service Hours: maximum include 9 hours (can extend to 10 hours if encounter heavy traffic on the road)\r\n\r\n[http://exmail.qq.com/cgi-bin/viewfile?type=signature\u0026picid=ZX0004-Hq7yS4Njio8VCBV_duPFX0l\u0026uin=486918320]\r\n\r\n\r\n\r\nDerek Lydia\u003cdkly@outlook.sg\u003e 在 2026年9月13日 周日 22:48 写道：\r\n您好！\r\n我是从网上找到你们的联系。\r\n我们是从新加坡的一家人， 有6人想预订北京往返慕田峪长城的私人包车一日游。\r\n日期：11月24日，星期一\r\n旅店地址：北京朝阳区工人体育场北路13号院2号楼3单元\r\n时间出发：0700 早上出发\r\n人数及情况：\r\n• 4位成人，其中2位老人，67岁和69岁\r\n• 1名7岁儿童\r\n• 1名3岁半儿童，\r\n请提供包车总价，并明确列出包含和不包含哪些项目，谢谢！\r\nDerek Lydia",
+                                       "邮箱":  "dkly@outlook.sg",
+                                       "询盘日期":  "2026-09-14T00:42:54.000+08:00",
+                                       "客户名称":  "Derek Lydia",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cSEZPR01MB4757E7D8B2837D94F23F000DB3BB2@SEZPR01MB4757.apcprd01.prod.exchangelabs.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5UQJH",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: 回复：11月24日: 北京往返慕田峪长城\nHi Alice,\r\n\r\n您好，感谢您的报价。想在确认预订前再确认一下以下细节：\r\n行程：\r\n\r\n  *\r\n日期：11月24日\r\n  *\r\n接送时间：早上约 8:00\r\n  *\r\n上车地点：北京世茂TNT公寓（Shimao TNT Apartments）北京朝阳区工人体育场北路13号院2号楼3单元\r\n  *\r\n人数：6人（4位成人 + 2名儿童）\r\n  *\r\n行程：酒店 → 慕田峪长城 → 酒店\r\n  *\r\n我们预计在慕田峪停留约 4–5小时\r\n  *\r\n游览期间司机需要在景区附近等候我们\r\n\r\n车辆方面：\r\n请问当天安排的车辆是**别克GL8（Buick GL8）**吗？\r\n我们比较希望是舒适的别克GL8商务车.\r\n如果不是GL8，请告诉我们具体的车型和座位数，以及是否是同等级别的舒适型MPV。\r\n关于1000元报价，也想确认：\r\n\r\n  1.\r\n1000元是否是当天6人包车的最终总价？\r\n  2.\r\n是否已经包含：\r\n     *\r\n司机服务费\r\n     *\r\n油费\r\n     *\r\n高速/过路费\r\n     *\r\n停车费\r\n  3.\r\n是否还有其他必须支付的费用？\r\n  4.\r\n如果我们在慕田峪停留超过原定时间，超时费是多少元/小时？\r\n  5.\r\n司机是否会在我们游览期间等候，并在结束后送我们直接回同一酒店？\r\n  6.\r\n慕田峪的门票、摆渡车、缆车、滑道/旱地雪橇 - 你们可以帮我们买吗\r\n\r\n另外，我们不需要导游或景点讲解，只需要司机负责接送和等候。\r\n谢谢！\r\n\r\n________________________________\r\nFrom: China Wonder Tou \u003cbooking@chinawondertours.com\u003e\r\nSent: Sunday, 13 September 2026 10:55 pm\r\nTo: Derek Lydia \u003cdkly@outlook.sg\u003e\r\nSubject: 回复：11月24日: 北京往返慕田峪长城\r\n\r\nHi\r\n\r\n日期：11月24日，星期一\r\n旅店地址：北京朝阳区工人体育场北路13号院2号楼3单元\r\n时间出发：0700 早上出发\r\n人数及情况：\r\n• 4位成人，其中2位老人，67岁和69岁\r\n• 1名7岁儿童\r\n• 1名3岁半儿童，\r\n请提供包车总价，并明确列出包含和不包含哪些项目，谢谢！\r\n\r\nFor Mutianyu One Day Excursion\r\n●Vehicle: 7-seater business van / MPV\r\n●Price: RMB 1000 (fixed price, no additional charges)\r\n●Inclusions: car, driver, tolls, fuel, parking, pick-up, and drop-off, driver meal allowance\r\n●Service Hours: maximum include 9 hours (can extend to 10 hours if encounter heavy traffic on the road)\r\n\r\n[http://exmail.qq.com/cgi-bin/viewfile?type=signature\u0026picid=ZX0004-Hq7yS4Njio8VCBV_duPFX0l\u0026uin=486918320]\r\n\r\n\r\n\r\nDerek Lydia\u003cdkly@outlook.sg\u003e 在 2026年9月13日 周日 22:48 写道：\r\n您好！\r\n我是从网上找到你们的联系。\r\n我们是从新加坡的一家人， 有6人想预订北京往返慕田峪长城的私人包车一日游。\r\n日期：11月24日，星期一\r\n旅店地址：北京朝阳区工人体育场北路13号院2号楼3单元\r\n时间出发：0700 早上出发\r\n人数及情况：\r\n• 4位成人，其中2位老人，67岁和69岁\r\n• 1名7岁儿童\r\n• 1名3岁半儿童，\r\n请提供包车总价，并明确列出包含和不包含哪些项目，谢谢！\r\nDerek Lydia",
+                                       "邮箱":  "dkly@outlook.sg",
+                                       "询盘日期":  "2026-09-14T08:54:04.000+08:00",
+                                       "客户名称":  "Derek Lydia",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cSEZPR01MB47570C63C88BDE96A21A6E14B3BB2@SEZPR01MB4757.apcprd01.prod.exchangelabs.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5WxIo",
+                        "fields":  {
+                                       "需求要点":  "主题：(无主题)\nОтправлено с iPhone Здравствуйте, ищем экскурсию в Шанхае18 сентября2026 года для троих. Нужен русскоязычный гид. Хотим посетить Shanghai Tower, храм Нефритового Будды, сад Юйюань, набережную Бунда и вечерний круиз по реке Хуанпу. Можете, пожалуйста, предложить как приватный, так и групповой вариант с похожим маршрутом? Для обоих вариантов уточните, пожалуйста, есть ли русскоязычный гид18 сентября, общая стоимость для троих, какие достопримечательности и круиз включены, время начала и окончания, есть ли трансфер из отеля? Спасибо!»",
+                                       "邮箱":  "nata.berdnikova@icloud.com",
+                                       "询盘日期":  "2026-09-16T10:39:13.000+08:00",
+                                       "客户名称":  "Наталья Бердникова",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c8058A352-1F7C-4AFA-9C05-3183E280E3DD@icloud.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5Tms0",
+                        "fields":  {
+                                       "需求要点":  "主题：🚗 New Inquiry: Alice — China Wonder Cars\nNew Inquiry from China Wonder Cars\r\n\r\nCustomer: Alice\r\nEmail: 148407335@qq.com\r\nWhatsApp: +8613564053414\r\nEst. Price: TBD\r\n\r\nAI Inquiry\r\nName: Alice\r\nEmail: 148407335@qq.com\r\nWhatsApp: +8613564053414\r\nPickup: N/A\r\nDestination: N/A\r\nDate: N/A\r\nPassengers: N/A\r\nLuggage: N/A\r\nVehicle: N/A\r\nEst. Price: TBD\r\n\r\n--- Chat History ---\r\nCustomer: Chengdu Panda Base tour\r\nWonder (AI): A must-visit in Chengdu! Our Chengdu Panda Base tour starts at $119, including a professional driver, fuel, tolls, and parking. This is a reference price. Final confirmed within 2 hours. When would you like to travel?\r\nCustomer: Oct 01\r\nWonder (AI): October 1st is a national holiday in China, so there might be a 20-30% peak season surcharge. For the Chengdu Panda Base tour on Oct 1st, the estimated price would be around $143-$153. How many passengers will be joining the tour?\r\nCustomer: 5\r\nWonder (AI): For 5 passengers, I recommend a 7-seat MPV (Buick GL8) for a comfortable ride. The estimated price for the Chengdu Panda Base tour on Oct 1st would be around $143-$153. Where should we pick you up in Chengdu? Hotel name or address, please?\r\nCustomer: hotel\r\nWonder (AI): We\u0027ll pick you up at your hotel in Chengdu. What\u0027s the hotel name, please? Also, what time works best for you to start the tour?\r\n--- End Chat History ---",
+                                       "邮箱":  "booking@chinawondercars.com",
+                                       "询盘日期":  "2026-09-19T17:15:51.000+08:00",
+                                       "客户名称":  "China Wonder Cars",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c010001a0baaacfe9-81f270fb-b763-49ad-8b5e-2f44acda08d2-000000@email.amazonses.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5UaKW",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Shanghai tour\nThank you Alice, I will get in touch, nearer the time.\r\n\r\nIf English guide is excluded how much would the price?\r\n\r\n\r\nOn Sunday, September 20, 2026, China Wonder Tou \u003c\r\nbooking@chinawondertours.com\u003e wrote:\r\n\r\n\u003e Dear Vijay,\r\n\u003e Thank you for your interest. We would be delighted to arrange your 4-day\r\n\u003e private Shanghai tour.\r\n\u003e *Tour Package — 4 Days / 3 Nights, 2 People*\r\n\u003e *Total price: RMB 10,500* (approx. GBP 1,150 / USD 1,450)\r\n\u003e *Includes:*\r\n\u003e *●*3 nights at a centrally located 3-star hotel (breakfast included)\r\n\u003e *●*Airport pickup from Pudong (Sep 15) and drop-off (Sep 18)\r\n\u003e *●*Private car + English-speaking guide for all 4 days\r\n\u003e *●*Entrance tickets to major attractions\r\n\u003e *●*All vehicle costs, fuel, tolls, and parking\r\n\u003e *Proposed Itinerary:*\r\n\u003e *●**Day 1 (Sep 15):* Arrive at PVG → transfer to hotel → relax, evening\r\n\u003e walk on the Bund (airport transfer only, no guide)\r\n\u003e *●**Day 2 (Sep 16):* The Bund → Yu Garden \u0026 Bazaar → City God Temple →\r\n\u003e Shanghai Tower skydeck → French Concession walk (guided tour with tour\r\n\u003e guide and driver)\r\n\u003e *●**Day 3 (Sep 17):* Zhujiajiao Water Town (full day) or Shanghai Museum\r\n\u003e + Nanjing Road (guided tour with tour guide and driver)\r\n\u003e *●**Day 4 (Sep 18):* Morning at leisure → transfer to PVG for your\r\n\u003e departure to Sydney (airport transfer only, no guide)\r\n\u003e *Not included:* lunches and dinners (guide will recommend local\r\n\u003e restaurants), personal expenses, and tips for the driver/guide.\r\n\u003e\r\n\u003e\r\n\u003e\r\n\u003e\r\n\u003e Vijayalakshmi V\u003cvijinjagu@gmail.com\u003e 在 2026年9月20日 周日 16:38 写道：\r\n\u003e\r\n\u003e Hello,\r\n\u003e\r\n\u003e I am interested in booking a 4-day/3-night private Shanghai tour for 2\r\n\u003e people.\r\n\u003e\r\n\u003e Details:\r\n\u003e\r\n\u003e • Arrival from London: 15 September 2027 at Shanghai Pudong Airport (PVG)\r\n\u003e\r\n\u003e • Departure: 18 September 2027 to Sydney\r\n\u003e\r\n\u003e  • 2 people • 3-star hotel, preferably centrally located\r\n\u003e\r\n\u003e  • Airport pickup and drop-off required\r\n\u003e\r\n\u003e  • Private vehicle and English-speaking guide\r\n\u003e\r\n\u003e  • Sightseeing covering the main Shanghai attractions\r\n\u003e",
+                                       "邮箱":  "vijinjagu@gmail.com",
+                                       "询盘日期":  "2026-09-21T08:43:36.000+08:00",
+                                       "客户名称":  "Vijayalakshmi V",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cCAKCzOSnorCXhLSnPqiKxE4UaZTBd2EYiZiF0RvuFb+QFp4e09Q@mail.gmail.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5VIDr",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Shanghai tour\nIt is mentioned that English speaking guide on all 4 days but iternery says\r\nno guide on day 2 \u0026 4.\r\n\r\n\r\nOn Sunday, September 20, 2026, China Wonder Tou \u003c\r\nbooking@chinawondertours.com\u003e wrote:\r\n\r\n\u003e Dear Vijay,\r\n\u003e Thank you for your interest. We would be delighted to arrange your 4-day\r\n\u003e private Shanghai tour.\r\n\u003e *Tour Package — 4 Days / 3 Nights, 2 People*\r\n\u003e *Total price: RMB 10,500* (approx. GBP 1,150 / USD 1,450)\r\n\u003e *Includes:*\r\n\u003e *●*3 nights at a centrally located 3-star hotel (breakfast included)\r\n\u003e *●*Airport pickup from Pudong (Sep 15) and drop-off (Sep 18)\r\n\u003e *●*Private car + English-speaking guide for all 4 days\r\n\u003e *●*Entrance tickets to major attractions\r\n\u003e *●*All vehicle costs, fuel, tolls, and parking\r\n\u003e *Proposed Itinerary:*\r\n\u003e *●**Day 1 (Sep 15):* Arrive at PVG → transfer to hotel → relax, evening\r\n\u003e walk on the Bund (airport transfer only, no guide)\r\n\u003e *●**Day 2 (Sep 16):* The Bund → Yu Garden \u0026 Bazaar → City God Temple →\r\n\u003e Shanghai Tower skydeck → French Concession walk (guided tour with tour\r\n\u003e guide and driver)\r\n\u003e *●**Day 3 (Sep 17):* Zhujiajiao Water Town (full day) or Shanghai Museum\r\n\u003e + Nanjing Road (guided tour with tour guide and driver)\r\n\u003e *●**Day 4 (Sep 18):* Morning at leisure → transfer to PVG for your\r\n\u003e departure to Sydney (airport transfer only, no guide)\r\n\u003e *Not included:* lunches and dinners (guide will recommend local\r\n\u003e restaurants), personal expenses, and tips for the driver/guide.\r\n\u003e\r\n\u003e\r\n\u003e\r\n\u003e\r\n\u003e Vijayalakshmi V\u003cvijinjagu@gmail.com\u003e 在 2026年9月20日 周日 16:38 写道：\r\n\u003e\r\n\u003e Hello,\r\n\u003e\r\n\u003e I am interested in booking a 4-day/3-night private Shanghai tour for 2\r\n\u003e people.\r\n\u003e\r\n\u003e Details:\r\n\u003e\r\n\u003e • Arrival from London: 15 September 2027 at Shanghai Pudong Airport (PVG)\r\n\u003e\r\n\u003e • Departure: 18 September 2027 to Sydney\r\n\u003e\r\n\u003e  • 2 people • 3-star hotel, preferably centrally located\r\n\u003e\r\n\u003e  • Airport pickup and drop-off required\r\n\u003e\r\n\u003e  • Private vehicle and English-speaking guide\r\n\u003e\r\n\u003e  • Sightseeing covering the main Shanghai attractions\r\n\u003e\r\n\u003e Please se",
+                                       "邮箱":  "vijinjagu@gmail.com",
+                                       "询盘日期":  "2026-09-21T08:47:16.000+08:00",
+                                       "客户名称":  "Vijayalakshmi V",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cCAKCzOS=-DOokQuii2uM6cy1vFMsVs4n3rCM5MKm6eU+Q_JPJDg@mail.gmail.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5Vp70",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Re: Private Driver / Buick GL8 – Beijing, Gubei, Jinshanling – 18–19 October 2026\nDear Alice,\r\n\r\nThank you very much for your kind offer. We really appreciate your\r\nflexibility and are happy to accept the package price of RMB 3,000 for all\r\nthree transfers.\r\n\r\nYour proposed itinerary looks excellent.\r\n\r\nEverything confirmed as outlined in your email.\r\n\r\nPlease send us the booking confirmation and your preferred payment details\r\nfor the RMB 1,500 deposit. We would prefer to pay via Alipay or PayPal if\r\npossible.\r\n\r\nWe look forward to travelling with China Wonder Tours.\r\n\r\nKind regards,\r\nOliver Kruse\r\n\r\n\r\nAm Mi., 23. Sept. 2026 um 18:28 Uhr schrieb China Wonder Tou \u003c\r\nbooking@chinawondertours.com\u003e:\r\n\r\n\u003e Dear Mr. Kruse,\r\n\u003e Thank you for your prompt feedback.\r\n\u003e We are pleased to offer a package rate of RMB 3,000 for the three\r\n\u003e transfers - meaning that the extra transfer from train station to the hotel\r\n\u003e will only cost an additional RMB 100 on top of previous quotaion.\r\n\u003e I believe this is a very competitive offer.\r\n\u003e ------------------------------\r\n\u003e *Itinerary \u0026 Price:*\r\n\u003e *16 October 2026*\r\n\u003e *●**Driver will holds a signboard to meet and greet guests at the train\r\n\u003e station exit*\r\n\u003e *●**Pick up guest from Beijing West Railway Station at 4:32 PM (train\r\n\u003e G354 from Xi\u0027an North)*\r\n\u003e *●*Transfer for *3 adults with luggage* to *Mandarin Oriental Wangfujing,\r\n\u003e Beijing*\r\n\u003e\r\n\u003e *18 October 2026*\r\n\u003e *●*Pick-up at *Mandarin Oriental Wangfujing, Beijing*, at approximately *1:00–2:00\r\n\u003e PM*\r\n\u003e *●*Transfer to *Royal Hot Spring Boutique Hotel, Gubei Water Town /\r\n\u003e Simatai*\r\n\u003e *●*Drop-off at the hotel\r\n\u003e\r\n\u003e *19 October 2026*\r\n\u003e *●*Pick-up at *Royal Hot Spring Boutique Hotel* at approximately *8:00 AM*\r\n\u003e *●*Drive to *Jinshanling Great Wall*\r\n\u003e *●*Driver waits with your luggage while you visit/hike the Great Wall for\r\n\u003e approximately *3–4 hours*\r\n\u003e *●*Afterwards, transfer directly to *Summer Palace Hotel (formerly Aman\r\n\u003e at Summer Palace), Beijing*\r\n\u003e *●*Expected arrival at approximately *4:30–5:00 PM*\r\n\u003e\r\n\u003e *Vehicle:* Buick GL8 (7-seater premium MPV), clea",
+                                       "邮箱":  "okruse@web.de",
+                                       "询盘日期":  "2026-09-23T18:43:50.000+08:00",
+                                       "客户名称":  "Oliver Kruse",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cCAFESmR9sQ4Mo6tJkbba5eUXGr4znkD2X8kLbj7tkMJr0OSsf_w@mail.gmail.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5VSKr",
+                        "fields":  {
+                                       "需求要点":  "主题：New CITY Enquiry - Pier Angelo Oberti\nNew booking enquiry from [chinawondercars.com](http://chinawondercars.com):\n\nName: Pier Angelo Oberti\nEmail: [pierooberti@gmail.com](mailto:pierooberti@gmail.com)\nWhatsApp/WeChat: N/A\nCity: N/A\nDate: 2026-10-24\nPassengers: 6\nService: CITY\nEst. Price: $148 - $281\n\nMessage: Need to be pick-up at Louyang Longmen rail station and taken to Longmen Grottoes and back to rail station",
+                                       "邮箱":  "booking@chinawondercars.com",
+                                       "询盘日期":  "2026-09-23T19:25:51.000+08:00",
+                                       "客户名称":  "Pier Angelo Oberti",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c010001a0cfbb4274-66e82c6b-c5ec-44b4-a91a-f87e0e664308-000000@email.amazonses.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5TZ5M",
+                        "fields":  {
+                                       "需求要点":  "主题：New CITY Enquiry - Pier Angelo Oberti\nNew booking enquiry from [chinawondercars.com](http://chinawondercars.com):\n\nName: Pier Angelo Oberti\nEmail: [pierooberti@gmail.com](mailto:pierooberti@gmail.com)\nWhatsApp/WeChat: N/A\nCity: N/A\nDate: 2026-10-24\nPassengers: 6\nService: CITY\nEst. Price: $148 - $281\n\nMessage: Need to be pick-up at Louyang Longmen rail station and taken to Longmen Grottoes and back to rail station",
+                                       "邮箱":  "booking@chinawondercars.com",
+                                       "询盘日期":  "2026-09-23T19:25:54.000+08:00",
+                                       "客户名称":  "China Wonder Cars",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c010001a0cfbb4f3d-a3fb5022-7c46-46d7-8e10-bbf8645e2011-000000@email.amazonses.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5UN1Y",
+                        "fields":  {
+                                       "需求要点":  "主题：New CITY Enquiry - Pier Angelo Oberti\nNew booking enquiry from [chinawondercars.com](http://chinawondercars.com):\n\nName: Pier Angelo Oberti\nEmail: [pierooberti@gmail.com](mailto:pierooberti@gmail.com)\nWhatsApp/WeChat: N/A\nCity: N/A\nDate: 2026-10-24\nPassengers: 6\nService: CITY\nEst. Price: $148 - $281\n\nMessage: Need to be pick-up at Louyang Longmen rail station and taken to Longmen Grottoes and back to rail station",
+                                       "邮箱":  "booking@chinawondercars.com",
+                                       "询盘日期":  "2026-09-23T19:25:51.000+08:00",
+                                       "客户名称":  "China Wonder Cars",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c010001a0cfbb4274-66e82c6b-c5ec-44b4-a91a-f87e0e664308-000000@email.amazonses.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5TtL8",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Private Mutianyu Great Wall Tour\nThanks Alice. This sounds great. We are staying at the Palace Garden Hotel.\r\nDo you also offer walking city tours?\r\nCheers,\r\nMelissa\r\n\r\n\r\n\u003e On 24 Sep 2026, at 1:04 am, China Wonder Tou \u003cbooking@chinawondertours.com\u003e wrote:\r\n\u003e \r\n\u003e Dear Melissa,\r\n\u003e Thank you for your inquiry and for the recommendation! We would be happy to arrange a private car for your Mutianyu Great Wall tour.\r\n\u003e \r\n\u003e Service Details:\r\n\u003e Item\tDetails\r\n\u003e Date\tOctober 15, 2026\r\n\u003e Passengers\t2 adults\r\n\u003e Pick-up\tYour hotel in north Beijing\r\n\u003e Drop-off\tSame hotel\r\n\u003e Vehicle\t5-seater sedan (VW Passat / Toyota Camry or similar)\r\n\u003e Price: RMB 880 (fixed, all-inclusive)\r\n\u003e Included:\r\n\u003e ●\r\n\u003e Private car with driver\r\n\u003e ●\r\n\u003e Hotel pick-up and drop-off\r\n\u003e ●\r\n\u003e Fuel, highway tolls, parking fees\r\n\u003e ●\r\n\u003e Waiting time while you visit the Great Wall\r\n\u003e \r\n\u003e Payment:\r\n\u003e ●\r\n\u003e 50% deposit to confirm booking \r\n\u003e ●\r\n\u003e Balance due on the service day\r\n\u003e ●\r\n\u003e Accepted methods: WeChat / Alipay / PayPal\r\n\u003e \r\n\u003e The driver\u0027s name, license plate number, and WhatsApp contact will be provided one day prior to the tour.\r\n\u003e Could you please share your hotel name and address so that we can confirm the exact pick-up time?\r\n\u003e Best regards,\r\n\u003e Alice Li\r\n\u003e China Wonder Tours\r\n\u003e WhatsApp: +86 15347723823\r\n\u003e booking@chinawondertours.com \u003cmailto:booking@chinawondertours.com\u003e\r\n\u003e \r\n\u003e \r\n\u003e \r\n\u003e \r\n\u003e Melissa Tomiczek\u003cmtomiczek@icloud.com\u003e 在 2026年9月23日 周三 18:09 写道：\r\n\u003e Hello, I was interested in booking a private tour of the Mutianyu Great Wall. We are staying in a hotel in the north of Beijing. What would be the cost of pick up, tour and then drop off back to the hotel for 2 people on October 15th?\r\n\u003e Your tour was recommended by a friend!\r\n\u003e Many thanks, \r\n\u003e Melissa\r\n\u003e \r\n\u003e \r\n\u003e Sent from my iPad",
+                                       "邮箱":  "mtomiczek@icloud.com",
+                                       "询盘日期":  "2026-09-24T07:54:38.000+08:00",
+                                       "客户名称":  "Melissa Tomiczek",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c9974843A-60D3-4D4C-A683-EF1721EE6C82@icloud.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5ULJE",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Transfer Service \u0026 All-Inclusive Price Enquiry – Kunming, Dali \u0026 Lijiang\nDear\u0026nbsp;Chananya,\r\n\r\n\r\nI confirm that the driver we provide is English speaking who can converse comfortably with guests\r\n\r\n\r\n\r\n---Original---\r\nFrom: \"Chananya Phataraprasit\"\u003cchananya@phataraprasit.com\u0026gt;\r\nDate: Thu, Sep 24, 2026 22:24 PM\r\nTo: \"China Wonder Tou\"\u003cbooking@chinawondertours.com\u0026gt;;\r\nCc: \"Nattha Leelakajonkit\"\u003cnattha@phatara8.com\u0026gt;;\r\nSubject: Re: Transfer Service \u0026amp; All-Inclusive Price Enquiry – Kunming, Dali \u0026amp; Lijiang\r\n\r\n\r\n\r\nDear Alice,\r\n\r\n\r\n\r\n\r\nThank you for your response to my assistant, Nattha. I would like to confirm that when you said English speaking driver, this means the driver himself/herself can converse comfortably in English,\u0026nbsp;rather than just having English-speaking support available from the office. Or support through WhatsApp.\r\n\r\nPlease kindly let me know.\r\n\r\n\r\n\r\n\r\nThank you,\r\n\r\n\r\n\r\n\r\nChananya\u0026nbsp;\r\n\r\n\r\n\r\nOn 23 Sep 2026, at 22:02, China Wonder Tou \u003cbooking@chinawondertours.com\u0026gt; wrote:\r\n\r\n\r\n﻿\r\nDear Nattha,\r\nThank you for your inquiry. Please find the quotation below.\r\n\r\n1. Kunming Airport → Dali\r\n●Date: October 10th, 2026  \r\n●Flight: TG 612  \r\n●BKK–KMG: 10:45–14:00  \r\n●Destination: Cenglin Hotel, Dali  \r\n●Distance: 340 km, 4–5 hours  \r\n●Quotation: RMB 1,900\r\n\r\n2. Dali → Lijiang\r\n●Date: October 12th, 2026  \r\n●Destination: Amandayan, Lijiang  \r\n●Distance: 180 km, 2.5 hours  \r\n●Quotation: RMB 1,600\r\n\r\nPackage price for both transfers: RMB 3,500\r\n\r\nIncluded:\r\n●Comfortable private vehicle (7-seater business van – Buick GL8 or similar premium MPV)\r\n●English-speaking driver\r\n●Fuel, highway tolls, and parking fees\r\n●Pick-up and drop-off waiting\r\n●Flight monitoring for arrival\r\n●Flexible sightseeing stops along the way (within reasonable time)\r\n●Driver allowance\r\n\r\n\r\n\r\n\r\n\r\n\r\nBest regards,\r\n\r\n\r\n Alice Li\r\n China Wonder Tours\r\n WhatsApp +86 15347723823\r\n booking@chinawondertours.com\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n                    Nattha Leelakajonkit\u003cnattha@phatara8.com\u0026gt;\u0026nbsp;在 周三,  9月 23, 2026, 下午 5:25 写道：\r\n\r\n\r\nDear China Wo",
+                                       "邮箱":  "booking@chinawondertours.com",
+                                       "询盘日期":  "2026-09-24T23:10:01.000+08:00",
+                                       "客户名称":  "China Wonder Tou",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003ctencent_5B89B1AE636112016783AAA4@qq.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5XD61",
+                        "fields":  {
+                                       "需求要点":  "主题：Car service\nHello. I need a private chauffeur and a comfortable premium sedan for one passenger in Beijing on Friday, 2 October 2026.\r\n\r\nMy flight CA184 arrives at Beijing Capital Airport (PEK) at 11:20. My route is PEK → Tiananmen Square (afternoon reservation) → Mutianyu Great Wall (late-afternoon/night ticket) → optional dinner if time permits → PEK. My onward flight CA845 departs at 02:50 on Saturday, 3 October. I would like to be back at PEK by approximately 23:30 on Friday.\r\n\r\nPlease quote an Audi A6L or Mercedes E-Class and, separately, a Mercedes S-Class. I need the same car and driver throughout the trip, including waiting during both visits.\r\n\r\nPlease give me one fixed total price including all hours, kilometres, waiting time, fuel, tolls, parking, taxes and any holiday or night surcharge. Please also confirm availability, the exact car model, cancellation terms, the PEK meeting point, and how I can contact the driver throughout the day. No guide is needed.\r\n\r\nThank you.\r\n\r\n\r\nCinto Ajram\r\n\r\nFounder \u0026 CEO\r\n\r\nCA Sports Marketing\r\na\r\nAv. Diagonal 575, 11th floor, 08029 Barcelona\r\nw\r\nwww.casportsmkt.com\u003chttp://www.casportsmkt.com/\u003e\r\n\r\n[Imagen]\r\n\r\n\r\n\r\n\r\nCinto AjramCEOCA Sports MarketingaAv. Diagonal, 575, Escalera 2, 11ª Planta - CC L\u0027Illa, 08029, Barcelonaw\r\nwww.casportsmarketing.com\u0026quot;Mi horario de trabajo puede no coincidir con el tuyo. Por favor, no te sientas en la obligaci\u0026oacute;n de responder a este email fuera de tu horario laboral habitual\u0026quot;.PROTECCI\u0026Oacute;N DE DATOS\r\nEn cumplimiento de la normativa de protecci\u0026oacute;n de datos (RGPD y la LOPDPGDD),le informamos que sus datos personales han sido incorporados a una Base de Datos titularidad de CA SPORTS MARKETING S.L. con las finalidades de mantener relaciones profesionales y/o comerciales conforme a la pol\u0026iacute;tica de privacidad y el inter\u0026eacute;s leg\u0026iacute;timo de CA SPORTS MARKETING S.L. Puede ejercer sus derechos a trav\u0026eacute;s de esta direcci\u0026oacute;n rgpd@casportsmarketing.com o directamente d",
+                                       "邮箱":  "cinto.ajram@casportsmarketing.com",
+                                       "询盘日期":  "2026-09-28T08:43:18.000+08:00",
+                                       "客户名称":  "Cinto Ajram",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cDB8PR05MB6762FBFDE2552DAB064C6755EE8D2@DB8PR05MB6762.eurprd05.prod.outlook.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5UFku",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Private Shanghai Tours – 31 December 2026 to 2 January 2027 – 4/5 Guests\nHello,\r\n\r\nI am writing to update the dates of the private Shanghai itinerary I\r\npreviously requested, as our overall China trip has now shifted by three\r\ndays.\r\n\r\nWe will now be in Shanghai from *3 January to 5 January 2027*.\r\n\r\nWe are *4 travellers: 3 adults and one 17-year-old*, and I would also\r\nappreciate a separate quotation for *5 travellers*.\r\n\r\nOur updated schedule is:\r\n\r\n*3 January 2027*\r\nWe arrive at *Shanghai Hongqiao Airport at 11:45* from Xi’an.\r\n\r\nWe would like:\r\n\r\n   - private airport transfer to our hotel;\r\n   - approximately 4-hour private afternoon/evening tour covering Old\r\n   Shanghai, traditional neighbourhoods and the Bund;\r\n   - hotel drop-off afterwards.\r\n\r\nWe would prefer a cultural/local neighbourhood experience rather than a\r\nfixed food tour, as one member of our group is gluten intolerant.\r\n\r\n*4 January 2027*\r\nFull-day private tour including:\r\n\r\n   - Zhujiajiao Water Town;\r\n   - traditional/private canal boat ride;\r\n   - Yu Garden and Yuyuan area;\r\n   - private vehicle, English-speaking guide and hotel pickup/drop-off.\r\n\r\nIn the evening, we would also like a private tour/walk through the *Former\r\nFrench Concession and Xintiandi*.\r\n\r\n*5 January 2027*\r\nPrivate hotel transfer to *Shanghai Hongqiao Airport* for our flight\r\ndeparting at *13:35* to Hong Kong.\r\n\r\nFor all sightseeing we would like a private English-speaking guide,\r\nprofessional driver/private vehicle where appropriate, all entrance tickets\r\nand reservations, bottled water and no shopping stops.\r\n\r\nWe prefer to arrange lunches and dinners separately.\r\n\r\nCould you please provide:\r\n\r\n   - price for 4 travellers;\r\n   - separate price for 5 travellers;\r\n   - your best package price for all services together;\r\n   - exact inclusions/exclusions;\r\n   - vehicle type;\r\n   - payment and cancellation terms.\r\n\r\nThank you very much.\r\n\r\nKind regards,\r\nPierfrancesco Landers\r\n\r\nIl giorno ven 2 ott 2026 alle ore 16:07 Pier Francesco Landers \u003c\r\nchiccolanders@gmail.com\u003e ha scritto:\r\n\r\n\u003e Hello,\r\n\u003e\r\n\u003e ",
+                                       "邮箱":  "chiccolanders@gmail.com",
+                                       "询盘日期":  "2026-10-02T22:37:17.000+08:00",
+                                       "客户名称":  "Pier Francesco Landers",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cCAKEXuh7qOZ+vsCqLgxGWZmMFwn83ZOLgp=Tv_Z1kVp1SGnVqBg@mail.gmail.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5TAM7",
+                        "fields":  {
+                                       "需求要点":  "主题：Request for Quote \u0026 Availability\nDear Team,\r\n\r\nHope you are well.\r\n\r\nPlease share your availability and prices for each of the following\r\ntransfers:\r\n\r\n\r\n*Booking ID: 174765, *\r\nDate: Oct/21/2026,  Time: 8:35 PM ,\r\nPick up: KWL, MU, 6403,\r\nDrop off: Sugarhouse, 东岭路 Yangshuo County, Guilin, Guangxi, China\r\n\r\n*Vehicle Type: Black SUV (2023 or Latest)Passenger: 3no.s*\r\n\r\n*Booking ID: 176435,*\r\nDate: Oct/22/2026,  Time: 8:30 PM ,\r\nPick up: KWL, CA, 1937,\r\nDrop off: Yangshuo Sugar House Hotel - 102 Dongling Road, Yangshuo County,\r\nGuilin, Guangxi, China\r\n\r\n*Vehicle Type: Black Van (2023 or Latest)Passenger: 6no.s + Luggage*\r\n\r\n*Booking ID: 176434*\r\nDate: Oct/22/2026,  Time: 8:30 PM ,\r\nPick up: KWL, CA, 1937,\r\nDrop off: Yangshuo Sugar House Hotel - 102 Dongling Road, Yangshuo County,\r\nGuilin, Guangxi, China\r\n\r\n*Vehicle Type: Black Van (2023 or Latest)Passenger: 7no.s + Luggage*\r\n\r\n*Booking ID: 176734,*\r\nDate: Oct/23/2026,  Time: 1:20 AM ,\r\nPick up: KWL, 7C, 8611,\r\nDrop off: voco Guilin Yangshuo by IHG, Jiwo Du Village, Yangshuo County,\r\nGuilin, Guangxi, China\r\n\r\n*Vehicle Type: Black Van (2023 or Latest)Passenger: 5no.s + Luggage*\r\n\r\n*Booking ID: 175471,*\r\nDate: Oct/23/2026,  Time: 8:35 PM ,\r\nPick up: KWL, MU, 6403,\r\nDrop off: Orange Hotel Guilin Yangshuo West Street, Bilian Ln, Yangshuo\r\nCounty, Guilin, Guangxi, China\r\n\r\n*Vehicle Type: Black Van (2023 or Latest)Passenger: 7no.s + Luggage*\r\n\r\n*Booking ID: 176671, *\r\nDate: Oct/24/2026,  Time: 5:30 PM ,\r\nPick up: Sugarhouse, 东岭路 Yangshuo County, Guilin, Guangxi, China,\r\nDrop off: Hotel Banyan Tree Yangshuo - Fuli Town, Yangshuo County, Guilin,\r\nGuangxi, China\r\n\r\n*Vehicle Type: Black Van (2023 or Latest)Passenger: 15no.s*\r\n\r\n*Booking ID: 176672, *\r\nDate: Oct/24/2026,  Time: 9:30 PM ,\r\nPick up: Hotel Banyan Tree Yangshuo - Fuli Town, Yangshuo County, Guilin,\r\nGuangxi, China\r\nDrop off: Sugarhouse, 东岭路 Yangshuo County, Guilin, Guangxi, China\r\n\r\n\r\n*Vehicle Type: Black Van (2023 or Latest)Passenger: 15no.s*\r\n\r\n*Booking ID: 176463, *Date: Oct/24/2026,  Time: 11:00",
+                                       "邮箱":  "reservations@blackbirdworldwide.com",
+                                       "询盘日期":  "2026-10-02T21:26:45.000+08:00",
+                                       "客户名称":  "Reservations Blackbirdworldwide",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cCA+4Yg-XAapaWj93y-oHLt1wx88cpWewZ60QArqkwRULnJ2pm4g@mail.gmail.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5TbDd",
+                        "fields":  {
+                                       "需求要点":  "主题：Shanghai Tour Request\nHello,\r\nI am looking for a private two day tour of Shanghai. My wife and I are staying at the St Regis Hotel on West Beijing Road, Shanghai. \r\nWe would like the tour to start on Tuesday, November 3 starting around 10:00 AM. And we would like the same driver and tour guide for Wednesday, November 4th. \r\nCountry USA - English preferred\r\nPlease provide a proposed tour of sights and spots without shopping stops and the price include gratuities.\r\nThanks,Rob",
+                                       "邮箱":  "rob_hk2000@yahoo.com",
+                                       "询盘日期":  "2026-10-03T22:07:35.000+08:00",
+                                       "客户名称":  "Rob Ling",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c367454781.186758.1791065255873@mail.yahoo.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5TCv2",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: Private Car – Luoyang Marriott → Shaolin Temple, Oct 25, 2026\nOn Sun, 4 Oct 2026 at 12:34 pm, Louisa Barra \u003clouisabarra@gmail.com\u003e wrote:\r\n\r\n\u003e Hi Alice,\r\n\u003e Thank you for your reply.\r\n\u003e\r\n\u003e Please include tickets to Shaolin Temple and Kung Fu show.\r\n\u003e Also we prefer an SUV\r\n\u003e\r\n\u003e Regards\r\n\u003e Louisa\r\n\u003e\r\n\u003e On Sat, 3 Oct 2026 at 11:26 pm, China Wonder Tou \u003c\r\n\u003e booking@chinawondertours.com\u003e wrote:\r\n\u003e\r\n\u003e\u003e\r\n\u003e\u003e Dear Louisa,\r\n\u003e\u003e\r\n\u003e\u003e Thank you for your enquiry. We can arrange this private day trip from\r\n\u003e\u003e Luoyang to the Shaolin Temple.\r\n\u003e\u003e\r\n\u003e\u003e Itinerary Overview (October 25, 2026)\r\n\u003e\u003e - Pick-up: Luoyang Marriott Hotel, approximately 08:30 AM\r\n\u003e\u003e - Drive to Shaolin Temple (Dengfeng) – approximately 80 km / 1.5 hours\r\n\u003e\u003e - Visit Shaolin Temple, Pagoda Forest, and watch the Kung Fu performance\r\n\u003e\u003e - After approximately 4 hours at the site, drive back to Luoyang Marriott\r\n\u003e\u003e Hotel\r\n\u003e\u003e - Estimated return to hotel: approximately 3:30 PM\r\n\u003e\u003e\r\n\u003e\u003e Vehicle\r\n\u003e\u003e - 5 seat sedan WV Passat or similar level\r\n\u003e\u003e - Comfortable for 2 passengers with ample legroom and luggage space\r\n\u003e\u003e - Professional English-speaking driver\r\n\u003e\u003e - No shopping stops – as requested\r\n\u003e\u003e\r\n\u003e\u003e Quotation\r\n\u003e\u003e - Private vehicle and English-speaking driver: RMB 1,400\r\n\u003e\u003e\r\n\u003e\u003e The price includes:\r\n\u003e\u003e - 5 seat sedan WV Passat\r\n\u003e\u003e - English-speaking professional driver\r\n\u003e\u003e - Fuel, highway tolls, and parking fees\r\n\u003e\u003e - Waiting time during your visit\r\n\u003e\u003e - Round-trip hotel transfers\r\n\u003e\u003e\r\n\u003e\u003e Not included:\r\n\u003e\u003e - Shaolin Temple entrance tickets: approximately RMB 80 per person\r\n\u003e\u003e - Kung Fu performance tickets: approximately RMB 150 per person\r\n\u003e\u003e - Meals\r\n\u003e\u003e\r\n\u003e\u003e We can pre-book the Shaolin Temple entrance and Kung Fu performance\r\n\u003e\u003e tickets for you in advance, so you can skip the ticket queue on the day.\r\n\u003e\u003e\r\n\u003e\u003e Booking Terms\r\n\u003e\u003e - A 50% deposit (RMB 700) is required to confirm and reserve the vehicle\r\n\u003e\u003e - The remaining 50% balance can be paid in cash to the driver on the day,\r\n\u003e\u003e or via WeChat/Alipay\r\n\u003e\u003e - Free cancellation up to 48 hours before the service\r\n\u003e\u003e\r\n\u003e\u003e Please let us know if you ",
+                                       "邮箱":  "louisabarra@gmail.com",
+                                       "询盘日期":  "2026-10-05T10:50:33.000+08:00",
+                                       "客户名称":  "Louisa Barra",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cCAJHLztw0PygtcVojd7xFOCzJgbDk41+mekAwh+FCGOPvPO8RnQ@mail.gmail.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5Wbu7",
+                        "fields":  {
+                                       "需求要点":  "主题：Re: INQUIRY: Vehicle Rental for the Outbound Mission to Yunnan, China\nGood morning, China Wonder Tours.\r\n\r\nThank you for submitting your quotation. I will be informing you of the\r\ndetails since we have changes to our itinerary. Rest assured that you will\r\nbe updated as soon as the details are finalized.\r\n\r\nMany thanks.\r\n\r\nOn Fri, Oct 2, 2026 at 6:15 PM China Wonder Tou \u003c\r\nbooking@chinawondertours.com\u003e wrote:\r\n\r\n\u003e Good day,\r\n\u003e Thank you for your inquiry. We are pleased to submit our proposal for the\r\n\u003e MinDA outbound mission to Kunming, scheduled from *November 16 to 21,\r\n\u003e 2026*.\r\n\u003e ------------------------------\r\n\u003e *Fleet Configuration:*\r\n\u003e *●**3 × Executive Vans* (Buick GL8 or equivalent, non-smoking) —\r\n\u003e comfortably accommodates 6 passengers each with luggage\r\n\u003e *●**1 × Premium SUV* (Audi A6L or equivalent, non-smoking) — designated\r\n\u003e for VIP use\r\n\u003e ------------------------------\r\n\u003e *Inclusions:*\r\n\u003e *●*Private vehicle and professional driver for each vehicle, *8 hours per\r\n\u003e day*, for *6 days*\r\n\u003e *●*Airport arrival and departure transfers\r\n\u003e *●*Fuel, highway tolls, and parking fees\r\n\u003e *●*All vehicles are non-smoking, well-maintained, and insured\r\n\u003e ------------------------------\r\n\u003e *Total Package Price:*\r\n\u003e *RMB 26,800* (all-inclusive for the full 6-day program)\r\n\u003e ------------------------------\r\n\u003e *Terms:*\r\n\u003e *●**Payment:* Cash upon arrival in Kunming (as requested)\r\n\u003e *●**Overtime:* Beyond 8 hours/day — RMB 100 per hour per vehicle\r\n\u003e *●*The rate covers *Kunming city proper*; trips to outlying areas (e.g.,\r\n\u003e Stone Forest, Yulong Snow Mountain) will be quoted separately\r\n\u003e ------------------------------\r\n\u003e Please let us know if you would like to proceed or require any\r\n\u003e adjustments. We can also arrange a site inspection of the vehicles prior to\r\n\u003e the mission.\r\n\u003e Best regards,\r\n\u003e Alice\r\n\u003e China Wonder Tours\r\n\u003e\r\n\u003e\r\n\u003e\r\n\u003e\r\n\u003e Janine Concepcion\u003cjanine.concepcion@minda.gov.ph\u003e 在 2026年9月9日 周三 10:54 写道：\r\n\u003e Good day, *Supplier*.\r\n\u003e\r\n\u003e The *Mindanao Development Authority (MinDA)* will be conducting an\r\n\u003e outbound mission to *Yunnan, Chi",
+                                       "邮箱":  "janine.concepcion@minda.gov.ph",
+                                       "询盘日期":  "2026-10-05T10:55:49.000+08:00",
+                                       "客户名称":  "Janine Concepcion",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cCANxyRjGL-TNcYAjzJW5hN9CkdJRkDXbqmx94eTGb5qkfdCYb2Q@mail.gmail.com\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5UYMs",
+                        "fields":  {
+                                       "需求要点":  "主题：11月4日的包车服务\n\u003chtml\u003e\n\u003chead\u003e\n    \u003cstyle\u003e\n        p{margin-top:0;margin-bottom:0}\n    \u003c/style\u003e\n\u003c/head\u003e\n\u003cbody\u003e\n    \u003cdiv style=\"font-size:11pt; font-family:Baekmuk Dotum,Undotum,Apple Gothic,Latin font,sans-serif;line-height:1.5;\"\u003e\u003cp\u003e\u0026#24744;\u0026#22909;\u0026#65292;\u0026#25105;\u0026#24819;\u0026#21672;\u0026#35810;11\u0026#26376;4\u0026#26085;\u0026#30340;\u0026#21253;\u0026#36710;\u0026#26381;\u0026#21153;\u0026#12290;\u003cbr\u003e\u003cbr\u003e\n\u0026#25105;\u0026#20204;\u0026#19968;\u0026#20849;8\u0026#20154;\u0026#65292;\u0026#27599;\u0026#20154;\u0026#19968;\u0026#20010;20\u0026#8211;24\u0026#33521;\u0026#23544;\u0026#30340;\u0026#34892;\u0026#26446;\u0026#31665;\u0026#12290;\u003cbr\u003e\u003cbr\u003e\n\u0026#34892;\u0026#31243;\u0026#22914;\u0026#19979;\u0026#65306; 14:11 \u0026#21040;\u0026#36798;\u0026#26118;\u0026#26126;\u0026#21335;\u0026#31449;\u0026#21518;\u0026#25509;\u0026#31449; \u0026#8594; \u0026#21069;\u0026#24448;\u0026#30707;\u0026#26519;\u0026#39118;\u0026#26223;\u0026#21306; \u0026#8594; \u0026#28216;\u0026#35272;\u0026#30707;\u0026#26519;\u0026#32422;2.5\u0026#23567;\u0026#26102; \u0026#8594; \u0026#26202;\u0026#39184; \u0026#8594; \u0026#21069;\u0026#24448;\u0026#26118;\u0026#26126;\u0026#38271;\u0026#27700;\u0026#22269;\u0026#38469;\u0026#26426;\u0026#22330;\u003cbr\u003e\u003cbr\u003e\n\u0026#25105;\u0026#20204;\u0026#30340;\u0026#33322;\u0026#29677;\u0026#26159;\u0026#24403;\u0026#22825;23:55\u0026#20174;\u0026#26118;\u0026#26126;\u0026#39134;\u0026#24448;\u0026#38889;\u0026#22269;\u0026#12290;\u003cbr\u003e\u003cbr\u003e\n\u0026#35831;\u0026#26681;\u0026#25454;\u0026#25105;\u0026#20204;8\u0026#20154;\u0026#21644;8\u0026#20010;\u0026#34892;\u0026#26446;\u0026#31665;\u0026#30340;\u0026#24773;\u0026#20917;\u0026#65292;\u0026#23433;\u0026#25490;\u0026#21512;\u0026#36866;\u0026#30340;\u0026#36710;\u0026#36742;\u0026#65292;\u0026#24182;\u0026#35831;\u0026#21578;\u0026#30693;\u0026#20197;\u0026#19978;\u0026#20840;\u0026#31243;\u0026#21253;\u0026#36710;\u0026#30340;\u0026#20215;\u0026#26684;\u0026#12290;\u003cbr\u003e\u003cbr\u003e\n\u0026#35831;\u0026#38382;\u0026#36153;\u0026#29992;\u0026#26159;\u0026#21542;\u0026#21253;\u0026#25324;\u0026#21496;\u0026#26426;\u0026#12289;\u0026#27833;\u0026#36153;\u0026#12289;\u0026#36807;\u0026#36335;\u0026#36153;\u0026#21644;\u0026#20572;\u0026#36710;\u0026#36153;\u0026#65311;\u003cbr\u003e\n\u0026#35874;\u0026#35874;\u0026#65281;\u003cbr\u003e\u003cbr\u003e\u003cbr\u003e\n\u003ca href=\"https://mail.daum.net/hanmailex/LinkMailAppSignature.daum?via=mail_sign\"\u003eDaum \u0026#47700;\u0026#51068;\u0026#50545;\u003c/a\u003e\u0026#50640;\u0026#49436; \u0026#48372;\u0026#45256;\u0026#49845;\u0026#45768;\u0026#45796;.\u003cbr\u003e\u003cbr\u003e\n\u003c/p\u003e\u003c/div\u003e \n\u003c/body\u003e\n\u003c/html\u003e\n\u003cimg src=\"https://confirm.mail.daum.net/confirmapi/v1/users/sungkyusong%40hanmail%2Enet/cmails/20261005145220%2E8ArgvvnqT4OKrG-aMeNAlg%40sungkyusong%2Ehanmail%2Enet/recipients/booking%40chinawondertours%2Ecom\"\u003e",
+                                       "邮箱":  "7377337@paran.com",
+                                       "询盘日期":  "2026-10-05T14:52:20.000+08:00",
+                                       "客户名称":  "sungkyusong",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c20261005145220.8ArgvvnqT4OKrG-aMeNAlg@sungkyusong.hanmail.net\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5WXmG",
+                        "fields":  {
+                                       "需求要点":  "主题：RE: 11月2日的包车服务\np{margin-top:0;margin-bottom:0} \u0026#8203; \u0026#24863;\u0026#35874;\u0026#24744;\u0026#30340;\u0026#24555;\u0026#36895;\u0026#22238;\u0026#22797;\u0026#65292;\u0026#25105;\u0026#36824;\u0026#26377;\u0026#19968;\u0026#20010;\u0026#35831;\u0026#27714;\u0026#12290; \u0026#35831;\u0026#24171;\u0026#24537;\u0026#38928;\u0026#35330;\u0026#19968;\u0026#36635;9\u0026#24231;\u0026#21253;\u0026#36554;\u0026#65288;8\u0026#20301;\u0026#20056;\u0026#23458;\u0026#65292;\u0026#27794;\u0026#26377;\u0026#34892;\u0026#26446;\u0026#65289;\u0026#65292;\u0026#21253;\u0026#21547;\u0026#21496;\u0026#27231;\u0026#12289;\u0026#27833;\u0026#36027;\u0026#12289;\u0026#36942;\u0026#36335;\u0026#36027;\u0026#21644;\u0026#20572;\u0026#36554;\u0026#36027;\u0026#12290;\u0026#34892;\u0026#31243;\u0026#65306;\u0026#40599;\u0026#27743;\u0026#37202;\u0026#24215; \u0026#10132; \u0026#33590;\u0026#39340;\u0026#23458;\u0026#26632; \u0026#10132; \u0026#20013;\u0026#36884;\u0026#23458;\u0026#26632; \u0026#10132; \u0026#34382;\u0026#36339;\u0026#23777;\u0026#65288;\u0026#19978;\u0026#34382;\u0026#36339;\u0026#65289; \u0026#10132; \u0026#36820;\u0026#22238;\u0026#40599;\u0026#27743;\u0026#37202;\u0026#24215;\u0026#12290;\u0026#35531;\u0026#21839;\u0026#20840;\u0026#21253;\u0026#19968;\u0026#26085;\u0026#36938;\u0026#19968;\u0026#20849;\u0026#22810;\u0026#23569;\u0026#37666;\u0026#65311; Daum \u0026#47700;\u0026#51068;\u0026#50545; \u0026#50640;\u0026#49436; \u0026#48372;\u0026#45256;\u0026#49845;\u0026#45768;\u0026#45796;. --------- 원본 메일 --------- 보낸사람:China Wonder Tou \u0026lt;booking@chinawondertours.com\u0026gt; 받는사람:sungkyusong \u0026lt;7377337@paran.com\u0026gt; 날짜:Mon Oct 05 15:19:56 GMT+09:00 2026 제목:回复：11月4日的包车服务 .qmbox p{margin-top:0;margin-bottom:0;} Dear Daum Thank you for your inquiry. Here is recommend car and quotation Private car cost is RMB 1400 9 seater spacious van Fix price, no additional charge including car, driver, toll, fuel, parking, pick up, drop off, waiting Photo below sungkyusong \u0026lt;7377337@paran.com\u0026gt; \u0026nbsp;在 2026年10月5日 周一 13:52 写道： 您好，我想咨询11月4日的包车服务。 我们一共8人，每人一个20–24英寸的行李箱。 行程如下： 14:11 到达昆明南站后接站 → 前往石林风景区 → 游览石林约2.5小时 → 晚餐 → 前往昆明长水国际机场 我们的航班是当天23:55从昆明飞往韩国。 请根据我们8人和8个行李箱的情况，安排合适的车辆，并请告知以上全程包车的价格。 请问费用是否包括司机、油费、过路费和停车费？ 谢谢！ Daum 메일앱 에서 보냈습니다.",
+                                       "邮箱":  "7377337@paran.com",
+                                       "询盘日期":  "2026-10-05T15:29:07.000+08:00",
+                                       "客户名称":  "sungkyusong",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c20261005152907.tN7A6oQUSlqDuAU4drlk2w@sungkyusong.hanmail.net\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5TBV4",
+                        "fields":  {
+                                       "需求要点":  "主题：RE: 回复：RE: 11月2日的包车服务\np{margin-top:0;margin-bottom:0} Thanks. Will confirm to you in a few days upon discussion with my team. By the way, any discount? One more question. Can you please book the Jade Dragon Snow Mountain cable car tickets for 8 people? Regards, Daum \u0026#47700;\u0026#51068;\u0026#50545; \u0026#50640;\u0026#49436; \u0026#48372;\u0026#45256;\u0026#49845;\u0026#45768;\u0026#45796;. --------- 원본 메일 --------- 보낸사람:China Wonder Tou \u0026lt;booking@chinawondertours.com\u0026gt; 받는사람:sungkyusong \u0026lt;7377337@paran.com\u0026gt; 날짜:Mon Oct 05 15:52:19 GMT+09:00 2026 제목:回复：RE: 11月2日的包车服务 .qmbox p{margin-top:0;margin-bottom:0;} .qmbox .qmbox p{margin-top:0;margin-bottom:0;} Dear\u0026nbsp; Daum 一輛9座包車（8位乘客，沒有行李），包含司機、油費、過路費和停車費。行程：麗江酒店 ➔ 茶馬客栈 ➔ 中途客栈 ➔ 虎跳峡（上虎跳） ➔ 返回麗江酒店。請問全包一日遊一共多少錢？ Here is the quotation for One Day Excursion to Tiger Leaping Gorge from Lijiang, it is same price is for Kunming Private car cost is RMB 1400 9 seater van Fix price, no additional charge including car, driver, toll, fuel, parking, pick up, drop off, waiting sungkyusong \u0026lt;7377337@paran.com\u0026gt; \u0026nbsp;在 2026年10月5日 周一 14:29 写道： 感谢您的快速回复，我还有一个请求。 请幫忙預訂一輛9座包車（8位乘客，沒有行李），包含司機、油費、過路費和停車費。行程：麗江酒店 ➔ 茶馬客栈 ➔ 中途客栈 ➔ 虎跳峡（上虎跳） ➔ 返回麗江酒店。請問全包一日遊一共多少錢？ Daum 메일앱 에서 보냈습니다. --------- 원본 메일 --------- 보낸사람:China Wonder Tou \u0026lt;booking@chinawondertours.com\u0026gt; 받는사람:sungkyusong \u0026lt;7377337@paran.com\u0026gt; 날짜:Mon Oct 05 15:19:56 GMT+09:00 2026 제목:回复：11月4日的包车服务 Dear Daum Thank you for your inquiry. Here is recommend car and quotation Private car cost is RMB 1400 9 seater spacious van Fix price, no additional charge including car, driver, toll, fuel, parking, pick up, drop off, waiting Photo below sungkyusong \u0026lt;7377337@paran.com\u0026gt; \u0026nbsp;在 2026年10月5日 周一 13:52 写道： 您好，我想咨询11月4日的包车服务。 我们一共8人，每人一个20–24英寸的行李箱。 行程如下： 14:11 到达昆明南站后接站 → 前往石林风景区 → 游览石林约2.5小时 → 晚餐 → 前往昆明长水国际机场 我们的航班是当天23:55从昆明飞往韩国。 请根据我们8人和8个行李箱的情况，安排合适的车辆，并请告知以上全程包车的价格。 请问费用是否包括司机、油费、过路费和停车费？ 谢谢！ Daum 메일앱 에서 보냈습니다.",
+                                       "邮箱":  "7377337@paran.com",
+                                       "询盘日期":  "2026-10-05T15:58:01.000+08:00",
+                                       "客户名称":  "sungkyusong",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003c20261005155801.qJiT5_GNR-CPvKjeF-GdZQ@sungkyusong.hanmail.net\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JkRr5WSYK",
+                        "fields":  {
+                                       "需求要点":  "主题：Shanghai Shore Excursion – November 3–4, 2027\nDear Alice,\r\nThank you very much for your detailed proposal and for the excellent work you have put into preparing the two-day Shanghai programme for us.\r\nWe particularly appreciated the attention you gave to our request for an easy walking pace, minimal stairs, comfortable private transportation and sufficient safety margin for our return to the Noordam.\r\nYour proposal is very attractive, and we also appreciate the inclusion of the two lunches, gratuities and the clear full-refund arrangement in case our ship is unable to call at Shanghai.\r\nUnfortunately, because we received your proposal somewhat later, in the meantime we had already finalised our arrangements with another local tour company and have now also made the payment for those tours.\r\nFor that reason, we will not proceed with a second booking for November 3 and 4, 2027.\r\nThis is certainly not a reflection on your proposal, which we found professional, comprehensive and very well adapted to our needs.\r\nWe will keep your contact details and proposal with our travel documents in case our arrangements should change in the future.\r\nThank you again for your time and effort, and we wish you all the best.\r\nWarm regards,\r\nMarc \u0026 Carine\r\n\r\n\r\nVan: China Wonder Tou \u003cbooking@chinawondertours.com\u003e\r\nVerzonden: maandag 5 oktober 2026 13:31\r\nAan: Marc Bocxstael \u003cMarc.bocxstael@outlook.com\u003e\r\nOnderwerp: 回复：Follow-up – Private Shanghai Shore Excursion – Noordam – November 3–4, 2027\r\n\r\nDear Marc \u0026 Carine,\r\n\r\nThank you for the inquiry! So sorry for late reply as we were having a busy last two weeks preparing for trips during our public holiday.\r\n\r\nWe are delighted to present the following private two-day shore programme for your call in Shanghai aboard Holland America Line\u0027s Noordam.\r\n\r\nYour programme at a glance\r\n●  Private car with driver + private English-speaking tour guide, same team for both days\r\n●  Direct pickup at Wusongkou International Cruise Terminal after disembarkation on Nov 3; return to the ship on Nov 4 with a",
+                                       "邮箱":  "Marc.bocxstael@outlook.com",
+                                       "询盘日期":  "2026-10-05T12:23:51.000+08:00",
+                                       "客户名称":  "Marc Bocxstael",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "自动同步自邮箱（Message-ID: \u003cVI1P194MB0591A35030843216570D643396962@VI1P194MB0591.EURP194.PROD.OUTLOOK.COM\u003e）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28Jl3Q7nKW6",
+                        "fields":  {
+                                       "服务日期":  "2026-10-19",
+                                       "需求要点":  "07:00 酒店接，4人+4辆自行车+大行李箱，需确认合适车型与总价",
+                                       "人数":  4,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "PVG送机询盘（4人+4自行车）",
+                                       "国家/地区":  "未提供",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  700,
+                                       "备注":  "建议大9座长轴高顶（V90/全顺同级）后排折叠装自行车；若自行车可折叠可降级7座GL8；报价含司机/油/过路/停车，定金30%",
+                                       "城市/线路":  "上海→PVG 送机（JI Hotel Xujiahui→浦东机场）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JlNaThV6u",
+                        "fields":  {
+                                       "服务日期":  "2026-10-19",
+                                       "需求要点":  "23人+行李（足球队+工作人员）；33座大巴；问总价/车型/车程/是否含司机油费路桥停车/机场等待/行李容量/附加费/接机服务",
+                                       "人数":  23,
+                                       "询盘日期":  "2026-10-05T00:00:00.000+08:00",
+                                       "客户名称":  "KMG→丽江 23人足球队（机场大巴询盘）",
+                                       "国家/地区":  "未提供",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  3800,
+                                       "备注":  "33座金龙/宇通同级；车程约5.5-6h（经大理高速）；全包含司机/油/路桥/停车/机场等待1.5h+举牌接机；单程含返空成本；建议口径待老板确认",
+                                       "城市/线路":  "昆明→丽江（KMG机场→丽江）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JllJg4OYk",
+                        "fields":  {
+                                       "服务日期":  "待确认",
+                                       "需求要点":  "北京酒店接送 → 古北水镇 + 司马台长城一日游，约13-14小时（09:00出发，约22:30返程）；仅需车+司机，要求英文司机，3人；门票自理；需确认行程可行、总价、是否超时费、车型。",
+                                       "人数":  3,
+                                       "询盘日期":  "2026-10-05T09:00:00.000+08:00",
+                                       "WhatsApp 号码":  "+54 9 3462 21-6589",
+                                       "客户名称":  "Jesica",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  1500,
+                                       "备注":  "建议报价 RMB 1,500（7座商务车+英文司机全包，13-14h，含油费/路桥/停车）待老板确认",
+                                       "城市/线路":  "北京 → 古北水镇/司马台长城",
+                                       "来源渠道":  [
+                                                    "WhatsApp"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JmbKOTGx4",
+                        "fields":  {
+                                       "需求要点":  "四段服务：①10/20 北京大兴接机（CZ356 HKG→PKX 16:55）送市区酒店；②10/21 北京金山岭长城一日（08:00酒店接，游览约5h，返酒店）；③10/23 西安兵马俑+送机（08:00喜来登接，行李留车，送XIY，航班9C8948 17:30）；④10/23 上海虹桥接机（SHA 19:55到）送市区酒店。仅需车+司机，无导游，2人。两段接机需举牌接机。",
+                                       "询盘日期":  "2026-10-05T17:10:00.000+08:00",
+                                       "邮箱":  "mariansommer@icloud.com",
+                                       "服务日期":  "2026-10-20 ~ 10-23",
+                                       "备注":  "最终确认 RMB 3,000 四项全包（大兴接机+金山岭一日+西安兵马俑送机+虹桥接机）；西安日司机当天灵活安排（午餐/加景点/回酒店自定），确保15:30-16:00抵XIY；两段接机举牌接机；付款方式 PayPal（付款链接待发）；确认件发 mariansommer@icloud.com；48小时前免费取消",
+                                       "客户名称":  "Marian",
+                                       "沟通记录":  [
+                                                    {
+                                                        "id":  "reczz28KAdeF11E7"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeExMkq"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeExgYx"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeF0gZH"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeF0FnV"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEylr0"
+                                                    }
+                                                ],
+                                       "人数":  2,
+                                       "成交金额":  3000,
+                                       "来源渠道":  [
+                                                    "WhatsApp"
+                                                ],
+                                       "报价金额":  3000,
+                                       "状态":  [
+                                                  "已确认"
+                                              ],
+                                       "WhatsApp 号码":  "+49 176 72830023",
+                                       "城市/线路":  "北京（大兴/金山岭）+ 西安 + 上海（虹桥）",
+                                       "AI 回复草稿":  "Dear Marian,\n\nThank you for confirming your booking with China Wonder Tours! We are pleased to confirm the following arrangements.\n\nBOOKING CONFIRMATION — RMB 3,000 (fixed, all-inclusive)\n\n1. 20 October 2026 – Beijing Airport Pickup\n- Flight: China Southern CZ356, Hong Kong (HKG) 13:40 to Beijing Daxing (PKX) 16:55\n- Private transfer to your hotel\n- Driver will meet you at arrivals holding a sign with your name\n- Vehicle: 5-seater sedan with driver\n\n2. 21 October 2026 – Jinshanling Great Wall (full day)\n- 08:00 pickup from your hotel in Beijing\n- Transfer to Jinshanling Great Wall, driver waits while you visit/hike approx. 5 hours\n- Return to your hotel\n\n3. 23 October 2026 – Xi\u0027an (Terracotta Warriors + airport transfer)\n- 08:00 pickup from Sheraton Xi\u0027an North City Hotel with luggage\n- Visit the Terracotta Warriors; driver waits with your luggage\n- Flexible itinerary afterwards (lunch, another sight, or return to the hotel - decided on the day with the driver)\n- Arrive at Xi\u0027an Xianyang Airport (XIY) around 15:30-16:00 for Spring Airlines 9C8948 departing 17:30\n\n4. 23 October 2026 – Shanghai Airport Pickup\n- Flight: Spring Airlines 9C8948, Xi\u0027an (XIY T5) 17:30 to Shanghai Hongqiao (SHA T1) 19:55\n- Private transfer to your hotel\n- Driver will meet you at arrivals holding a sign with your name\n\nINCLUDED: private vehicle (5-seater sedan) with professional driver for all four services, airport meet-and-greet with name sign, pickup \u0026 drop-off, fuel, highway tolls, parking, waiting time and driver allowance.\n\nNOT INCLUDED: attraction entrance tickets, meals, personal expenses.\n\nTOTAL PRICE: RMB 3,000 - fixed, all-inclusive, no additional charges.\n\nPAYMENT: PayPal. The payment link will be sent to you separately.\n\nCANCELLATION: Free cancellation up to 48 hours before the first service (20 October). No refund within 48 hours of the service.\n\nThe driver\u0027s name, license plate number and WhatsApp contact will be provided one day before each service.\n\nThank you for choosing China Wonder Tours. We look forward to welcoming you!\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nWhatsApp: +86 15347723823\nbooking@chinawondertours.com"
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JmthyhP2p",
+                        "fields":  {
+                                       "服务日期":  "2026-11-12 ~ 11-18",
+                                       "需求要点":  "上海4程7座商务MPV接送：①11/12 PVG T1接机（MU568 21:35）→静安假日酒店；②11/15 静安假日→外滩华尔道夫（约12:00）；③11/17 华尔道夫→迪士尼玩具总动员酒店（暂定06:15，按迪士尼开园时间可免费调整）；④11/18 玩具总动员→PVG T2（08:45接，CX317 12:50）。2大人+3岁+9个月婴儿，两个儿童座椅均客人自备（Doona+3岁座椅），行李3行李箱+3背包+折叠婴儿车。",
+                                       "人数":  4,
+                                       "询盘日期":  "2026-10-05T18:30:00.000+08:00",
+                                       "客户名称":  "David",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  1950,
+                                       "沟通记录":  [
+                                                    {
+                                                        "id":  "reczz28KAdeExhK3"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeF0Jip"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEyT8v"
+                                                    }
+                                                ],
+                                       "备注":  "总价 RMB 1,950 全包（已去掉原儿童座椅400元，座椅由客人自备，供应商不提供）；接机含落地后90分钟免费等待，超时100/小时；提前48h外取消定金全退；支付宝/微信/PayPal可付。",
+                                       "城市/线路":  "上海（浦东机场/静安/外滩/迪士尼）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JnNXM0k56",
+                        "fields":  {
+                                       "服务日期":  "2027-01-03 ~ 2027-01-05",
+                                       "需求要点":  "Private Shanghai 3-day tour, 4 travellers (3 adults + 1 age 17), also asking separate price for 5 travellers. Jan 3: arrive SHA Hongqiao 11:45 from Xi\u0027an, private airport transfer to hotel + approx 4h afternoon/evening tour (Old Shanghai, traditional neighbourhoods, Bund) + hotel drop-off; prefer cultural/local experience, NOT food tour (one guest gluten intolerant). Jan 4: full-day tour - Zhujiajiao Water Town + private canal boat, Yu Garden \u0026 Yuyuan area, hotel pickup/drop-off; evening private walk through Former French Concession \u0026 Xintiandi. Jan 5: private transfer to SHA Hongqiao airport for 13:35 flight to Hong Kong. Wants private English-speaking guide, professional driver/private vehicle, all entrance tickets \u0026 reservations, bottled water, NO shopping stops. Meals separate. Asked: price for 4, price for 5, best package price, inclusions/exclusions, vehicle type, payment \u0026 cancellation terms.",
+                                       "人数":  4,
+                                       "邮箱":  "chiccolanders@gmail.com",
+                                       "询盘日期":  "2026-10-05T20:30:00.000+08:00",
+                                       "客户名称":  "Pierfrancesco Landers",
+                                       "AI 回复草稿":  "Dear Mr. Landers,\n\nThank you so much for reaching out to China Wonder Tours with your detailed tour inquiry for your Shanghai trip, we really appreciate you sharing all the specifics of your travel plans with us.\n\nWe’re happy to confirm that we can fully accommodate the private 3-day Shanghai itinerary you outlined: this includes your January 3 arrival transfer from SHA Hongqiao, the multi-day sightseeing covering Zhujiajiao Water Town, Yu Garden, the Bund, Former French Concession and Xintiandi, your January 5 departure transfer to SHA Hongqiao, and all your preferences including no shopping stops, gluten intolerance related requirements, and a focus on local cultural rather than food-focused experiences. As standard for all our private tours, we provide private English-speaking guides, professional drivers and private vehicles, and we can also assist with arranging all required entrance tickets and reservations for your listed attractions.\n\nTo help our team prepare the most accurate and tailored information for you, could you please share one small additional detail with us: the exact name and address of the hotel you will be staying at during your time in Shanghai? This will help us finalize the logistics for all your pickup and drop-off arrangements smoothly.\n\nPlease note that our team will follow up separately with all the details you requested: pricing for both 4 and 5 travellers, package inclusions and exclusions, available vehicle types, and our payment and cancellation terms, as soon as we have the above detail from you.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com",
+                                       "备注":  "原询盘为 12/31-1/2，已改期至 1/3-1/5；另询 5 人价格；1 名成员麸质不耐受，午餐晚餐自理",
+                                       "城市/线路":  "上海 3 日私游（含朱家角/豫园/外滩/法租界）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28JxO8U2CAD",
+                        "fields":  {
+
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K7rSejFHs",
+                        "fields":  {
+                                       "需求要点":  "10/20 北京慕田峪长城+古北水镇一日（原箭扣+慕田峪+古北太赶，客人简化为慕田峪+古北）；10/25 张家界武陵源→大峡谷→芙蓉古镇→张家界市区一日游询价；5 成人，7 座",
+                                       "询盘日期":  "2026-10-06T00:00:00.000+08:00",
+                                       "邮箱":  "krizsanmaja@gmail.com",
+                                       "服务日期":  "10/20 · 10/25",
+                                       "备注":  "北京线已报 ¥1,480（GL8 全包）；张家界 10/25 新线待报价；电话 +36-20-547-81-52",
+                                       "客户名称":  "Mariann Nagy-Krizsán",
+                                       "沟通记录":  [
+                                                    {
+                                                        "id":  "reczz28KAdeF0Yxh"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeF11qN"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEzCfh"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEz6TL"
+                                                    }
+                                                ],
+                                       "人数":  5,
+                                       "国家/地区":  "匈牙利",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ],
+                                       "报价金额":  1480,
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "城市/线路":  "北京 · 张家界",
+                                       "AI 回复草稿":  "Dear Ms. Mariann Nagy-Krizsán,\n\nThank you so much for reaching out to China Wonder Tours with your travel inquiry, we have received all your details clearly.\n\nWe are happy to confirm that we can accommodate the two private day tour itineraries you outlined: the October 20th Mutianyu Great Wall + Gubei Water Town day tour in Beijing, and the October 25th day tour covering Wulingyuan, Grand Canyon, and Furong Ancient Town returning to downtown Zhangjiajie, for your group of 5 adults with a 7-seat vehicle.\n\nTo help us prepare a suitable tailored arrangement for you, could you please share a few additional key details:\n1.  Your exact pickup locations for both days (e.g. the name and address of your hotel in Beijing, and your starting point in Zhangjiajie for the October 25th tour)\n2.  Any relevant flight details if applicable, for your arrival into Beijing and transfer between Beijing and Zhangjiajie if you have already booked those segments?\n\nAs part of our standard private tour service, we provide professional English-speaking local guides, fully licensed and insured private vehicles with experienced local drivers, and can also assist with arranging any required entrance tickets for attractions during your trips.\n\nPlease note that full pricing will be confirmed separately by our dedicated tour team once we have the above details to finalize your custom itinerary. Feel free to share any other special requests or preferences you may have as well.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com"
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K7rSegSlZ",
+                        "fields":  {
+                                       "服务日期":  "11/13",
+                                       "需求要点":  "11/13 09:30 芙蓉古镇接→天门山游览约4h（行李留车）→16:00 送武陵源标志门附近酒店；4 人 4 登机箱",
+                                       "人数":  4,
+                                       "AI 回复草稿":  "Subject: Reply to Your Zhangjiajie Private Tour Inquiry\nDear Matias,\n\nThank you so much for reaching out to China Wonder Tours with your travel inquiry, we have received your request in full and greatly appreciate you sharing the initial details for your planned Zhangjiajie trip.\n\nWe are happy to confirm that the itinerary you outlined – picking you up at Furong Ancient Town at 09:30 on November 13th, visiting Tianmen Mountain for approximately 4 hours with your luggage stored safely in the vehicle, then dropping you off at the hotel near Wulingyuan Sign Gate at 16:00 for a group of 4 people with 4 carry-on suitcases – is fully within our service scope for private chauffeured trips and custom private tours in Zhangjiajie.\n\nTo help us prepare the most accurate and tailored arrangement for you, could you please kindly share one small additional key detail with us: the exact flight number (and arrival time if applicable) associated with your trip, to ensure we align our pickup and transfer timings perfectly with your travel schedule?\n\nAs a standard part of our private travel services, we provide dedicated English-speaking private guides, fully equipped comfortable private cars with experienced local drivers, and we can also assist with arranging all necessary attraction entrance tickets for your Tianmen Mountain visit to save you the hassle of booking separately. Please note that specific pricing for your custom arrangement will be confirmed separately by our dedicated team once we finalize all trip details.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com",
+                                       "询盘日期":  "2026-10-06T00:00:00.000+08:00",
+                                       "客户名称":  "Matias",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "报价金额":  1200,
+                                       "备注":  "建议 7 座 MPV ¥1,200 / 5 座 SUV ¥1,000（待老板确认）；英文报价草稿已给；天门山门票不含",
+                                       "城市/线路":  "张家界（芙蓉镇→天门山→武陵源）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K7rSejMrb",
+                        "fields":  {
+                                       "需求要点":  "PEK→慕田峪→PEK 包车询价（印尼语）",
+                                       "AI 回复草稿":  "Subject: Thank you for your inquiry about private transfer to Mutianyu Great Wall\nDear valued customer,\n\nThank you so much for reaching out to China Wonder Tours about your private car service inquiry from Beijing Capital International Airport (PEK) to Mutianyu Great Wall and back to PEK, we have received your request clearly.\n\nWe are happy to confirm that this private chauffeured transfer route is fully within our service scope, and we can fully support this one-day private travel arrangement for you. For your reference, our company provides full private travel services including English-speaking private guides, comfortable private vehicles with professional drivers, and we can also assist with arranging any required attraction tickets for your trip.\n\nTo help us prepare a tailored arrangement that fits your needs perfectly, could you please share a few more key details with us at your convenience? These include:\n1. Your specific planned travel date for this trip\n2. The total number of passengers in your group\n3. Your exact pickup time and specific terminal/meeting point at PEK, as well as your return flight details on the day of travel\n\nPlease note that our dedicated team will follow up with you separately once we have these details to share the relevant arrangement information, and no pricing is quoted at this stage.\n\nFeel free to reach out if you have any other questions in the meantime.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com",
+                                       "询盘日期":  "2026-10-06T00:00:00.000+08:00",
+                                       "WhatsApp 号码":  "+62 812-8321-4340",
+                                       "客户名称":  "印尼客户（WhatsApp 慕田峪询价）",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "备注":  "印尼语询盘；建议 5 座 ¥850 / 7 座 ¥1,200（待确认后回复）",
+                                       "城市/线路":  "北京 · 慕田峪",
+                                       "来源渠道":  [
+                                                    "WhatsApp"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K7rSejNyz",
+                        "fields":  {
+                                       "服务日期":  "12/3",
+                                       "需求要点":  "12/3 05:15 抵 PEK；06:30 接→天坛→故宫→后海胡同；22:00 送机场（00:25 国际航班）；2 成人+6 岁女儿；英语导游至晚餐前",
+                                       "人数":  3,
+                                       "AI 回复草稿":  "Subject: Re: Inquiry for Private Beijing Tour on December 3rd\n\nDear Valued Customer,\n\nThank you so much for reaching out to China Wonder Tours with your private travel inquiry for Beijing, we confirm we have received all your initial details clearly.\n\nWe are happy to confirm that your requested itinerary for December 3rd – arriving at PEK airport at 05:15, pickup at 06:30, visiting the Temple of Heaven, Forbidden City and Houhai Hutong, transfer back to the airport for your 00:25 international flight at 22:00, with an English-speaking guide through to dinner time for your party of 2 adults and a 6-year-old daughter – is fully within our service scope, and we are able to arrange this private experience for you.\n\nTo allow our team to prepare the most tailored arrangement for your family, could you please kindly share one additional key detail with us: the exact terminal of your arrival flight at PEK on 3rd December, to ensure our driver and guide meet you at the correct point smoothly?\n\nAs part of our standard private tour offerings, we will provide a dedicated English-speaking guide, a private chauffeured vehicle suited for your family group, and can also assist with arranging any required attraction tickets for your listed sites as part of your seamless day. Please note that full pricing for this arrangement will be confirmed separately by our dedicated team once we finalize all details with you.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com",
+                                       "询盘日期":  "2026-10-06T00:00:00.000+08:00",
+                                       "客户名称":  "北京 12/3 家庭团（2 成人+6 岁）",
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "报价金额":  2800,
+                                       "备注":  "车 5 座 ¥1,600 / 7 座 ¥2,000 + 导 ¥1,200；天坛→故宫→后海顺序；免费儿童座椅；打包价 ¥2,700 待拍板；故宫天坛门票另计",
+                                       "城市/线路":  "北京（天坛·故宫·后海胡同）",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K7rSeh04h",
+                        "fields":  {
+                                       "服务日期":  "10/12-19",
+                                       "需求要点":  "6 项私人接送：10/12 桂林西→阳朔；10/14 阳朔→桂林西（原 KWL 机场改）；10/14 丽江接机（祥鹏 18:30）；10/16 丽江→虎跳峡→香格里拉（行李留车）；10/18 大兴接机；10/19 慕田峪往返",
+                                       "人数":  2,
+                                       "AI 回复草稿":  "Hi Roland,\n\nThank you so much for reaching out to China Wonder Tours with your inquiry, we have received your request for private transfer services across Guilin, Yangshuo, Lijiang and Beijing clearly.\n\nWe are able to support all 6 of the private transfer routes you outlined: the 10/12 transfer from Guilin West Railway Station to Yangshuo, the 10/14 transfer from Yangshuo to Guilin West Railway Station (adjusted from the original KWL airport pickup), the 10/14 18:30 Lijiang airport pickup for your Lucky Airlines flight, the 10/16 Lijiang to Tiger Leaping Gorge to Shangri-La transfer with luggage storage in the vehicle, the 10/18 Daxing Airport pickup, and the 10/19 round-trip transfer to Mutianyu Great Wall.\n\nTo help us prepare a fully tailored arrangement for your party of 2, could you please share a couple of additional details with us? Specifically, the exact hotel or specific pickup address for your stay in Yangshuo, your exact hotel or drop-off address for Shangri-La, and your exact hotel or pickup location in Beijing for the Mutianyu round-trip transfer.\n\nAs part of our private travel services, we provide private English-speaking guides, fully licensed private cars and professional drivers, and we can also assist with arranging any required attraction, transport or entry tickets for your itinerary as needed. Pricing will be confirmed separately by our dedicated team once we have the full details of your arrangement.\n\nPlease feel free to share any extra requests or adjustments you may have at your convenience.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com",
+                                       "询盘日期":  "2026-10-06T00:00:00.000+08:00",
+                                       "客户名称":  "Roland（桂林/丽江/北京 6 项接送）",
+                                       "状态":  [
+                                                  "已确认"
+                                              ],
+                                       "沟通记录":  [
+                                                    {
+                                                        "id":  "reczz28KAdeEzbXd"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEygUD"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeF0MCL"
+                                                    }
+                                                ],
+                                       "备注":  "10/14 变更无额外费用；丽江航班改祥鹏 18:30；已录入 elite-fleet（6 单 x2610...roland）；变更确认邮件草稿已给",
+                                       "城市/线路":  "桂林 · 阳朔 · 丽江 · 北京",
+                                       "来源渠道":  [
+                                                    "Email"
+                                                ]
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K843HpQOu",
+                        "fields":  {
+
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K9s296WJe",
+                        "fields":  {
+                                       "下次跟进日期":  "2026-10-07T10:00:00.000+08:00",
+                                       "询盘日期":  "2026-10-06T00:00:00.000+08:00",
+                                       "邮箱":  "esutanty@yahoo.com",
+                                       "备注":  "客户未署名、未提供人数与酒店；待确认人数后发送报价（人数 5-6 优先推 7 座 ¥1,000，毛利 40%）；门票代购实报实销无利润；10 月佛塔线海拔 4200m 受天气影响",
+                                       "客户名称":  "Tan Elly Marina Sutanty",
+                                       "沟通记录":  [
+                                                    {
+                                                        "id":  "reczz28KAdeEySY0"
+                                                    },
+                                                    {
+                                                        "id":  "reczz28KAdeEzIUB"
+                                                    }
+                                                ],
+                                       "需求要点":  "香格里拉往返巴拉格宗一日包车：大峡谷/巴拉村/香巴拉佛塔三景点；问价格、门票与景区观光车是否含；09:00 出发、景区内 4 小时；5 座 ¥700 / 7 座 ¥1,000 整团全包（含司机油费过路停车等待）；门票 170/人 + 佛塔线 75/人另计",
+                                       "来源渠道":  [
+                                                    "WhatsApp"
+                                                ],
+                                       "报价金额":  700,
+                                       "状态":  [
+                                                  "已报价"
+                                              ],
+                                       "WhatsApp 号码":  "+62 821-6534-5701",
+                                       "城市/线路":  "香格里拉→巴拉格宗一日游（大峡谷/巴拉村/香巴拉佛塔）",
+                                       "AI 回复草稿":  "Subject: Re: Inquiry for Shangri-La to Balagezong Private Day Tour\n\nDear Customer,\n\nThank you so much for reaching out to China Wonder Tours with your inquiry for a private day tour from Shangri-La to Balagezong, and we confirm we have received your request clearly.\n\nWe understand that you are looking for a private charter service for a one-day trip covering three key spots: the Grand Canyon, Bala Village, and the Xiangbala Pagoda, with a 09:00 departure and a 4-hour stay inside the scenic area, and you are asking about inclusions such as ticket fees and scenic area shuttle bus costs. We are pleased to confirm that this private day tour route and itinerary you outlined is fully feasible for us to arrange.\n\nTo help our team prepare the most accurate, tailored arrangement for you, could you please kindly share a couple of key missing details with us at your earliest convenience? These include your exact planned travel date, and the total number of passengers in your travel party.\n\nFor your reference, our private tour service includes dedicated English-speaking guides, private chauffeured vehicles, and we can also assist with arranging all necessary entrance tickets and scenic area transport for you as needed. Please note that formal pricing will be confirmed separately by our dedicated team once we have the above details to finalize your arrangement.\n\nShould you have any other questions in the meantime, feel free to let us know anytime.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\n[booking@chinawondertours.com](mailto:booking@chinawondertours.com)"
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28K9urZRHJT",
+                        "fields":  {
+
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28KBTFhdVhd",
+                        "fields":  {
+                                       "Receipt 状态":  [
+                                                          "未生成"
+                                                      ],
+                                       "需求要点":  "服务日期 2026-11-15；航班 LH720；到达 14:30；酒店 Grand Hyatt Beijing；3 天；时长 full day",
+                                       "询盘日期":  "2026-10-07T00:03:29.000+08:00",
+                                       "邮箱":  "peter.schmidt@example.com",
+                                       "服务日期":  "2026-11-15",
+                                       "备注":  "官网表单来源：chinawondertours.net | 原始：{\"ts\": \"2026-10-06T16:03:29.898Z\", \"source\": \"chinawondertours.net\", \"path\": \"/api/enquiry\", \"ua\": \"curl/8.13.0\", \"ip\": \"240e:b8f:875f:5600:18d8:e84a:ac31:7463\", \"name\": \"Peter Schmidt\", \"email\": \"peter.schmidt@example.com\", \"whatsapp\": \"+49 171 2345678\", \"date\": \"2026-11-15\", \"passengers\": 2, \"cities\": \"Beijing\", \"hotel\": \"Grand Hyatt Beijing\", \"flightNo\": \"LH720\", \"arrivalTime\": \"14:30\", \"days\": 3, \"duration\": \"full day\"}",
+                                       "Voucher 状态":  [
+                                                          "未生成"
+                                                      ],
+                                       "客户名称":  "Peter Schmidt",
+                                       "人数":  2,
+                                       "来源渠道":  [
+                                                    "其他"
+                                                ],
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "WhatsApp 号码":  "+49 171 2345678",
+                                       "城市/线路":  "Beijing",
+                                       "AI 回复草稿":  "Subject: Re: Your Inquiry for Beijing Private Travel Services on 2026-11-15\nDear Mr. Schmidt,\nThank you so much for reaching out to China Wonder Tours with your Beijing travel inquiry – we confirm we have received your request and are delighted to assist you with planning your upcoming trip.\n\nWe note that you are looking for services in Beijing on 2026-11-15, arriving on flight LH720 at 14:30, staying at the Grand Hyatt Beijing, for a 3-day full-day service period for a party of 2. To help us prepare the most suitable tailored arrangement for you, could you please kindly clarify one key detail for us: specifically, whether you require the 3 days of full-day private services to start from your arrival date of November 15, or if you have a specific end date for your 3-day travel period in Beijing?\n\nFor your reference, our private travel arrangements include dedicated English-speaking guides, comfortable private vehicles with professional local drivers, and we can also assist with booking any attraction or activity tickets you may need during your trip. Please note that all pricing will be confirmed separately by our team once we finalize all your travel details.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com"
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28KBTFhbGLG",
+                        "fields":  {
+                                       "Receipt 状态":  [
+                                                          "未生成"
+                                                      ],
+                                       "需求要点":  "服务日期 2026-12-01",
+                                       "询盘日期":  "2026-10-07T00:03:31.000+08:00",
+                                       "邮箱":  "maria@example.com",
+                                       "服务日期":  "2026-12-01",
+                                       "备注":  "官网表单来源：elitetravel4u.com | 原始：{\"ts\": \"2026-10-06T16:03:31.433Z\", \"source\": \"elitetravel4u.com\", \"path\": \"/api/enquiry\", \"ua\": \"curl/8.13.0\", \"ip\": \"240e:b8f:875f:5600:18d8:e84a:ac31:7463\", \"name\": \"Maria Lopez\", \"email\": \"maria@example.com\", \"date\": \"2026-12-01\", \"passengers\": 4, \"fromCity\": \"Shanghai\", \"toCity\": \"Suzhou\", \"airportCity\": \"PVG\"}",
+                                       "Voucher 状态":  [
+                                                          "未生成"
+                                                      ],
+                                       "客户名称":  "Maria Lopez",
+                                       "人数":  4,
+                                       "来源渠道":  [
+                                                    "其他"
+                                                ],
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "城市/线路":  "Shanghai → Suzhou → PVG",
+                                       "AI 回复草稿":  "Hi Maria,\n\nThank you so much for reaching out to China Wonder Tours! We’re thrilled to confirm we’ve received your inquiry for travel arrangements between Shanghai, Suzhou and PVG (Pudong International Airport) on December 1, 2026 for a group of 4.\n\nFirst, we want to confirm that this type of multi-stop private travel arrangement is absolutely well within our service scope, and we can fully support this itinerary for you and your party. To make sure we can put together the most tailored, seamless arrangement for your group, could you please share a few more key details with us at your convenience?\n- Your exact planned pickup location (e.g. a specific hotel in Shanghai, or other address you will be starting your trip from)\n- Any specific timing preferences for your departure from Shanghai, and your planned timing for arriving at Suzhou as part of the journey\n- The flight number for your departure/arrival at PVG airport, so we can align the drop-off timing perfectly with your schedule\n\nJust a quick note that all our private travel services include English-speaking local guides, fully licensed private cars with professional, experienced drivers, and we can also assist with booking any attraction tickets you may need during your time in Suzhou if you require that support.\n\nOnce we receive those additional details, our dedicated team will follow up with you separately with all relevant information for your trip.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com"
+                                   }
+                    },
+                    {
+                        "recordId":  "reczz28KO8dwbk5H",
+                        "fields":  {
+                                       "Receipt 状态":  [
+                                                          "未生成"
+                                                      ],
+                                       "需求要点":  "2 人。约 11:30 落地 PEK，13:00 出发，8-10 小时行程：长城 + 市区几处，结束送回机场。缺：服务日期、回程航班、行李数。",
+                                       "Voucher 状态":  [
+                                                          "未生成"
+                                                      ],
+                                       "AI 回复草稿":  "Subject: Reply to Your Inquiry for Beijing Mutianyu Great Wall + City Private Tour\n\nDear Customer,\n\nThank you so much for reaching out to China Wonder Tours with your tour inquiry! We have received your request clearly and are happy to confirm that the itinerary you described – starting from PEK Airport, visiting the Mutianyu Great Wall plus city sites including the Bird\u0027s Nest and Water Cube, followed by a drop-off back to PEK Airport, over an 8-10 hour duration for 2 passengers – is fully within our service scope.\n\nTo help us prepare a tailored arrangement that fits your needs perfectly, could you please share a few more key details with us at your earliest convenience?\n1.  The specific service date you plan to take this tour\n2.  Your return flight number after the tour\n3.  The approximate number of pieces of luggage you will be carrying\n\nAs part of our standard private tour offerings, we provide professional private English-speaking guides, fully insured private vehicles with experienced local drivers, and can also assist with arranging all required entrance tickets for the attractions on your route. Please note that formal pricing will be confirmed separately by our dedicated team once we have all your required details.\n\nBest regards,\nAlice\nChina Wonder Tours / China Wonder Cars\nbooking@chinawondertours.com",
+                                       "询盘日期":  "2026-10-06T00:00:00.000+08:00",
+                                       "客户名称":  "待确认（PEK 机场出发 2 人）",
+                                       "状态":  [
+                                                  "新询盘"
+                                              ],
+                                       "人数":  2,
+                                       "备注":  "建议慕田峪 + 鸟巢/水立方（约 8h），可加天坛/胡同至 10h。报价 5 座 ¥1,300 / 7 座 ¥1,500 待确认后发出。",
+                                       "城市/线路":  "北京：PEK 机场出发，长城（慕田峪）+ 市区（鸟巢/水立方），8-10h，送回机场",
+                                       "来源渠道":  [
+                                                    "WhatsApp"
+                                                ]
+                                   }
+                    }
+                ],
+    "fetchedAt":  "2026-10-07 20:35:54",
+    "count":  54
+}
