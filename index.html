@@ -2830,8 +2830,8 @@ const TRADE_CITIES = [
   { tz:'Europe/Paris',  zh:'欧洲 · 巴黎 / 法兰克福', en:'Europe · Paris / Frankfurt' }
 ];
 const FX_CURRENCIES = ['USD','EUR','AED','GBP','HKD'];
-const FX_NAMES = { USD:'美元 USD', EUR:'欧元 EUR', AED:'迪拉姆 AED', GBP:'英镑 GBP', HKD:'港币 HKD' };
-const FX_DEFAULT = { USD:7.12, EUR:7.82, AED:1.94, GBP:9.12, HKD:0.91 };
+const FX_NAMES = { USD:'美元 USD', EUR:'欧元 EUR', AED:'迪拉姆 AED', GBP:'英镑 GBP', HKD:'港币 HKD', JPY:'日元 JPY', SGD:'新加坡元 SGD', MYR:'马币 MYR', THB:'泰铢 THB', IDR:'印尼盾 IDR', INR:'卢比 INR', SAR:'沙特里亚尔 SAR', AUD:'澳元 AUD', CAD:'加元 CAD', CHF:'瑞郎 CHF', KRW:'韩元 KRW', TWD:'新台币 TWD', RUB:'卢布 RUB', SEK:'克朗 SEK', NZD:'新西兰元 NZD', PHP:'比索 PHP', VND:'越南盾 VND', QAR:'卡塔尔里亚尔 QAR', KWD:'科威特第纳尔 KWD', BRL:'雷亚尔 BRL', MXN:'比索 MXN', TRY:'里拉 TRY', ZAR:'兰特 ZAR', MOP:'澳门元 MOP', EGP:'埃镑 EGP' };
+const FX_DEFAULT = { USD:7.12, EUR:7.82, AED:1.94, GBP:9.12, HKD:0.91, JPY:0.047, SGD:5.25, MYR:1.60, THB:0.20, IDR:0.00045, INR:0.085, SAR:1.90, AUD:4.60, CAD:5.20, CHF:8.10, KRW:0.0052, TWD:0.22, RUB:0.078, SEK:0.68, NZD:4.20, PHP:0.125, VND:0.00028, QAR:1.96, KWD:23.2, BRL:1.28, MXN:0.37, TRY:0.20, ZAR:0.40, MOP:0.885, EGP:0.145 };
 let fxCache = null, fxManual = null, fxClockTimer = null;
 
 function tzOffsetMin(tz){
@@ -6306,6 +6306,75 @@ const CS_LANG_KEY = 'ef_agent_lang';
 const CS_AI_KEY = 'ef_agent_ai';
 const FS_STATUS_MAP = { '新询盘':'new', '已报价':'quoted', '已确认':'won', '已收款':'won', '已完成':'won', '已取消':'lost' };
 let csLang = localStorage.getItem(CS_LANG_KEY)==='zh' ? 'zh' : 'en';
+/* ===== 客源地当地时间 + 外币报价参考（汲取外贸工具） ===== */
+const CS_COUNTRIES=[
+  {c:'CN',zh:'中国',en:'China',tz:'Asia/Shanghai',cur:'CNY',alias:['中国','china']},
+  {c:'US',zh:'美国',en:'USA',tz:'America/New_York',cur:'USD',alias:['美国','usa','united states','america','new york','纽约']},
+  {c:'USW',zh:'美国(美西)',en:'USA(PT)',tz:'America/Los_Angeles',cur:'USD',alias:['洛杉矶','san francisco','加州','california','美西']},
+  {c:'CA',zh:'加拿大',en:'Canada',tz:'America/Toronto',cur:'CAD',alias:['加拿大','canada','温哥华','多伦多']},
+  {c:'GB',zh:'英国',en:'UK',tz:'Europe/London',cur:'GBP',alias:['英国','uk','united kingdom','britain','england','london','伦敦']},
+  {c:'DE',zh:'德国',en:'Germany',tz:'Europe/Berlin',cur:'EUR',alias:['德国','germany','berlin','慕尼黑','法兰克福']},
+  {c:'FR',zh:'法国',en:'France',tz:'Europe/Paris',cur:'EUR',alias:['法国','france','paris','巴黎']},
+  {c:'ES',zh:'西班牙',en:'Spain',tz:'Europe/Madrid',cur:'EUR',alias:['西班牙','spain','madrid','barcelona','巴塞罗那']},
+  {c:'IT',zh:'意大利',en:'Italy',tz:'Europe/Rome',cur:'EUR',alias:['意大利','italy','rome','milan','米兰']},
+  {c:'NL',zh:'荷兰',en:'Netherlands',tz:'Europe/Amsterdam',cur:'EUR',alias:['荷兰','netherlands','holland','amsterdam']},
+  {c:'BE',zh:'比利时',en:'Belgium',tz:'Europe/Brussels',cur:'EUR',alias:['比利时','belgium']},
+  {c:'CH',zh:'瑞士',en:'Switzerland',tz:'Europe/Zurich',cur:'CHF',alias:['瑞士','switzerland','zurich','日内瓦']},
+  {c:'SE',zh:'瑞典',en:'Sweden',tz:'Europe/Stockholm',cur:'SEK',alias:['瑞典','sweden','stockholm','斯德哥尔摩']},
+  {c:'NO',zh:'挪威',en:'Norway',tz:'Europe/Oslo',cur:'NOK',alias:['挪威','norway','oslo','奥斯陆']},
+  {c:'DK',zh:'丹麦',en:'Denmark',tz:'Europe/Copenhagen',cur:'DKK',alias:['丹麦','denmark','copenhagen']},
+  {c:'FI',zh:'芬兰',en:'Finland',tz:'Europe/Helsinki',cur:'EUR',alias:['芬兰','finland','helsinki']},
+  {c:'PL',zh:'波兰',en:'Poland',tz:'Europe/Warsaw',cur:'PLN',alias:['波兰','poland','warsaw','华沙']},
+  {c:'CZ',zh:'捷克',en:'Czech',tz:'Europe/Prague',cur:'CZK',alias:['捷克','czech','czechia','prague','布拉格']},
+  {c:'RU',zh:'俄罗斯',en:'Russia',tz:'Europe/Moscow',cur:'RUB',alias:['俄罗斯','russia','moscow','莫斯科']},
+  {c:'TR',zh:'土耳其',en:'Turkey',tz:'Europe/Istanbul',cur:'TRY',alias:['土耳其','turkey','türkiye','istanbul','伊斯坦布尔']},
+  {c:'AE',zh:'阿联酋(迪拜)',en:'UAE(Dubai)',tz:'Asia/Dubai',cur:'AED',alias:['阿联酋','迪拜','dubai','uae','emirates','sharjah','沙迦','阿布扎比','abu dhabi']},
+  {c:'SA',zh:'沙特',en:'Saudi Arabia',tz:'Asia/Riyadh',cur:'SAR',alias:['沙特','saudi','riyadh','利雅得']},
+  {c:'QA',zh:'卡塔尔',en:'Qatar',tz:'Asia/Qatar',cur:'QAR',alias:['卡塔尔','qatar','doha','多哈']},
+  {c:'KW',zh:'科威特',en:'Kuwait',tz:'Asia/Kuwait',cur:'KWD',alias:['科威特','kuwait']},
+  {c:'OM',zh:'阿曼',en:'Oman',tz:'Asia/Muscat',cur:'OMR',alias:['阿曼','oman','muscat']},
+  {c:'IN',zh:'印度',en:'India',tz:'Asia/Kolkata',cur:'INR',alias:['印度','india','mumbai','delhi','孟买','新德里']},
+  {c:'ID',zh:'印尼',en:'Indonesia',tz:'Asia/Jakarta',cur:'IDR',alias:['印尼','印度尼西亚','indonesia','jakarta','雅加达','巴厘岛','bali']},
+  {c:'MY',zh:'马来西亚',en:'Malaysia',tz:'Asia/Kuala_Lumpur',cur:'MYR',alias:['马来西亚','malaysia','kuala lumpur','吉隆坡']},
+  {c:'SG',zh:'新加坡',en:'Singapore',tz:'Asia/Singapore',cur:'SGD',alias:['新加坡','singapore','singaporean']},
+  {c:'TH',zh:'泰国',en:'Thailand',tz:'Asia/Bangkok',cur:'THB',alias:['泰国','thailand','bangkok','曼谷','普吉']},
+  {c:'VN',zh:'越南',en:'Vietnam',tz:'Asia/Ho_Chi_Minh',cur:'VND',alias:['越南','vietnam','hanoi','河内']},
+  {c:'PH',zh:'菲律宾',en:'Philippines',tz:'Asia/Manila',cur:'PHP',alias:['菲律宾','philippines','manila','马尼拉']},
+  {c:'JP',zh:'日本',en:'Japan',tz:'Asia/Tokyo',cur:'JPY',alias:['日本','japan','tokyo','osaka','大阪','东京']},
+  {c:'KR',zh:'韩国',en:'South Korea',tz:'Asia/Seoul',cur:'KRW',alias:['韩国','south korea','korea','seoul','首尔']},
+  {c:'TW',zh:'台湾',en:'Taiwan',tz:'Asia/Taipei',cur:'TWD',alias:['台湾','taiwan','台北']},
+  {c:'HK',zh:'香港',en:'Hong Kong',tz:'Asia/Hong_Kong',cur:'HKD',alias:['香港','hong kong','hongkong']},
+  {c:'MO',zh:'澳门',en:'Macau',tz:'Asia/Macau',cur:'MOP',alias:['澳门','macau']},
+  {c:'AU',zh:'澳大利亚',en:'Australia',tz:'Australia/Sydney',cur:'AUD',alias:['澳大利亚','australia','sydney','melbourne','悉尼','墨尔本']},
+  {c:'NZ',zh:'新西兰',en:'New Zealand',tz:'Pacific/Auckland',cur:'NZD',alias:['新西兰','new zealand','auckland','奥克兰']},
+  {c:'ZA',zh:'南非',en:'South Africa',tz:'Africa/Johannesburg',cur:'ZAR',alias:['南非','south africa','johannesburg']},
+  {c:'EG',zh:'埃及',en:'Egypt',tz:'Africa/Cairo',cur:'EGP',alias:['埃及','egypt','cairo','开罗']},
+  {c:'BR',zh:'巴西',en:'Brazil',tz:'America/Sao_Paulo',cur:'BRL',alias:['巴西','brazil','sao paulo','里约']},
+  {c:'MX',zh:'墨西哥',en:'Mexico',tz:'America/Mexico_City',cur:'MXN',alias:['墨西哥','mexico','mexico city']}
+];
+function csCountryOf(text, inq){
+  const hay=csNormText([inq&&inq.country, text].filter(Boolean).join(' ')).toLowerCase();
+  for(const c of CS_COUNTRIES){
+    for(const a of c.alias){ if(hay.includes(a)) return c; }
+  }
+  return null;
+}
+function csLocalTime(tz){
+  try{
+    const now=new Date();
+    const t=new Intl.DateTimeFormat('zh-CN',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+    const d=new Intl.DateTimeFormat(currentLang==='en'?'en-GB':'zh-CN',{timeZone:tz,weekday:'short'}).format(now);
+    return {t,d};
+  }catch(e){ return null; }
+}
+function csFxRef(cny, country, maxCur){
+  // 1 外币 = ? CNY 的 fxRateOf；cny/rate = 外币金额。country 未识别时给 USD+EUR 参考。
+  const list=[]; const add=(c)=>{ if(c==='CNY') return; const rate=fxRateOf(c); const amt=cny/rate; list.push({cur:c,amt:Math.round(amt),rate}); };
+  if(country && country.cur) add(country.cur);
+  if(list.length<(maxCur||2)) add('USD');
+  if(list.length<(maxCur||2)) add('EUR');
+  return list;
+}
 let csCurrent = null;   // 当前处理的询价单（S.inquiries 里的对象）
 let csParsed = null;    // 消息解析结果
 let csQuote = null;     // 最近一次定价结果
@@ -6401,6 +6470,9 @@ function csDetectService(t){
 }
 function csMatchRoute(city, text){
   const t=csNormText(text);
+  const lower=t.toLowerCase();
+  const enKw={pudong:'浦东',hongqiao:'虹桥',daxing:'大兴',capital:'首都',baiyun:'白云',baoan:'宝安',xiaoshan:'萧山',lukou:'禄口',xianyang:'咸阳',tianfu:'天府',mutianyu:'慕田峪',badaling:'八达岭',shanghai:'上海',beijing:'北京',guangzhou:'广州',shenzhen:'深圳',hangzhou:'杭州',suzhou:'苏州',sanya:'三亚',guilin:'桂林',qinhuangdao:'秦皇岛',datong:'大同',luoyang:'洛阳'};
+  const enBoost=(k)=>{ for(const e in enKw){ if(new RegExp('\\b'+e+'\\b','i').test(lower) && k.includes(enKw[e])) return k.length; } return 0; };
   const rows=(S.prices||[]).filter(p=>!city||p.city===city);
   const svc=csDetectService(t);
   let best=null, bestScore=0;
@@ -6410,7 +6482,7 @@ function csMatchRoute(city, text){
     if(svc==='送机'&&/送机/.test(rk)) score+=3;
     if(svc==='包车'&&/包车/.test(rk)) score+=3;
     const keys=rk.split(/[→·\s,，、/（）()]+/).filter(k=>k.length>=2);
-    keys.forEach(k=>{ if(t.includes(k)) score+=k.length; });
+    keys.forEach(k=>{ if(t.includes(k)) score+=k.length; score+=enBoost(k); });
     if(score>bestScore){ bestScore=score; best=rk; }
   });
   return bestScore>0?best:'';
@@ -6449,6 +6521,14 @@ function csBuildReply(){
   const priceLine=q.quote!=null?('¥'+q.quote.toLocaleString()):'待确认';
   const flightLine=p.flight?(' · '+p.flight):'';
   const noteLine=[p.route, p.note].filter(Boolean).join('；');
+  const fxC=csCountryOf(csRawMsg||'', csCurrent);
+  let fxLine='';
+  if(q.quote!=null){
+    const refs=csFxRef(q.quote, fxC, 2);
+    if(refs.length) fxLine=(csLang==='zh')
+      ? '· 外币参考：≈ '+refs.map(r=>r.cur+' '+r.amt.toLocaleString('en-US')).join(' / ')+'（按 '+refs.map(r=>'1 '+r.cur+'='+fmtFx(r.rate)+'元').join('，')+'）'
+      : '· FX ref: ≈ '+refs.map(r=>r.cur+' '+r.amt.toLocaleString('en-US')).join(' / ')+' (at '+refs.map(r=>'1 '+r.cur+'='+fmtFx(r.rate)+' CNY').join(', ')+')';
+  }
   if(csLang==='zh'){
     return `您好${guest?'，'+guest:''}，感谢您的咨询！
 
@@ -6457,7 +6537,7 @@ Elite Travel 曦驰旅游 · ${p.city||''}${p.route?' · '+p.route:''} 报价
 · 服务日期：${dateLine||'待确认'}${flightLine}
 · 车型：${veh}（${p.pax}人）
 · 报价：${priceLine}（含司机与车辆使用费）
-${noteLine?'· 行程：'+noteLine+'\n':''}━━━━━━━━━━━━━━━━
+${fxLine?fxLine+'\n':''}${noteLine?'· 行程：'+noteLine+'\n':''}━━━━━━━━━━━━━━━━
 报价含司机与车辆使用费；不含门票、餐费、停车费、高速费（另有说明除外）；超时按约定标准另计。报价有效期 3 天，最终以确认单为准。
 
 确认预订需支付 50% 订金，余款服务日支付（支持 PayPal / 微信 / 支付宝）。
@@ -6474,7 +6554,7 @@ Elite Travel · ${p.city||''}${p.route?' · '+p.route:''} — Quotation
 · Service date: ${dateLine||'TBC'}${flightLine}
 · Vehicle: ${veh} (${p.pax} pax)
 · Total price: ${priceLine} (incl. driver & vehicle service)
-${noteLine?'· Itinerary: '+noteLine+'\n':''}━━━━━━━━━━━━━━━━
+${fxLine?fxLine+'\n':''}${noteLine?'· Itinerary: '+noteLine+'\n':''}━━━━━━━━━━━━━━━━
 The price includes driver and vehicle service. It excludes tickets, meals, parking and tolls unless stated. Overtime charged per agreed rate. Valid for 3 days, subject to final confirmation.
 
 A 50% deposit is required to confirm the booking; the balance is payable on the service day (PayPal / WeChat / Alipay accepted).
@@ -6517,6 +6597,7 @@ function csMsgFromInquiry(i){
 }
 function renderAgentPage(){
   renderAgentQueue();
+  loadFx();   // 汇率：读缓存/默认，后台刷新一次
   const cfg=csAiCfg();
   if(cfg.key) $('agentAiBadge').textContent='✓';
   $('agentAiProvider').value=cfg.provider||'openai';
@@ -6545,7 +6626,10 @@ function renderAgentQueue(){
   if(!order.length){ list.innerHTML='<div class="empty">暂无询价，可从「询价管理」新增或「导入飞书询盘」</div>'; return; }
   const statusMap={new:'新询价',quoted:'已报价',following:'跟进中',won:'已成交',lost:'已流失'};
   const srcTag=i=> i._fsRecordId?'飞书':(/^web_/.test(i.id)?'网站':'本地');
-  list.innerHTML=order.map(i=>`
+  list.innerHTML=order.map(i=>{
+    const cc=csCountryOf('', i);
+    const lt=cc?csLocalTime(cc.tz):null;
+    return `
     <div class="agent-q-item${csCurrent&&csCurrent.id===i.id?' on':''}" onclick="agentLoadInquiry('${i.id}')">
       <div class="q-g">
         <span class="nm">${escapeHtml(i.guest||'未命名')}</span>
@@ -6557,9 +6641,10 @@ function renderAgentQueue(){
         <span>${i.pax||1}人</span>
         ${i.quote?`<span>报价 <b style="color:var(--accent-dark)">${i.quote}元</b></span>`:''}
         ${i.serviceDate?`<span>${escapeHtml(i.serviceDate)}</span>`:''}
+        ${cc&&lt?`<span title="${escapeHtml(cc.zh)} 当地时间">${currentLang==='en'?cc.en:cc.zh} ${lt.t}</span>`:''}
       </div>
       <div class="q-route">${escapeHtml(i.route||i.note||'')}</div>
-    </div>`).join('');
+    </div>`;}).join('');
 }
 function agentLoadInquiry(id){
   const i=(S.inquiries||[]).find(x=>x.id===id); if(!i) return;
@@ -6584,6 +6669,8 @@ function agentParse(){
   chips.push(`<span class="ap-chip">车型 <b>${escapeHtml(p.vehicle)}</b></span>`);
   if(p.flight) chips.push(`<span class="ap-chip">航班 <b>${p.flight}</b></span>`);
   if(p.contact) chips.push(`<span class="ap-chip">联系 <b>${escapeHtml(p.contact)}</b></span>`);
+  const csC=csCountryOf(csRawMsg||msg, csCurrent);
+  if(csC){ const lt=csLocalTime(csC.tz); chips.push(`<span class="ap-chip">客户 <b>${currentLang==='en'?csC.en:csC.zh}</b> · 当地 ${lt?lt.t+' '+lt.d:'—'}</span>`); }
   const el=$('agentParsed'); el.classList.remove('hidden');
   el.innerHTML='<div class="ap-t">解析结果</div><div class="ap-chips">'+(chips.join('')||'<span style="color:var(--text-3);font-size:12px">未能识别关键信息，请在下方回复文本中手动补充</span>')+'</div>';
   agentBuildReply();
@@ -6598,6 +6685,11 @@ function agentBuildReply(){
   rows.push(`<span>报价 <b style="color:var(--confirmed)">${q.quote!=null?('¥'+q.quote.toLocaleString()):'待确认'}</b></span>`);
   if(q.profit!=null) rows.push(`<span>利润 <b>¥${q.profit.toLocaleString()}</b></span>`);
   if(q.basis) rows.push(`<span>依据 <b>${escapeHtml(q.basis)}</b></span>`);
+  if(q.quote!=null){
+    const csC=csCountryOf(csRawMsg||'', csCurrent);
+    const refs=csFxRef(q.quote, csC, 2);
+    if(refs.length) rows.push(`<span>外币参考 <b>${refs.map(r=>r.cur+' ≈ '+r.amt.toLocaleString('en-US')).join(' · ')}</b> <small style="color:var(--text-3)">(${refs.map(r=>'1 '+r.cur+'='+fmtFx(r.rate)+'元').join('，')})</small></span>`);
+  }
   if(!p.city||!p.route) rows.push(`<span style="color:#C0504D"><b>⚠ 未匹配到城市/线路</b>，报价为估算，请人工核对</span>`);
   let html='<div class="ap-t">智能报价建议</div><div class="ap-rows">'+rows.join('')+'</div>';
   if(q.night) html+='<div class="ap-warn">⚠ 夜间用车（21:00–07:00），可加价 10%</div>';
@@ -6758,7 +6850,8 @@ function fsImportData(d){
     const rec={
       id, guest:String(f['客户名称']||''), contact:String(f['WhatsApp 号码']||f['邮箱']||''),
       email:String(f['邮箱']||''), date:String(f['询盘日期']||'').slice(0,10),
-      serviceDate:String(f['服务日期']||''), city:'', pax:parseInt(f['人数'],10)||1,
+      serviceDate:String(f['服务日期']||''), city:'', country:String(f['国家/地区']||''),
+      pax:parseInt(f['人数'],10)||1,
       vehicle:'', status:FS_STATUS_MAP[String(f['状态']||'').trim()]||'new', route,
       quote:parseFloat(f['报价金额'])||parseFloat(f['成交金额'])||0,
       cost:0, followUp:String(f['下次跟进日期']||'').slice(0,10),

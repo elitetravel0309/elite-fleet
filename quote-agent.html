@@ -398,6 +398,89 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     if(/接送|transfer/.test(t)) return '接送';
     return '';
   }
+  /* ===== 客源地当地时间 + 外币报价参考 ===== */
+  var QA_COUNTRIES=[
+    ['CN','中国','China','Asia/Shanghai','CNY',['中国','china']],
+    ['US','美国','USA','America/New_York','USD',['美国','usa','united states','america','new york','纽约']],
+    ['USW','美国(美西)','USA(PT)','America/Los_Angeles','USD',['洛杉矶','san francisco','加州','california']],
+    ['CA','加拿大','Canada','America/Toronto','CAD',['加拿大','canada','温哥华','多伦多']],
+    ['GB','英国','UK','Europe/London','GBP',['英国','uk','united kingdom','britain','england','london','伦敦']],
+    ['DE','德国','Germany','Europe/Berlin','EUR',['德国','germany','berlin','慕尼黑','法兰克福']],
+    ['FR','法国','France','Europe/Paris','EUR',['法国','france','paris','巴黎']],
+    ['ES','西班牙','Spain','Europe/Madrid','EUR',['西班牙','spain','madrid','barcelona','巴塞罗那']],
+    ['IT','意大利','Italy','Europe/Rome','EUR',['意大利','italy','rome','milan','米兰']],
+    ['NL','荷兰','Netherlands','Europe/Amsterdam','EUR',['荷兰','netherlands','holland','amsterdam']],
+    ['BE','比利时','Belgium','Europe/Brussels','EUR',['比利时','belgium']],
+    ['CH','瑞士','Switzerland','Europe/Zurich','CHF',['瑞士','switzerland','zurich','日内瓦']],
+    ['SE','瑞典','Sweden','Europe/Stockholm','SEK',['瑞典','sweden','stockholm','斯德哥尔摩']],
+    ['NO','挪威','Norway','Europe/Oslo','NOK',['挪威','norway','oslo','奥斯陆']],
+    ['DK','丹麦','Denmark','Europe/Copenhagen','DKK',['丹麦','denmark','copenhagen']],
+    ['FI','芬兰','Finland','Europe/Helsinki','EUR',['芬兰','finland','helsinki']],
+    ['PL','波兰','Poland','Europe/Warsaw','PLN',['波兰','poland','warsaw','华沙']],
+    ['CZ','捷克','Czech','Europe/Prague','CZK',['捷克','czech','czechia','prague','布拉格']],
+    ['RU','俄罗斯','Russia','Europe/Moscow','RUB',['俄罗斯','russia','moscow','莫斯科']],
+    ['TR','土耳其','Turkey','Europe/Istanbul','TRY',['土耳其','turkey','türkiye','istanbul','伊斯坦布尔']],
+    ['AE','阿联酋(迪拜)','UAE(Dubai)','Asia/Dubai','AED',['阿联酋','迪拜','dubai','uae','emirates','sharjah','沙迦','阿布扎比','abu dhabi']],
+    ['SA','沙特','Saudi Arabia','Asia/Riyadh','SAR',['沙特','saudi','riyadh','利雅得']],
+    ['QA','卡塔尔','Qatar','Asia/Qatar','QAR',['卡塔尔','qatar','doha','多哈']],
+    ['KW','科威特','Kuwait','Asia/Kuwait','KWD',['科威特','kuwait']],
+    ['IN','印度','India','Asia/Kolkata','INR',['印度','india','mumbai','delhi','孟买','新德里']],
+    ['ID','印尼','Indonesia','Asia/Jakarta','IDR',['印尼','印度尼西亚','indonesia','jakarta','雅加达','巴厘岛','bali']],
+    ['MY','马来西亚','Malaysia','Asia/Kuala_Lumpur','MYR',['马来西亚','malaysia','kuala lumpur','吉隆坡']],
+    ['SG','新加坡','Singapore','Asia/Singapore','SGD',['新加坡','singapore','singaporean']],
+    ['TH','泰国','Thailand','Asia/Bangkok','THB',['泰国','thailand','bangkok','曼谷','普吉']],
+    ['VN','越南','Vietnam','Asia/Ho_Chi_Minh','VND',['越南','vietnam','hanoi','河内']],
+    ['PH','菲律宾','Philippines','Asia/Manila','PHP',['菲律宾','philippines','manila','马尼拉']],
+    ['JP','日本','Japan','Asia/Tokyo','JPY',['日本','japan','tokyo','osaka','大阪','东京']],
+    ['KR','韩国','South Korea','Asia/Seoul','KRW',['韩国','south korea','korea','seoul','首尔']],
+    ['TW','台湾','Taiwan','Asia/Taipei','TWD',['台湾','taiwan','台北']],
+    ['HK','香港','Hong Kong','Asia/Hong_Kong','HKD',['香港','hong kong','hongkong']],
+    ['MO','澳门','Macau','Asia/Macau','MOP',['澳门','macau']],
+    ['AU','澳大利亚','Australia','Australia/Sydney','AUD',['澳大利亚','australia','sydney','melbourne','悉尼','墨尔本']],
+    ['NZ','新西兰','New Zealand','Pacific/Auckland','NZD',['新西兰','new zealand','auckland','奥克兰']],
+    ['ZA','南非','South Africa','Africa/Johannesburg','ZAR',['南非','south africa','johannesburg']],
+    ['EG','埃及','Egypt','Africa/Cairo','EGP',['埃及','egypt','cairo','开罗']],
+    ['BR','巴西','Brazil','America/Sao_Paulo','BRL',['巴西','brazil','sao paulo','里约']],
+    ['MX','墨西哥','Mexico','America/Mexico_City','MXN',['墨西哥','mexico','mexico city']]
+  ];
+  var QA_FX_DEFAULT={USD:7.12,EUR:7.82,AED:1.94,GBP:9.12,HKD:0.91,JPY:0.047,SGD:5.25,MYR:1.60,THB:0.20,IDR:0.00045,INR:0.085,SAR:1.90,AUD:4.60,CAD:5.20,CHF:8.10,KRW:0.0052,TWD:0.22,RUB:0.078,SEK:0.68,NZD:4.20,PHP:0.125,VND:0.00028,QAR:1.96,KWD:23.2,BRL:1.28,MXN:0.37,TRY:0.20,ZAR:0.40,MOP:0.885,EGP:0.145};
+  var qaFxCache=null;
+  function qaCountryOf(t){
+    var hay=qaNorm(t).toLowerCase();
+    for(var i=0;i<QA_COUNTRIES.length;i++){
+      var c=QA_COUNTRIES[i], aliases=c[5];
+      for(var j=0;j<aliases.length;j++){ if(hay.indexOf(aliases[j])>=0) return {zh:c[1],en:c[2],tz:c[3],cur:c[4]}; }
+    }
+    return null;
+  }
+  function qaLocalTime(tz){
+    try{
+      var now=new Date();
+      var t=new Intl.DateTimeFormat('zh-CN',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+      var d=new Intl.DateTimeFormat(lang==='en'?'en-GB':'zh-CN',{timeZone:tz,weekday:'short'}).format(now);
+      return t+' '+d;
+    }catch(e){ return ''; }
+  }
+  function qaFxRate(cur){
+    if(qaFxCache&&qaFxCache.rates&&qaFxCache.rates[cur]) return 1/Number(qaFxCache.rates[cur]);
+    var m=null; try{ m=JSON.parse(localStorage.getItem('qa-fx-cache')||'null'); }catch(e){ m=null; }
+    if(m&&m.rates&&m.rates[cur]) return 1/Number(m.rates[cur]);
+    return QA_FX_DEFAULT[cur]||7.12;
+  }
+  function qaFxRef(cny, country){
+    var list=[]; var add=function(c){ if(c==='CNY') return; var rate=qaFxRate(c); list.push({cur:c,amt:Math.round(cny/rate),rate:rate}); };
+    if(country&&country.cur) add(country.cur);
+    if(!list.length) add('USD');
+    if(list.length===1&&list[0].cur!=='EUR') add('EUR');
+    return list;
+  }
+  function qaLoadFx(){
+    try{ var m=JSON.parse(localStorage.getItem('qa-fx-cache')||'null'); if(m&&m.rates) qaFxCache=m; }catch(e){ qaFxCache=null; }
+    fetch('https://open.er-api.com/v6/latest/CNY',{cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then(function(j){ if(j&&j.result==='success'&&j.rates){ qaFxCache={ts:Date.now(),rates:j.rates}; try{ localStorage.setItem('qa-fx-cache',JSON.stringify(qaFxCache)); }catch(e){} } renderQuote(); })
+      .catch(function(){});
+  }
   function autoParse(){
     var t=qaNorm($('inRaw').value);
     if(!t){ toast('请先粘贴客户消息'); return; }
@@ -409,6 +492,9 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var flight=qaExtractFlight(t);
     var guest=qaExtractGuest(t);
     var svc=qaDetectService(t);
+    var tl=t.toLowerCase();
+    var enKw={pudong:'浦东',hongqiao:'虹桥',daxing:'大兴',capital:'首都',baiyun:'白云',baoan:'宝安',xiaoshan:'萧山',lukou:'禄口',xianyang:'咸阳',tianfu:'天府',mutianyu:'慕田峪',badaling:'八达岭',shanghai:'上海',beijing:'北京',guangzhou:'广州',shenzhen:'深圳',hangzhou:'杭州',suzhou:'苏州',sanya:'三亚',guilin:'桂林',qinhuangdao:'秦皇岛',datong:'大同',luoyang:'洛阳'};
+    function enBoost(k){ for(var e in enKw){ if(new RegExp('\\b'+e+'\\b','i').test(tl) && k.indexOf(enKw[e])>=0) return k.length; } return 0; }
     // 匹配线路
     var bestRoute='', bestScore=0;
     var routes=Object.keys(city?routesByCity[city]||{}:{});
@@ -418,7 +504,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
       if(svc==='送机'&&/送机/.test(r)) score+=3;
       if(svc==='包车'&&/包车/.test(r)) score+=3;
       var keys=r.split(/[→·\s,，、/（）()]+/).filter(function(k){return k.length>=2;});
-      keys.forEach(function(k){ if(t.indexOf(k)>=0) score+=k.length; });
+      keys.forEach(function(k){ if(t.indexOf(k)>=0) score+=k.length; score+=enBoost(k); });
       if(score>bestScore){ bestScore=score; bestRoute=r; }
     });
     if(guest) $('inGuest').value=guest;
@@ -433,6 +519,8 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var hint=[];
     if(city) hint.push('城市 '+city); else hint.push('城市未识别');
     if(bestRoute) hint.push('线路 '+bestRoute); else hint.push('线路未匹配（请手动选择）');
+    var cc=qaCountryOf(t);
+    if(cc){ var lt=qaLocalTime(cc.tz); hint.push('客户 '+(lang==='en'?cc.en:cc.zh)+(lt?' · 当地 '+lt:'')); }
     $('autoParseHint').textContent='✓ '+hint.join(' · ');
     $('autoParseHint').style.color='var(--green)';
     // 自动选城市和线路
@@ -777,6 +865,9 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var doc=$('doc');
     if(!p){ doc.innerHTML='<div class="empty">请先选择车型</div>'; return; }
     var priceLine = r.suggest!=null?('¥'+r.suggest.toLocaleString()):'待确认';
+    var fxRefs = r.suggest!=null ? qaFxRef(r.suggest, qaCountryOf($('inRaw').value)) : [];
+    var fxRowZh = fxRefs.length ? '<tr><th>外币参考</th><td>≈ '+fxRefs.map(function(x){return x.cur+' '+x.amt.toLocaleString('en-US');}).join(' / ')+' <small style="color:#888">（1 '+fxRefs[0].cur+' = '+fxRefs[0].rate.toFixed(2)+' 元）</small></td></tr>' : '';
+    var fxRowEn = fxRefs.length ? '<tr><th>FX ref</th><td>≈ '+fxRefs.map(function(x){return x.cur+' '+x.amt.toLocaleString('en-US');}).join(' / ')+' <small style="color:#888">(1 '+fxRefs[0].cur+' = '+fxRefs[0].rate.toFixed(2)+' CNY)</small></td></tr>' : '';
     if(lang==='zh'){
       doc.innerHTML=
         '<div class="doc-head"><div class="bh"><h3>Elite Travel 曦驰旅游</h3><p>接送 · 包车 · 机场专车服务</p></div>'+
@@ -789,6 +880,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
         '<tr><th>线路</th><td>'+esc(state.route)+'</td></tr>'+
         '<tr><th>车型</th><td>'+esc(p.v||'')+(p.d?'（'+esc(p.d)+'）':'')+'</td></tr>'+
         '<tr><th>人数</th><td>'+esc($('inPax').value||'')+' 人</td></tr>'+
+        fxRowZh+
         '<tr><th>行程说明</th><td>'+esc(g.note||'-')+'</td></tr>'+
         '</tbody></table>'+
         (p.n?'<div class="note">备注：'+esc(p.n)+'</div>':'')+
@@ -805,6 +897,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
         '<tr><th>Route</th><td>'+esc(state.route)+'</td></tr>'+
         '<tr><th>Vehicle</th><td>'+esc(p.v||'')+(p.d?' ('+esc(p.d)+')':'')+'</td></tr>'+
         '<tr><th>Passengers</th><td>'+esc($('inPax').value||'')+'</td></tr>'+
+        fxRowEn+
         '<tr><th>Itinerary</th><td>'+esc(g.note||'-')+'</td></tr>'+
         '</tbody></table>'+
         (p.n?'<div class="note">Note: '+esc(p.n)+'</div>':'')+
@@ -1158,6 +1251,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   $('selOrder').innerHTML='<option value="">正在连接工作台…</option>';
   $('dataBadge').textContent=PRICE_BASE.length+' 条底价 · 内置';
   loadCloud();
+  qaLoadFx();
 })();
 </script>
 </body>
