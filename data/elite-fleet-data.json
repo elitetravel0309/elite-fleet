@@ -4389,6 +4389,26 @@
             "cost": 1500,
             "quote": 0,
             "note": "英文司机12小时"
+        },
+        {
+            "city": "长沙",
+            "route": "包车 · 市区（8小时100公里）",
+            "vehicle": "十四座",
+            "duration": "8小时",
+            "distance": "100公里",
+            "cost": 800,
+            "quote": 0,
+            "note": "超时120/h，超公里8/km"
+        },
+        {
+            "city": "长沙",
+            "route": "包车 · 市区（8小时100公里）",
+            "vehicle": "十九座",
+            "duration": "8小时",
+            "distance": "100公里",
+            "cost": 950,
+            "quote": 0,
+            "note": "超时120/h，超公里8/km"
         }
     ],
     "guests": [
