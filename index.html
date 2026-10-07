@@ -5172,6 +5172,7 @@ function importBackup(ev){
 function cloudUrl(){
   if(location.protocol==='file:') return null;
   try{ const s=JSON.parse(localStorage.getItem('ef-cf')||'{}'); if(s.url) return s.url.replace(/\/$/,'')+'/api/data?t='+Date.now(); }catch(e){}
+  if(location.hostname.indexOf('github.io')>=0) return 'https://elitetravel0309.github.io/elite-fleet/data/elite-fleet-data.json?t='+Date.now();
   return '/api/data?t='+Date.now();
 }
 const WEB_INQ_API = location.protocol==='file:' ? 'https://www.chinawondercars.com/api/workbench' : (location.origin + '/api/inquiries');

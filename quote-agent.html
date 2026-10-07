@@ -465,7 +465,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     }).filter(function(p){return p.c&&(p.cost>0||p.q>0);});
   }
   function loadCloud(){
-    var url = location.protocol==='file:' ? 'https://elitetravel0309.github.io/elite-fleet/data/elite-fleet-data.json' : ('/api/public-data?t='+Date.now());
+    var url = (location.protocol==='file:' || location.hostname.indexOf('github.io')>=0) ? ('https://elitetravel0309.github.io/elite-fleet/data/elite-fleet-data.json?t='+Date.now()) : ('/api/public-data?t='+Date.now());
     var xhr=new XMLHttpRequest();
     xhr.open('GET',url,true);
     xhr.timeout=8000;
