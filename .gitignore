@@ -1,0 +1,13 @@
+# 本地运行状态与密钥
+.wrangler/
+node_modules/
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+
+# 临时/构建产物
+dist/
+build/
+.tmp/

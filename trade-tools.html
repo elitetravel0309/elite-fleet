@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elite Travel · 外贸工具</title>
+<style>
+  :root{
+    --ink:#14263F; --bg:#F3F4F7; --card:#FFFFFF; --line:#E2E6EE;
+    --text:#273043; --text-2:#5B6573; --text-3:#8A94A6; --accent:#E8833A;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  .topbar{ background:var(--ink); color:#fff; padding:14px 24px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .topbar .logo{ font-size:18px; font-weight:700; }
+  .topbar .sub{ font-size:12px; opacity:.75; }
+  .topbar .spacer{ flex:1; }
+  .langbtn{ background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); color:#fff; font-size:12px; padding:6px 14px; border-radius:8px; cursor:pointer; }
+  .wrap{ max-width:1100px; margin:20px auto; padding:0 16px; }
+  .head h2{ font-size:20px; }
+  .head p{ font-size:13px; color:var(--text-2); margin:4px 0 16px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+  @media(max-width:960px){ .grid{ grid-template-columns:1fr; } }
+  .panel{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .panel h3{ font-size:15px; margin-bottom:6px; }
+  .panel .desc{ font-size:12px; color:var(--text-2); margin-bottom:14px; }
+  .clock-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:12px; }
+  .clock-card{ border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card); }
+  .clock-card.base{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .clock-city{ font-size:14px; font-weight:600; }
+  .clock-city small{ display:block; font-size:11px; color:var(--text-3); font-weight:400; margin-top:2px; }
+  .clock-time{ font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; margin:8px 0 2px; letter-spacing:.5px; }
+  .clock-date{ font-size:12px; color:var(--text-2); }
+  .clock-meta{ font-size:11px; color:var(--text-3); margin-top:4px; }
+  .fx-rate-line{ font-size:12px; color:var(--text-2); margin:8px 0 10px; line-height:1.6; }
+  .fx-live{ color:#1a7f37; font-weight:600; }
+  .fx-warn{ color:#b45309; font-weight:600; }
+  .fx-box{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .fx-box input[type=number]{ width:130px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:14px; }
+  .fx-box select{ max-width:180px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff; }
+  .fx-result{ font-size:22px; font-weight:700; color:var(--accent); padding:8px 12px; border:1px dashed var(--line); border-radius:8px; background:var(--bg); margin-top:10px; min-width:170px; text-align:right; font-variant-numeric:tabular-nums; }
+  .fx-chips{ display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+  .fx-chips .chip{ padding:5px 12px; border:1px solid var(--line); border-radius:999px; background:var(--bg); color:var(--text-2); font-size:12px; cursor:pointer; }
+  .fx-chips .chip:hover{ border-color:var(--accent); color:var(--accent); }
+  .fx-tbl{ width:100%; border-collapse:collapse; font-size:13px; }
+  .fx-tbl th,.fx-tbl td{ border:1px solid var(--line); padding:7px 10px; text-align:left; }
+  .fx-tbl th{ background:var(--bg); color:var(--text-2); font-weight:600; }
+  .fx-tbl td:first-child{ white-space:nowrap; }
+  .fx-manual{ width:92px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; font-size:12px; }
+  .foot{ text-align:center; font-size:11px; color:var(--text-3); padding:20px 0 30px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">Elite Travel</div>
+  <div class="sub" id="tbSub">外贸工具 · 客源地时钟 · 汇率换算</div>
+  <div class="spacer"></div>
+  <button class="langbtn" id="langToggle" onclick="toggleLang()">EN</button>
+</div>
+<div class="wrap">
+  <div class="head">
+    <h2 id="pgTitle">外贸工具</h2>
+    <p id="pgSub">接客户电话 / 报价前先看对方几点，人民币 ↔ 外币实时换算。</p>
+  </div>
+  <div class="grid">
+    <div class="panel">
+      <h3 id="clkTitle">客源地当地时间</h3>
+      <p class="desc" id="clkDesc">迪拜 · 美国 · 欧洲 · 中国，秒级刷新，自动识别夏令时。</p>
+      <div class="clock-grid" id="clockGrid"></div>
+    </div>
+    <div class="panel">
+      <h3 id="fxTitle">汇率换算（人民币 ↔ 外币）</h3>
+      <div class="fx-rate-line" id="fxRateLine">汇率加载中…</div>
+      <div class="fx-box">
+        <input type="number" id="fxAmount" value="1000" min="0" step="any" oninput="fxConvert()">
+        <select id="fxDir" onchange="fxConvert()">
+          <option value="c2f">人民币 → 外币</option>
+          <option value="f2c">外币 → 人民币</option>
+        </select>
+        <select id="fxCur" onchange="fxConvert()">
+          <option value="USD">美元 USD</option>
+          <option value="EUR">欧元 EUR</option>
+          <option value="AED">迪拉姆 AED</option>
+          <option value="GBP">英镑 GBP</option>
+          <option value="HKD">港币 HKD</option>
+        </select>
+        <div class="fx-result" id="fxResult">—</div>
+      </div>
+      <div class="fx-chips" id="fxChips"></div>
+      <div class="fx-table" id="fxTable"></div>
+    </div>
+  </div>
+  <div class="foot">Elite Travel · 曦驰旅游 &nbsp;|&nbsp; 数据保存在本机浏览器（汇率可离线缓存，断网可用手动汇率）</div>
+</div>
+<script>
+/* ============ 客源地时钟 ============ */
+const TRADE_CITIES = [
+  { tz:'Asia/Shanghai', zh:'北京 / 广州', en:'Beijing / Guangzhou', base:true },
+  { tz:'Asia/Dubai',    zh:'迪拜',        en:'Dubai' },
+  { tz:'America/New_York',    zh:'美国 · 纽约（美东）', en:'USA · New York (ET)' },
+  { tz:'America/Los_Angeles', zh:'美国 · 洛杉矶（美西）', en:'USA · Los Angeles (PT)' },
+  { tz:'Europe/London', zh:'英国 · 伦敦', en:'UK · London' },
+  { tz:'Europe/Paris',  zh:'欧洲 · 巴黎 / 法兰克福', en:'Europe · Paris / Frankfurt' }
+];
+let curLang = localStorage.getItem('ef-tt-lang') || 'zh';
+
+function tzOffsetMin(tz){
+  try{
+    const parts = new Intl.DateTimeFormat('en-US',{timeZone:tz,timeZoneName:'longOffset'}).formatToParts(new Date());
+    const name = (parts.find(p=>p.type==='timeZoneName')||{}).value || 'GMT';
+    const m = String(name).match(/GMT([+-])(\d{2}):(\d{2})/);
+    if(!m) return 0;
+    const sign = m[1]==='-' ? -1 : 1;
+    return sign*(parseInt(m[2],10)*60 + parseInt(m[3],10));
+  }catch(e){ return 0; }
+}
+function diffLabel(min){
+  const dm = Math.abs(min), h = Math.floor(dm/60), mm = dm%60;
+  const s = (h>0?h+'h':'') + (mm>0?mm+'m':'') || '0m';
+  if(min===0) return curLang==='en' ? 'Same as Beijing' : '与北京同时';
+  return min>0
+    ? (curLang==='en' ? '+'+s+' vs Beijing' : '比北京快 '+s)
+    : (curLang==='en' ? '-'+s+' vs Beijing' : '比北京慢 '+s);
+}
+function renderClocks(){
+  const grid = document.getElementById('clockGrid');
+  grid.innerHTML = TRADE_CITIES.map(c=>`
+    <div class="clock-card${c.base?' base':''}">
+      <div class="clock-city">${curLang==='zh'?c.zh:c.en}<small>${curLang==='zh'?c.en:c.zh}</small></div>
+      <div class="clock-time" data-tz="${c.tz}">--:--:--</div>
+      <div class="clock-date" data-tz="${c.tz}"></div>
+      <div class="clock-meta" data-tz="${c.tz}"></div>
+    </div>`).join('');
+  updateClocks();
+}
+function updateClocks(){
+  const now = new Date();
+  document.querySelectorAll('.clock-card').forEach(card=>{
+    const tz = card.querySelector('.clock-time').dataset.tz;
+    card.querySelector('.clock-time').textContent = new Intl.DateTimeFormat('zh-CN',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(now);
+    card.querySelector('.clock-date').textContent = new Intl.DateTimeFormat(curLang==='zh'?'zh-CN':'en-GB',{timeZone:tz,month:'long',day:'numeric',weekday:'short'}).format(now);
+    const off = tzOffsetMin(tz);
+    const sign = off>=0 ? '+' : '-';
+    const oh = String(Math.floor(Math.abs(off)/60)).padStart(2,'0');
+    const om = String(Math.abs(off)%60).padStart(2,'0');
+    card.querySelector('.clock-meta').textContent = 'UTC'+(off===0?'':sign+oh+':'+om)+' · '+diffLabel(off-480);
+  });
+}
+setInterval(updateClocks, 1000);
+
+/* ============ 汇率换算 ============ */
+const FX_CURRENCIES = ['USD','EUR','AED','GBP','HKD'];
+const FX_NAMES = { USD:'美元 USD', EUR:'欧元 EUR', AED:'迪拉姆 AED', GBP:'英镑 GBP', HKD:'港币 HKD' };
+const FX_DEFAULT = { USD:7.12, EUR:7.82, AED:1.94, GBP:9.12, HKD:0.91 };
+let fxCache = null, fxManual = null;
+
+function readFxManual(){
+  try{ fxManual = JSON.parse(localStorage.getItem('ef-tt-manual')||'{}'); }catch(e){ fxManual = {}; }
+  return fxManual||{};
+}
+function fxRateOf(cur){
+  const m = readFxManual();
+  if(m[cur]) return Number(m[cur]);
+  if(fxCache && fxCache.rates && fxCache.rates[cur]) return 1/Number(fxCache.rates[cur]);
+  return FX_DEFAULT[cur];
+}
+function fmtFx(v){ const n = Number(v); return isFinite(n) ? n.toFixed(4) : '—'; }
+function saveFxManual(k,v){
+  readFxManual();
+  if(v===null || v===undefined || isNaN(v)) delete fxManual[k];
+  else fxManual[k] = v;
+  localStorage.setItem('ef-tt-manual', JSON.stringify(fxManual));
+  renderFxTable(); fxConvert();
+}
+function loadFx(){
+  const c = localStorage.getItem('ef-tt-cache');
+  if(c){ try{ fxCache = JSON.parse(c); }catch(e){ fxCache = null; } }
+  fetch('https://open.er-api.com/v6/latest/CNY', { cache:'no-store' })
+    .then(r=>{ if(!r.ok) throw new Error(String(r.status)); return r.json(); })
+    .then(j=>{
+      if(j && j.result==='success' && j.rates){
+        fxCache = { ts: Date.now(), rates: j.rates };
+        localStorage.setItem('ef-tt-cache', JSON.stringify(fxCache));
+      }
+      renderFxLine(); renderFxTable(); fxConvert();
+    })
+    .catch(()=>{ renderFxLine(); renderFxTable(); fxConvert(); });
+}
+function refreshFx(){
+  renderFxLine();
+  loadFx();
+}
+function renderFxLine(){
+  const el = document.getElementById('fxRateLine');
+  const live = fxCache && fxCache.rates;
+  el.innerHTML = live
+    ? `<span class="fx-live">● ${curLang==='en'?'Live rate':'实时汇率'} · ${new Date(fxCache.ts).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</span> &nbsp;1 USD = <b>${fmtFx(fxRateOf('USD'))}</b> CNY &nbsp;·&nbsp; 1 EUR = <b>${fmtFx(fxRateOf('EUR'))}</b> CNY`
+    : `<span class="fx-warn">${curLang==='en'?'Using default / manual rate':'使用默认 / 手动汇率（点击右上刷新）'}</span> &nbsp;1 USD = <b>${fmtFx(fxRateOf('USD'))}</b> CNY`;
+}
+function fxConvert(){
+  const el = document.getElementById('fxResult');
+  const amt = parseFloat(document.getElementById('fxAmount').value);
+  const dir = document.getElementById('fxDir').value;
+  const cur = document.getElementById('fxCur').value;
+  const rate = fxRateOf(cur);
+  if(!isFinite(amt) || amt<=0){ el.textContent = '—'; return; }
+  const res = dir==='c2f' ? amt/rate : amt*rate;
+  el.textContent = res.toLocaleString('en-US',{maximumFractionDigits:2}) + (dir==='c2f' ? ' '+cur : ' CNY');
+}
+function renderFxChips(){
+  document.getElementById('fxChips').innerHTML =
+    [100,500,1000,5000,10000].map(n=>
+      `<button class="chip" onclick="document.getElementById('fxAmount').value=${n};fxConvert()">${n.toLocaleString()}</button>`).join('');
+}
+function renderFxTable(){
+  const el = document.getElementById('fxTable');
+  const m = readFxManual();
+  el.innerHTML = `<table class="fx-tbl">
+    <thead><tr><th>币种</th><th>1 外币 = ? CNY</th><th>1 CNY = ? 外币</th><th>手动汇率 (CNY)</th></tr></thead>
+    <tbody>${FX_CURRENCIES.map(c=>{
+      const rate = fxRateOf(c);
+      return `<tr>
+        <td><b>${FX_NAMES[c]}</b></td>
+        <td>${fmtFx(rate)}</td>
+        <td>${fmtFx(1/rate)}</td>
+        <td><input class="fx-manual" type="number" step="any" min="0" value="${m[c]!==undefined?m[c]:''}" placeholder="自动" onchange="saveFxManual('${c}',parseFloat(this.value))" onblur="if(this.value==='')saveFxManual('${c}',null)"></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+/* ============ 语言切换 ============ */
+function applyLang(){
+  document.getElementById('langToggle').textContent = curLang==='zh' ? 'EN' : '中';
+  document.getElementById('pgTitle').textContent = curLang==='zh' ? '外贸工具' : 'Trade Tools';
+  document.getElementById('pgSub').textContent = curLang==='zh'
+    ? '接客户电话 / 报价前先看对方几点，人民币 ↔ 外币实时换算。'
+    : 'Check client local time before calling or quoting. Live CNY ↔ foreign currency converter.';
+  document.getElementById('clkTitle').textContent = curLang==='zh' ? '客源地当地时间' : 'Client Local Times';
+  document.getElementById('clkDesc').textContent = curLang==='zh'
+    ? '迪拜 · 美国 · 欧洲 · 中国，秒级刷新，自动识别夏令时。'
+    : 'Dubai · USA · Europe · China. Auto DST, refreshes every second.';
+  document.getElementById('fxTitle').textContent = curLang==='zh' ? '汇率换算（人民币 ↔ 外币）' : 'FX Converter (CNY ↔ Foreign)';
+  document.getElementById('tbSub').textContent = curLang==='zh' ? '外贸工具 · 客源地时钟 · 汇率换算' : 'Trade Tools · World Clock · FX';
+  const dir = document.getElementById('fxDir');
+  dir.options[0].text = curLang==='zh' ? '人民币 → 外币' : 'CNY → Foreign';
+  dir.options[1].text = curLang==='zh' ? '外币 → 人民币' : 'Foreign → CNY';
+  renderClocks();
+  renderFxLine();
+}
+function toggleLang(){
+  curLang = curLang==='zh' ? 'en' : 'zh';
+  localStorage.setItem('ef-tt-lang', curLang);
+  applyLang();
+}
+
+/* ============ 启动 ============ */
+renderClocks();
+renderFxChips();
+renderFxTable();
+fxConvert();
+loadFx();
+applyLang();
+</script>
+</body>
+</html>
