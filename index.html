@@ -627,6 +627,7 @@ textarea{resize:vertical;line-height:1.5}
             <button class="btn ghost" onclick="agentAiPolish()">AI 润色<span id="agentAiBadge"></span></button>
             <button class="btn ghost" onclick="agentCopyReply()">复制回复</button>
             <button class="btn ghost" onclick="agentSaveToInquiry()">保存到询价管理</button>
+            <button class="btn" style="background:var(--accent);border-color:var(--accent);color:#fff" onclick="agentDispatch()" title="按解析结果生成订单并打开派车消息">转派车</button>
           </div>
           <div id="agentParsed" class="agent-parsed hidden"></div>
           <div id="agentPricing" class="agent-pricing hidden"></div>
@@ -654,11 +655,22 @@ textarea{resize:vertical;line-height:1.5}
           </div>
           <div id="agentAiSettings" class="hidden" style="margin-top:10px;border-top:1px dashed var(--line);padding-top:10px">
             <div class="form-grid">
+              <div class="field"><label>厂商预设</label>
+                <select id="agentAiProvider" onchange="agentAiPreset()">
+                  <option value="openai">OpenAI</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="silicon">硅基流动 SiliconFlow</option>
+                  <option value="zhipu">智谱 GLM</option>
+                  <option value="moonshot">Kimi (Moonshot)</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </div>
               <div class="field"><label>AI 接口地址</label><input type="text" id="agentAiUrl" placeholder="https://api.openai.com/v1/chat/completions"></div>
               <div class="field"><label>API Key</label><input type="password" id="agentAiKey" placeholder="sk-...（留空=仅规则引擎）"></div>
               <div class="field"><label>模型</label><input type="text" id="agentAiModel" placeholder="gpt-4o-mini"></div>
             </div>
             <button class="btn ghost small" onclick="agentSaveAi()">保存 AI 设置</button>
+            <button class="btn ghost small" onclick="agentAiTest()">测试连接</button>
             <span id="agentAiStatus" style="font-size:12px;color:var(--text-3);margin-left:8px"></span>
           </div>
         </div>
@@ -4876,6 +4888,7 @@ document.addEventListener('keydown', e=>{
 function fleetMsg(id){
   const o = id? S.orders.find(x=>x.id===id) : null;
   if(!o){ toast('请先保存订单，再生成派单消息'); return; }
+  window._fleetMsgId = o.id;
   const tm=TYPE_META[o.type]?TYPE_META[o.type].label:o.type;
   const lines=[];
   lines.push('【Elite Travel 派单 · '+tm+'】'+o.date+(o.time?' '+o.time:''));
@@ -4903,13 +4916,13 @@ function fallbackCopy(t){
   document.body.removeChild(ta);
 }
 function markFleetSent(){
-  if(!editingId){ toast('请先保存订单'); return; }
-  const o=S.orders.find(x=>x.id===editingId); if(!o) return;
+  const id = window._fleetMsgId || editingId;
+  const o=S.orders.find(x=>x.id===id); if(!o){ toast('请先保存订单'); return; }
   if(['sent','confirmed','done'].indexOf(o.status)<0){
     if(!confirm('把订单「'+STATUS_META[o.status].label+'」标记为「已派车队」？')) return;
   }
   o.status='sent';
-  if($('oFleet').value) o.fleet=$('oFleet').value.trim();
+  const oF=$('oFleet'); if(oF && oF.value) o.fleet=oF.value.trim();
   saveState(S); renderOrders(); renderKpis(); renderToday();
   closeFleetMsg(); closeOrder();
   toast('已标记「已派车队」');
@@ -6506,6 +6519,7 @@ function renderAgentPage(){
   renderAgentQueue();
   const cfg=csAiCfg();
   if(cfg.key) $('agentAiBadge').textContent='✓';
+  $('agentAiProvider').value=cfg.provider||'openai';
   $('agentAiUrl').value=cfg.url||'';
   $('agentAiKey').value=cfg.key||'';
   $('agentAiModel').value=cfg.model||'';
@@ -6625,11 +6639,42 @@ function csAiCfg(){
   try{ return JSON.parse(localStorage.getItem(CS_AI_KEY)||'{}'); }catch(e){ return {}; }
 }
 function agentSaveAi(){
-  const cfg={ url:$('agentAiUrl').value.trim()||'https://api.openai.com/v1/chat/completions', key:$('agentAiKey').value.trim(), model:$('agentAiModel').value.trim()||'gpt-4o-mini' };
+  const cfg={ provider:$('agentAiProvider').value, url:$('agentAiUrl').value.trim()||'https://api.openai.com/v1/chat/completions', key:$('agentAiKey').value.trim(), model:$('agentAiModel').value.trim()||'gpt-4o-mini' };
   localStorage.setItem(CS_AI_KEY, JSON.stringify(cfg));
   $('agentAiBadge').textContent=cfg.key?'✓':'';
   $('agentAiStatus').textContent=cfg.key?'已保存，AI 润色可用':'已保存（未填 Key，仅规则引擎）';
   toast('AI 设置已保存');
+}
+const AI_PROVIDERS={
+  openai:{url:'https://api.openai.com/v1/chat/completions', model:'gpt-4o-mini'},
+  deepseek:{url:'https://api.deepseek.com/v1/chat/completions', model:'deepseek-chat'},
+  silicon:{url:'https://api.siliconflow.cn/v1/chat/completions', model:'Qwen/Qwen2.5-7B-Instruct'},
+  zhipu:{url:'https://open.bigmodel.cn/api/paas/v4/chat/completions', model:'glm-4-flash'},
+  moonshot:{url:'https://api.moonshot.cn/v1/chat/completions', model:'moonshot-v1-8k'},
+  custom:{url:'', model:''}
+};
+function agentAiPreset(){
+  const p=$('agentAiProvider').value;
+  const pr=AI_PROVIDERS[p]||AI_PROVIDERS.custom;
+  $('agentAiUrl').value=pr.url;
+  $('agentAiModel').value=pr.model;
+  $('agentAiStatus').textContent=pr.url?'已填入「'+p+'」接口地址与默认模型，填 Key 后保存':'自定义：请自行填写接口地址与模型';
+}
+async function agentAiTest(){
+  const cfg={ provider:$('agentAiProvider').value, url:$('agentAiUrl').value.trim()||'https://api.openai.com/v1/chat/completions', key:$('agentAiKey').value.trim(), model:$('agentAiModel').value.trim()||'gpt-4o-mini' };
+  if(!cfg.key){ $('agentAiStatus').textContent='未填 Key，无法测试（规则引擎可正常使用）'; toast('先填写 API Key 再测试'); return; }
+  $('agentAiStatus').textContent='测试中…';
+  try{
+    const res=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:'ping'}],max_tokens:5})});
+    const d=await res.json().catch(()=>({}));
+    const msg=(d.error&&d.error.message)||((d.choices&&d.choices[0])?'OK':'响应格式异常');
+    const ok=res.ok&&(d.choices&&d.choices[0]);
+    $('agentAiStatus').textContent=ok?('✓ 连接成功（HTTP '+res.status+'）'):('✗ HTTP '+res.status+'：'+msg);
+    toast(ok?'AI 连接测试通过':'AI 连接失败：HTTP '+res.status+' '+msg);
+  }catch(e){
+    $('agentAiStatus').textContent='✗ 无法连接：'+(e.message||e);
+    toast('AI 连接失败：'+(e.message||e));
+  }
 }
 async function agentAiPolish(){
   const cfg=csAiCfg();
@@ -6642,11 +6687,47 @@ async function agentAiPolish(){
       {role:'user',content:'Customer original message:\n'+(csRawMsg||'')+'\n\nCurrent draft:\n'+reply}
     ],temperature:0.3})});
     const d=await res.json();
+    if(!res.ok) throw new Error('HTTP '+res.status+'：'+((d.error&&d.error.message)||'请求失败'));
     const out=((d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'').trim();
     if(!out) throw new Error((d.error&&d.error.message)||'空回复');
     $('agentReply').value=out; toast('AI 润色完成');
   }catch(e){ toast('AI 调用失败：'+(e.message||e)); }
   finally{ $('agentAiBadge').textContent=cfg.key?'✓':''; }
+}
+/* ---- 智能客服 → 一键转派车 ---- */
+function agentDispatch(){
+  const p=csParsed; if(!p){ toast('请先解析消息'); return; }
+  if(!p.city && !p.route){ toast('未识别到城市/线路，无法生成派车单（请在消息中补充后重新解析）'); return; }
+  const q=csQuote||csCalc(p.city,p.route,p.vehicle,p.serviceDate,p.time);
+  const svc=csDetectService(p.note||'');
+  const typeMap={'接机':'arrival','送机':'departure','包车':'charter','接送':'transfer'};
+  let o=null;
+  if(csCurrent && csCurrent._orderId) o=S.orders.find(x=>x.id===csCurrent._orderId);
+  const date=p.serviceDate||(csCurrent?csCurrent.serviceDate:'')||todayStr();
+  if(o){
+    o.date=date||o.date; o.time=p.time||o.time; o.type=typeMap[svc]||o.type||'charter';
+    o.city=p.city||o.city; o.route=p.route||o.route; o.vehicle=p.vehicle||o.vehicle;
+    o.pax=p.pax||o.pax; o.guest=p.guest||o.guest; o.contact=p.contact||o.contact;
+    o.flight=p.flight||o.flight; o.quote=q.quote||o.quote; o.cost=q.cost||o.cost;
+    o._lastModified=Date.now();
+  }else{
+    o={ id:uid(), date:date, time:p.time||'', type:typeMap[svc]||'charter', city:p.city||'其他',
+        airport:'', flight:p.flight||'', route:p.route||'', vehicle:p.vehicle||'', pax:p.pax||1,
+        guest:p.guest||'', contact:p.contact||'', driver:'', plate:'', fleet:'',
+        price:q.quote||0, quote:q.quote||0, cost:q.cost||0,
+        status:(csCurrent&&csCurrent.status==='won')?'confirmed':'pending', note:p.note||'' };
+    S.orders.push(o);
+  }
+  if(csCurrent){
+    csCurrent._orderId=o.id;
+    if(csCurrent.status!=='won'&&csCurrent.status!=='lost'){ csCurrent.status='won'; }
+    csCurrent._lastModified=Date.now();
+    $('agentStatus').value=csCurrent.status;
+    $('agentFsInfo').textContent='已转派车 · 订单已生成'+(csCurrent._fsRecordId?'（可导出回写飞书）':'');
+  }
+  saveState(S); renderOrders(); renderInquiries(); renderAgentQueue();
+  fleetMsg(o.id);
+  toast('已生成订单并打开派车消息');
 }
 /* ---- 飞书询盘桥接 ---- */
 function openFeishuImportModal(){ $('feishuImportOverlay').classList.add('show'); $('feishuImportStatus').textContent=''; $('feishuImportJson').value=''; }
