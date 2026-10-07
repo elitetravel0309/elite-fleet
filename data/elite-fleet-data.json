@@ -1601,6 +1601,27 @@
             "note": "Same vehicle and driver. Driver waits with luggage at Jinshanling. Part of 3-transfer package RMB 3000 total. Entrance tickets not included."
         },
         {
+            "id": "x261024dan1",
+            "date": "2026-10-24",
+            "time": "",
+            "type": "charter",
+            "airport": "PVG",
+            "flight": "",
+            "route": "上海Paramount Gallery酒店(南京西路1728号) → 朱家角古镇 → PVG浦东机场",
+            "vehicle": "七座",
+            "pax": 3,
+            "guest": "Daniela Queiroz",
+            "contact": "Dani.mia1978@gmail.com",
+            "driver": "",
+            "plate": "",
+            "price": 1250,
+            "quote": 1250,
+            "cost": 0,
+            "status": "confirmed",
+            "note": "3 pax + 6 large suitcases; ~8h/110km; luggage locked in car while visiting Zhujiajiao (free entry); 50% deposit RMB 625 received via Alipay; balance RMB 625 on service day; overtime RMB 100/h; driver & plate sent 1 day before",
+            "city": "上海"
+        },
+        {
             "id": "x261026_annarita_1789905429689",
             "date": "2026-10-26",
             "time": "06:00",
