@@ -578,6 +578,7 @@ textarea{resize:vertical;line-height:1.5}
       <div class="toolbar">
         <button class="btn primary" onclick="openInquiry()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增询价</button>
         <button class="btn ghost small" onclick="openFeishuImportModal()">导入飞书询盘</button>
+        <button class="btn ghost small" onclick="qaImportOpen()">导入 quote-agent 回写</button>
         <button class="btn ghost small" onclick="fsExportStatus()">导出回写飞书</button>
         <div class="spacer"></div>
         <select id="inquiryStatusFilter" onchange="renderInquiries()">
@@ -6910,6 +6911,53 @@ function fsExportStatus(){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='feishu-status-updates.json'; a.click();
   const fs=$('fsSyncStatus'); if(fs) fs.textContent='已导出 '+items.length+' 条 → 运行 scripts/push_feishu_status.ps1 回写飞书';
   toast('已导出 '+items.length+' 条回写文件');
+}
+
+/* ===== quote-agent 回写导入（B 闭环的另一半） ===== */
+function qaImportOpen(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=()=>{
+    const f=inp.files&&inp.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const d=JSON.parse(rd.result);
+        const r=qaImportWriteback(d);
+        toast('quote-agent 回写导入完成：新增 '+r.added+'，更新 '+r.updated);
+      }catch(e){ toast('导入失败：'+(e.message||e)); }
+    };
+    rd.readAsText(f);
+  };
+  inp.click();
+}
+function qaImportWriteback(d){
+  if(!d||!Array.isArray(d.items)) throw new Error('JSON 缺少 items 数组');
+  if(!S.inquiries) S.inquiries=[];
+  const map=new Map(S.inquiries.map(i=>[i.id,i]));
+  let added=0, updated=0;
+  (d.items||[]).forEach((it,idx)=>{
+    const notes=[];
+    if(it.note) notes.push('备注：'+it.note);
+    notes.push('来源：quote-agent 回写');
+    const rec={
+      id:'qa_'+(it._fsRecordId?('fs_'+it._fsRecordId):('wb_'+Date.now()+'_'+idx)),
+      guest:it.guest||'', contact:it.contact||'', email:it.email||'',
+      date:String(it.serviceDate||'').slice(0,10), serviceDate:it.serviceDate||'',
+      city:it.city||'', country:(csCountryOf(it.city)&&csCountryOf(it.city).name)||'',
+      pax:it.pax||1, vehicle:it.vehicle||'', status:it.status||'won', route:it.route||'',
+      quote:it.quote||0, cost:it.cost||0, followUp:'', followUps:[],
+      fleetQuotes:[], note:notes.join('\n'),
+      source:'quote-agent', _fsRecordId:it._fsRecordId||'', _lastModified:Date.now()
+    };
+    let dup=null;
+    if(rec._fsRecordId){ dup=[...map.values()].find(i=>i._fsRecordId===rec._fsRecordId); }
+    if(!dup){ dup=[...map.values()].find(i=>i.guest===rec.guest && i.serviceDate===rec.serviceDate && i.city===rec.city && (i.guest)); }
+    if(dup){ updated++; map.set(dup.id,Object.assign({},dup,rec,{id:dup.id})); }
+    else{ added++; map.set(rec.id,rec); }
+  });
+  S.inquiries=[...map.values()];
+  saveState(S); renderInquiries(); renderAgentQueue();
+  return {added,updated,total:S.inquiries.length};
 }
 
 function renderInquiryFollowUps(){

@@ -131,6 +131,10 @@
     .head{background:#fff !important;color:#000;border-bottom:2px solid #000;border-radius:0;}
     .head h1{color:#000;}
     .head .sub,.badge{color:#555 !important;}
+    body.printing-quote #cardQuote, body.printing-dispatch #cardDispatch, body.printing-confirm #cardConfirm{display:block !important;}
+    body.printing-quote #cardDispatch, body.printing-quote #cardConfirm,
+    body.printing-dispatch #cardQuote, body.printing-dispatch #cardConfirm,
+    body.printing-confirm #cardQuote, body.printing-confirm #cardDispatch{display:none !important;}
   }
 </style>
 </head>
@@ -191,6 +195,10 @@
       <div><label class="f">接送时间</label><input type="text" id="inTime" placeholder="如 08:30"></div>
     </div>
     <div><label class="f">行程说明 / 接送点</label><textarea id="inNote" rows="2" placeholder="酒店名称、航班号、接送点等"></textarea></div>
+    <div class="grid2">
+      <div><label class="f">客户 WhatsApp</label><input type="text" id="inWA" placeholder="如 +971 50 123 4567（自动识别）"></div>
+      <div><label class="f">客户邮箱</label><input type="text" id="inEmail" placeholder="如 guest@mail.com（自动识别）"></div>
+    </div>
     <div class="price-box" style="margin-top:12px;">
       <div class="p-cell"><div class="lab">成本价</div><div class="val" id="pCost">-</div></div>
       <div class="p-cell"><div class="lab">建议报价</div><div class="val" id="pSuggest">-</div></div>
@@ -214,7 +222,10 @@
     <div class="doc" id="doc"></div>
     <div class="acts no-print">
       <button class="btn gold" id="btnCopy">复制报价</button>
+      <button class="btn ghost" id="btnSendWA">发 WhatsApp</button>
+      <button class="btn ghost" id="btnSendMail">发邮件</button>
       <button class="btn primary" id="btnPrint">打印 / 存 PDF</button>
+      <button class="btn ghost" id="btnPolish">AI 润色</button>
       <button class="btn ghost" id="btnSave">保存记录</button>
       <button class="btn ghost" id="btnDispatch">生成派车单</button>
       <button class="btn ghost" id="btnConfirm">生成确认单</button>
@@ -265,7 +276,10 @@
     <div class="doc" id="docDispatch"></div>
     <div class="acts no-print">
       <button class="btn gold" id="btnCopyDispatch">复制派车单</button>
+      <button class="btn ghost" id="btnSendDispatchWA">发 WhatsApp</button>
+      <button class="btn ghost" id="btnSendDispatchMail">发邮件</button>
       <button class="btn primary" id="btnPrintDispatch">打印派车单</button>
+      <button class="btn ghost" id="btnPolishDispatch">AI 润色</button>
       <button class="btn ghost" id="btnBackQuote">返回报价单</button>
     </div>
   </div>
@@ -298,8 +312,44 @@
     <div class="doc" id="docConfirm"></div>
     <div class="acts no-print">
       <button class="btn gold" id="btnCopyConfirm">复制确认单</button>
+      <button class="btn ghost" id="btnSendConfirmWA">发 WhatsApp</button>
+      <button class="btn ghost" id="btnSendConfirmMail">发邮件</button>
       <button class="btn primary" id="btnPrintConfirm">打印确认单</button>
+      <button class="btn ghost" id="btnPolishConfirm">AI 润色</button>
+      <button class="btn ghost" id="btnSaveWorkbench">保存到工作台</button>
       <button class="btn ghost" id="btnBackQuote2">返回报价单</button>
+    </div>
+  </div>
+
+  <div class="card no-print hidden" id="cardAiCfg">
+    <div class="step-t"><span class="step-n">⚙</span><h2>AI 设置（可选）</h2><span class="hint">用于「AI 润色」；不填则跳过</span></div>
+    <div class="grid2">
+      <div><label class="f">服务商</label><select id="aiProvider">
+        <option value="openai">OpenAI</option>
+        <option value="deepseek">DeepSeek</option>
+        <option value="kimi">Kimi (Moonshot)</option>
+        <option value="qwen">通义千问</option>
+        <option value="custom">自定义</option>
+      </select></div>
+      <div><label class="f">模型</label><input type="text" id="aiModel" placeholder="如 gpt-4o-mini / deepseek-chat"></div>
+    </div>
+    <div><label class="f">API 地址（chat/completions）</label><input type="text" id="aiUrl" placeholder="https://api.openai.com/v1/chat/completions"></div>
+    <div><label class="f">API Key</label><input type="password" id="aiKey" placeholder="sk-..."></div>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn primary" id="btnAiSave">保存设置</button>
+      <button class="btn ghost" id="btnAiTest">测试连接</button>
+      <span class="hint" id="aiCfgHint"></span>
+    </div>
+  </div>
+
+  <div class="card no-print hidden" id="cardAiOut">
+    <div class="step-t"><span class="step-n">AI</span><h2>AI 润色结果</h2><span class="hint">可再编辑后复制 / 发送</span></div>
+    <textarea id="aiOut" rows="10" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px;font-family:inherit"></textarea>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn gold" id="btnAiCopy">复制结果</button>
+      <button class="btn ghost" id="btnAiSendWA">发 WhatsApp</button>
+      <button class="btn ghost" id="btnAiSendMail">发邮件</button>
+      <button class="btn ghost" id="btnAiClose">关闭</button>
     </div>
   </div>
 
@@ -390,6 +440,14 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     m=t.match(/^(?:hi|hello|hey|good\s*(?:morning|afternoon|evening))\s*[,!]?\s*([A-Z][a-zA-Z]+)/i);
     if(m && !/^(We|I|Please|Hello|Hi|Hey|Good|Dear|Our|The|A)$/i.test(m[1])) return m[1];
     return '';
+  }
+  function qaExtractContact(t){
+    var m=t.match(/\+?\d[\d\s\-()]{7,}\d/);
+    return m?m[0].trim():'';
+  }
+  function qaExtractEmail(t){
+    var m=t.match(/[\w.+-]+@[\w-]+(\.[\w-]+)+/i);
+    return m?m[0]:'';
   }
   function qaDetectService(t){
     if(/接机|pickup|airport transfer|arrival|接站|meet.*airport/.test(t)) return '接机';
@@ -511,6 +569,10 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     $('inPax').value=pax;
     if(date) $('inDate').value=date;
     if(time) $('inTime').value=time;
+    var contact=qaExtractContact(t);
+    var email=qaExtractEmail(t);
+    if(contact) $('inWA').value=contact;
+    if(email) $('inEmail').value=email;
     var note=[];
     if(svc) note.push(svc);
     if(flight) note.push('航班 '+flight);
@@ -642,6 +704,7 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     state.orderCost=(o.cost>0)?money(o.cost):null;
     state.orderQuote=(o.quote>0)?money(o.quote):null;
     state.useOrderQ=!!state.orderQuote;
+    state.orderFsId=o._fsRecordId||'';
     if($('inDriver')){ $('inDriver').value=o.driver||''; $('inDriverTel').value=o.driverTel||o.contact||''; $('inPlate').value=o.plate||''; $('inVehDispatch').value=o.vehicle||''; $('inDispType').value=o.type==='arrival'?'机场接机 Airport Transfer':(o.type==='departure'?'机场送机 Airport Departure':(o.type==='charter'?'包车 Charter':(o.type==='transfer'?'市内接送 City Transfer':''))); $('inDispFlight').value=(o.airport?o.airport+' ': '')+(o.flight||''); $('inDispPickup').value=o.airport?((o.type==='arrival'?(o.airport+' 到达层'):'')):''; $('inDispTime').value=o.time||''; $('inDispDrop').value=''; $('inDispEmail').value=''; $('inDispWA').value=o.contact||''; $('inDispLug').value=''; $('inDispReq').value=''; $('inDispNotes').value=o.note||''; }
     if($('inConfLoc')){ $('inConfLoc').value=o.airport||''; $('inConfFlight').value=(o.flight||'')+(o.time?(' · '+o.time):''); $('inConfPickup').value=o.time||''; $('inConfDrop').value=''; $('inConfNote').value=o.route?('接机牌：'+o.guest+'；'+o.route):''; }
     $('inGuest').value=o.guest||'';
@@ -653,6 +716,8 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     if(o.route) note.push(o.route);
     if(o.note) note.push(o.note);
     $('inNote').value=note.join('；');
+    if($('inWA')){ $('inWA').value=(o.contact&&/[+\d]{6,}/.test(o.contact))?o.contact:''; }
+    if($('inEmail')){ $('inEmail').value=(o.email&&/@/.test(o.email))?o.email:''; }
     if(state.city&&cities.indexOf(state.city)>=0){
       $('selCity').value=state.city;
       renderRoutes();
@@ -1034,24 +1099,22 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     }
   }
 
-  function copyQuote(){
-    if(!p){ toast('请先选择车型'); return; }
+  function buildQuoteText(){
+    var p=state.veh, r=calc(), g=guestInfo();
+    if(!p) return '';
     var price=r.suggest!=null?('¥'+r.suggest.toLocaleString()):'待确认';
-    var text;
+    var fxRefs=r.suggest!=null?qaFxRef(r.suggest,qaCountryOf($('inRaw').value)):[];
+    var fxLine=fxRefs.length?('外币参考：≈ '+fxRefs.map(function(x){return x.cur+' '+x.amt.toLocaleString('en-US');}).join(' / ')+'（1 '+fxRefs[0].cur+'='+fxRefs[0].rate.toFixed(2)+'元）'):'';
     if(lang==='zh'){
-      text='【Elite Travel 曦驰旅游 报价】\n'
-        +'客人：'+g.g+'\n服务日期：'+g.date+(g.time?' '+g.time:'')+'\n城市：'+state.city+'\n线路：'+state.route+'\n车型：'+(p.v||'')+(p.d?'（'+p.d+'）':'')+'\n人数：'+($('inPax').value||'')+'人\n报价：'+price+'\n'+(g.note?'行程说明：'+g.note+'\n':'')+(p.n?'备注：'+p.n+'\n':'')+'有效期3天，最终以确认单为准。';
-    }else{
-      text='【Elite Travel - Quotation】\n'
-        +'Guest: '+g.g+'\nService Date: '+g.date+(g.time?' '+g.time:'')+'\nCity: '+state.city+'\nRoute: '+state.route+'\nVehicle: '+(p.v||'')+(p.d?' ('+p.d+')':'')+'\nPassengers: '+($('inPax').value||'')+'\nTotal: '+price+'\n'+(g.note?'Itinerary: '+g.note+'\n':'')+(p.n?'Note: '+p.n+'\n':'')+'Valid for 3 days, subject to final confirmation.';
+      return '【Elite Travel 曦驰旅游 报价】\n'
+        +'客人：'+g.g+'\n服务日期：'+g.date+(g.time?' '+g.time:'')+'\n城市：'+state.city+'\n线路：'+state.route+'\n车型：'+(p.v||'')+(p.d?'（'+p.d+'）':'')+'\n人数：'+($('inPax').value||'')+'人\n报价：'+price+(fxLine?'\n'+fxLine:'')+'\n'+(g.note?'行程说明：'+g.note+'\n':'')+(p.n?'备注：'+p.n+'\n':'')+'有效期3天，最终以确认单为准。';
     }
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){toast('报价已复制');},function(){fallbackCopy(text);});
-    }else{ fallbackCopy(text); }
+    return '【Elite Travel - Quotation】\n'
+      +'Guest: '+g.g+'\nService Date: '+g.date+(g.time?' '+g.time:'')+'\nCity: '+state.city+'\nRoute: '+state.route+'\nVehicle: '+(p.v||'')+(p.d?' ('+p.d+')':'')+'\nPassengers: '+($('inPax').value||'')+'\nTotal: '+price+(fxLine?'\nFX ref: ≈ '+fxRefs.map(function(x){return x.cur+' '+x.amt.toLocaleString('en-US');}).join(' / ')+' (1 '+fxRefs[0].cur+'='+fxRefs[0].rate.toFixed(2)+' CNY)':'')+'\n'+(g.note?'Itinerary: '+g.note+'\n':'')+(p.n?'Note: '+p.n+'\n':'')+'Valid for 3 days, subject to final confirmation.';
   }
-  function copyDispatch(){
+  function buildDispatchText(){
     var p=state.veh, g=guestInfo();
-    if(!p){ toast('请先选择车型'); return; }
+    if(!p) return '';
     var driver=$('inDriver').value.trim()||'(待定)';
     var dtel=$('inDriverTel').value.trim();
     var plate=$('inPlate').value.trim()||'-';
@@ -1062,42 +1125,148 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
     var drop=$('inDispDrop').value.trim();
     var lug=$('inDispLug').value.trim();
     var dtime=$('inDispTime').value.trim()||g.time;
-    var email=$('inDispEmail').value.trim();
-    var wa=$('inDispWA').value.trim();
+    var email=$('inDispEmail').value.trim()||($('inEmail')&&$('inEmail').value.trim());
+    var wa=$('inDispWA').value.trim()||($('inWA')&&$('inWA').value.trim());
     var req=$('inDispReq').value.trim();
     var notes=$('inDispNotes').value.trim();
-    var text;
     if(lang==='zh'){
-      text='【Elite Travel 派车单】\n'
+      return '【Elite Travel 派车单】\n'
         +'服务类型：'+stype+'\n日期：'+g.date+(dtime?' '+dtime:'')+(flight?'\n航班号：'+flight:'')+(pickup?'\n上车地点：'+pickup:'')+(drop?'\n送达地点：'+drop:'')+'\n乘客：'+g.g+'（'+($('inPax').value||'')+'人'+(lug?' · 行李'+lug:'')+'）\n车型：'+dveh+' · 车牌：'+plate+'\n线路：'+state.route+(g.note?' · '+g.note:'')+'\n司机：'+driver+(dtel?' · '+dtel:'')+(req?'\n特殊要求：'+req:'')+(email||wa?'\n联系人：'+(email?'邮箱 '+email:'')+(email&&wa?' · ':'')+(wa?'WhatsApp '+wa:''):'')+(notes?'\n备注：'+notes:'')+'\n请提前抵达，接人核对姓名，完成后向调度确认。';
-    }else{
-      text='【Elite Travel Dispatch】\n'
-        +'Service: '+stype+'\nDate: '+g.date+(dtime?' '+dtime:'')+(flight?'\nFlight: '+flight:'')+(pickup?'\nPick-up: '+pickup:'')+(drop?'\nDrop-off: '+drop:'')+'\nGuest: '+g.g+' ('+($('inPax').value||'')+' pax'+(lug?' · Luggage '+lug:'')+')\nVehicle: '+dveh+' · Plate: '+plate+'\nRoute: '+state.route+(g.note?' · '+g.note:'')+'\nDriver: '+driver+(dtel?' · '+dtel:'')+(req?'\nSpecial Requests: '+req:'')+(email||wa?'\nContact: '+(email?'Email '+email:'')+(email&&wa?' · ':'')+(wa?'WhatsApp '+wa:''):'')+(notes?'\nNotes: '+notes:'')+'\nPlease arrive early, verify guest name, and confirm with dispatcher.';
     }
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){toast('派车单已复制');},function(){fallbackCopy(text,'派车单');});
-    }else{ fallbackCopy(text,'派车单'); }
+    return '【Elite Travel Dispatch】\n'
+      +'Service: '+stype+'\nDate: '+g.date+(dtime?' '+dtime:'')+(flight?'\nFlight: '+flight:'')+(pickup?'\nPick-up: '+pickup:'')+(drop?'\nDrop-off: '+drop:'')+'\nGuest: '+g.g+' ('+($('inPax').value||'')+' pax'+(lug?' · Luggage '+lug:'')+')\nVehicle: '+dveh+' · Plate: '+plate+'\nRoute: '+state.route+(g.note?' · '+g.note:'')+'\nDriver: '+driver+(dtel?' · '+dtel:'')+(req?'\nSpecial Requests: '+req:'')+(email||wa?'\nContact: '+(email?'Email '+email:'')+(email&&wa?' · ':'')+(wa?'WhatsApp '+wa:''):'')+(notes?'\nNotes: '+notes:'')+'\nPlease arrive early, verify guest name, and confirm with dispatcher.';
   }
-  function copyConfirm(){
+  function buildConfirmText(){
     var p=state.veh, r=calc(), g=guestInfo();
-    if(!p){ toast('请先选择车型'); return; }
+    if(!p) return '';
     var price=r.suggest!=null?('¥'+r.suggest.toLocaleString()):'待确认';
     var loc=$('inConfLoc').value.trim(), flight=$('inConfFlight').value.trim();
     var pickup=$('inConfPickup').value.trim()||g.time, drop=$('inConfDrop').value.trim();
     var inc=$('inConfInc').value.trim(), dur=$('inConfDur').value.trim();
     var dep=$('inConfDep').value.trim(), bal=$('inConfBal').value.trim(), pay=$('inConfPay').value.trim();
     var note=$('inConfNote').value.trim();
-    var text;
     if(lang==='zh'){
-      text='【Elite Travel 曦驰旅游 服务确认单】\n'
+      return '【Elite Travel 曦驰旅游 服务确认单】\n'
         +'客人：'+g.g+'\n服务日期：'+g.date+(g.time?' '+g.time:'')+'\n接送地点：'+(loc||'-')+'\n航班/到达：'+(flight||'-')+'\n接车时间：'+(pickup||'-')+'\n下车地点：'+(drop||'-')+'\n线路：'+state.route+'\n车型：'+(p.v||'')+(p.d?'（'+p.d+'）':'')+'\n人数：'+($('inPax').value||'')+'人\n时长：'+(dur||'-')+'\n服务费：'+price+'\n包含：'+(inc||'司机、车辆、油费、路桥费')+'\n订金：'+(dep||'-')+'\n余款：'+(bal||'-')+'\n付款方式：'+(pay||'-')+(note?'\n备注：'+note:'')+'\n请核对以上信息，如需变更请提前24小时告知。';
-    }else{
-      text='【Elite Travel - Service Confirmation】\n'
-        +'Guest: '+g.g+'\nService Date: '+g.date+(g.time?' '+g.time:'')+'\nPick-up Location: '+(loc||'-')+'\nFlight / ETA: '+(flight||'-')+'\nPick-up Time: '+(pickup||'-')+'\nDrop-off Location: '+(drop||'-')+'\nRoute: '+state.route+'\nVehicle: '+(p.v||'')+(p.d?' ('+p.d+')':'')+'\nGuests: '+($('inPax').value||'')+'\nDuration: '+(dur||'-')+'\nTotal Price: '+price+'\nIncludes: '+(inc||'Driver, vehicle, fuel, tolls')+'\nDeposit: '+(dep||'-')+'\nBalance: '+(bal||'-')+'\nPayment: '+(pay||'-')+(note?'\nNote: '+note:'')+'\nPlease review the details. Changes require 24-hour notice.';
     }
+    return '【Elite Travel - Service Confirmation】\n'
+      +'Guest: '+g.g+'\nService Date: '+g.date+(g.time?' '+g.time:'')+'\nPick-up Location: '+(loc||'-')+'\nFlight / ETA: '+(flight||'-')+'\nPick-up Time: '+(pickup||'-')+'\nDrop-off Location: '+(drop||'-')+'\nRoute: '+state.route+'\nVehicle: '+(p.v||'')+(p.d?' ('+p.d+')':'')+'\nGuests: '+($('inPax').value||'')+'\nDuration: '+(dur||'-')+'\nTotal Price: '+price+'\nIncludes: '+(inc||'Driver, vehicle, fuel, tolls')+'\nDeposit: '+(dep||'-')+'\nBalance: '+(bal||'-')+'\nPayment: '+(pay||'-')+(note?'\nNote: '+note:'')+'\nPlease review the details. Changes require 24-hour notice.';
+  }
+  function copyQuote(){
+    var text=buildQuoteText();
+    if(!text){ toast('请先选择车型'); return; }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){toast('报价已复制');},function(){fallbackCopy(text);});
+    }else{ fallbackCopy(text); }
+  }
+  function copyDispatch(){
+    var text=buildDispatchText();
+    if(!text){ toast('请先选择车型'); return; }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){toast('派车单已复制');},function(){fallbackCopy(text,'派车单');});
+    }else{ fallbackCopy(text,'派车单'); }
+  }
+  function copyConfirm(){
+    var text=buildConfirmText();
+    if(!text){ toast('请先选择车型'); return; }
     if(navigator.clipboard&&navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).then(function(){toast('确认单已复制');},function(){fallbackCopy(text,'确认单');});
     }else{ fallbackCopy(text,'确认单'); }
+  }
+  /* ===== 一键发送（WhatsApp / 邮件） ===== */
+  function qaClientWA(){ var v=($('inWA')&&$('inWA').value||'').trim(); return v.replace(/[^\d]/g,''); }
+  function qaClientEmail(){ return ($('inEmail')&&$('inEmail').value||'').trim(); }
+  function sendWhatsApp(text,label){
+    var digits=qaClientWA();
+    if(!digits){ toast('请先在「订单信息」填写客户 WhatsApp 号码'); return; }
+    window.open('https://wa.me/'+digits+'?text='+encodeURIComponent(text),'_blank');
+    toast('已打开 WhatsApp，核对后发送');
+  }
+  function sendMail(text,label){
+    var em=qaClientEmail();
+    if(!em){ toast('请先在「订单信息」填写客户邮箱'); return; }
+    window.open('mailto:'+em+'?subject='+encodeURIComponent('Elite Travel - '+label)+'&body='+encodeURIComponent(text),'_blank');
+    toast('已打开邮件客户端');
+  }
+  /* ===== 保存到工作台（回写闭环） ===== */
+  function saveWorkbench(){
+    var p=state.veh, g=guestInfo();
+    if(!p){ toast('请先选择车型'); return; }
+    var r=calc();
+    var items=[{
+      guest:g.g, contact:qaClientWA(), email:qaClientEmail(),
+      serviceDate:g.date, time:g.time, city:state.city, route:state.route,
+      vehicle:(p.v||''), pax:parseInt($('inPax').value,10)||1,
+      quote:r.suggest||0, cost:r.cost||0, status:'won',
+      note:g.note||'', _fsRecordId:state.orderFsId||''
+    }];
+    var blob=new Blob([JSON.stringify({items:items},null,2)],{type:'application/json'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='qa-writeback.json'; a.click();
+    toast('已下载回写文件 → 在工作台「询价管理」点「导入 quote-agent 回写」');
+  }
+  /* ===== 打印（作用域） ===== */
+  function printScoped(kind){
+    document.body.classList.remove('printing-quote','printing-dispatch','printing-confirm');
+    document.body.classList.add('printing-'+kind);
+    var rem=function(){ document.body.classList.remove('printing-'+kind); window.removeEventListener('afterprint',rem); };
+    window.addEventListener('afterprint',rem);
+    window.print();
+  }
+  /* ===== AI 润色 ===== */
+  var AI_PRESETS={ openai:{url:'https://api.openai.com/v1/chat/completions',model:'gpt-4o-mini'}, deepseek:{url:'https://api.deepseek.com/chat/completions',model:'deepseek-chat'}, kimi:{url:'https://api.moonshot.cn/v1/chat/completions',model:'moonshot-v1-8k'}, qwen:{url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',model:'qwen-plus'} };
+  var QA_AI_KEY='qa-ai-cfg';
+  function qaAiCfg(){
+    var c={provider:'openai',url:'',key:'',model:''};
+    try{ c=Object.assign(c,JSON.parse(localStorage.getItem(QA_AI_KEY)||'{}')); }catch(e){}
+    return c;
+  }
+  function fillAiCfgInputs(){
+    var c=qaAiCfg();
+    $('aiProvider').value=c.provider||'openai';
+    $('aiModel').value=c.model||'';
+    $('aiUrl').value=c.url||'';
+    $('aiKey').value=c.key||'';
+  }
+  function applyAiPreset(force){
+    var pv=$('aiProvider').value;
+    var p=AI_PRESETS[pv];
+    var hint=$('aiCfgHint');
+    if(!p){ if(hint) hint.textContent='自定义：请自行填写 API 地址与模型'; return; }
+    if(force || !$('aiUrl').value) $('aiUrl').value=p.url;
+    if(force || !$('aiModel').value) $('aiModel').value=p.model;
+    if(hint) hint.textContent='预设：'+p.model+' @ '+p.url.replace('https://','');
+  }
+  function saveAiCfg(){
+    var c={provider:$('aiProvider').value, url:$('aiUrl').value.trim(), key:$('aiKey').value.trim(), model:$('aiModel').value.trim()};
+    try{ localStorage.setItem(QA_AI_KEY,JSON.stringify(c)); }catch(e){}
+    toast('AI 设置已保存');
+  }
+  function testAi(){
+    var c=qaAiCfg(); if(!c.key){ toast('请先填入 API Key'); return; }
+    var url=c.url||AI_PRESETS[c.provider].url; var model=c.model||AI_PRESETS[c.provider].model;
+    if(!url||!model){ toast('请先填 API 地址和模型'); return; }
+    toast('测试连接…');
+    fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+c.key,'Content-Type':'application/json'},body:JSON.stringify({model:model,messages:[{role:'user',content:'ping'}]})})
+      .then(function(r){ if(r.ok){ toast('连接成功'); var h=$('aiCfgHint'); if(h) h.textContent='✓ 连接成功'; } else { toast('连接失败 HTTP '+r.status); var h2=$('aiCfgHint'); if(h2) h2.textContent='✗ HTTP '+r.status; } })
+      .catch(function(e){ toast('网络错误：'+(e.message||e)); });
+  }
+  function polishDoc(kind){
+    var text=kind==='dispatch'?buildDispatchText():(kind==='confirm'?buildConfirmText():buildQuoteText());
+    if(!text){ toast('请先生成内容'); return; }
+    var c=qaAiCfg();
+    if(!c.key){ toast('请先在 AI 设置填入 API Key'); showCard('cardAiCfg'); return; }
+    var url=c.url||AI_PRESETS[c.provider].url; var model=c.model||AI_PRESETS[c.provider].model;
+    var sys='你是 Elite Travel 曦驰旅游（接送包车服务）的客服助理。用户发来一段待发送给客户的文本（报价/派车单/确认单），请润色：更专业、通顺、礼貌。保留全部事实与数字（价格、日期、时间、人数、航班、地点、条款），保持原文换行结构，用原文语言回复，不要增删价格或关键信息。';
+    toast('AI 润色中…');
+    fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+c.key,'Content-Type':'application/json'},body:JSON.stringify({model:model,messages:[{role:'system',content:sys},{role:'user',content:text}]})})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(j){
+        var out=(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
+        if(!out) throw new Error('空响应');
+        $('aiOut').value=out; showCard('cardAiOut'); window.scrollTo({top:0,behavior:'smooth'});
+        toast('润色完成');
+      })
+      .catch(function(e){ toast('润色失败：'+(e.message||e)); });
   }
   function fallbackCopy(text,label){    label=label||'报价';
     var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
@@ -1181,10 +1350,10 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   $('langZh').addEventListener('click',function(){ lang='zh'; this.classList.add('on'); $('langEn').classList.remove('on'); renderQuote(); });
   $('langEn').addEventListener('click',function(){ lang='en'; this.classList.add('on'); $('langZh').classList.remove('on'); renderQuote(); });
   $('btnCopy').addEventListener('click',copyQuote);
-  $('btnPrint').addEventListener('click',function(){
-    $('cardDispatch').classList.add('hidden');
-    window.print();
-  });
+  $('btnSendWA').addEventListener('click',function(){ sendWhatsApp(buildQuoteText(),'Quotation'); });
+  $('btnSendMail').addEventListener('click',function(){ sendMail(buildQuoteText(),'Quotation'); });
+  $('btnPrint').addEventListener('click',function(){ printScoped('quote'); });
+  $('btnPolish').addEventListener('click',function(){ polishDoc('quote'); });
   $('btnSave').addEventListener('click',saveHist);
   $('btnUseOrderQ').addEventListener('click',function(){ state.useOrderQ=true; syncOrder(); toast('按订单报价'); });
   $('btnUseCalcQ').addEventListener('click',function(){ state.useOrderQ=false; syncOrder(); toast('按成本+利润率重算'); });
@@ -1208,12 +1377,15 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   $('langZh2').addEventListener('click',function(){ lang='zh'; this.classList.add('on'); $('langEn2').classList.remove('on'); $('langZh').classList.add('on'); $('langEn').classList.remove('on'); renderDispatch(); renderQuote(); });
   $('langEn2').addEventListener('click',function(){ lang='en'; this.classList.add('on'); $('langZh2').classList.remove('on'); $('langEn').classList.add('on'); $('langZh').classList.remove('on'); renderDispatch(); renderQuote(); });
   $('btnCopyDispatch').addEventListener('click',copyDispatch);
+  $('btnSendDispatchWA').addEventListener('click',function(){ sendWhatsApp(buildDispatchText(),'Dispatch'); });
+  $('btnSendDispatchMail').addEventListener('click',function(){ sendMail(buildDispatchText(),'Dispatch'); });
   $('btnPrintDispatch').addEventListener('click',function(){
     renderDispatch();
     $('cardQuote').classList.add('hidden');
     $('cardDispatch').classList.remove('hidden');
-    window.print();
+    printScoped('dispatch');
   });
+  $('btnPolishDispatch').addEventListener('click',function(){ polishDoc('dispatch'); });
   $('btnClearHist').addEventListener('click',function(){
     if(confirm('确定清空全部历史报价？')){ localStorage.removeItem(histKey); renderHist(); toast('已清空'); }
   });
@@ -1236,15 +1408,36 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
   $('langZh3').addEventListener('click',function(){ lang='zh'; this.classList.add('on'); $('langEn3').classList.remove('on'); $('langZh').classList.add('on'); $('langEn').classList.remove('on'); renderConfirm(); renderQuote(); });
   $('langEn3').addEventListener('click',function(){ lang='en'; this.classList.add('on'); $('langZh3').classList.remove('on'); $('langEn').classList.add('on'); $('langZh').classList.remove('on'); renderConfirm(); renderQuote(); });
   $('btnCopyConfirm').addEventListener('click',copyConfirm);
+  $('btnSendConfirmWA').addEventListener('click',function(){ sendWhatsApp(buildConfirmText(),'Confirmation'); });
+  $('btnSendConfirmMail').addEventListener('click',function(){ sendMail(buildConfirmText(),'Confirmation'); });
   $('btnPrintConfirm').addEventListener('click',function(){
     renderConfirm();
     $('cardQuote').classList.add('hidden');
     $('cardDispatch').classList.add('hidden');
     $('cardConfirm').classList.remove('hidden');
-    window.print();
+    printScoped('confirm');
   });
+  $('btnPolishConfirm').addEventListener('click',function(){ polishDoc('confirm'); });
+  $('btnSaveWorkbench').addEventListener('click',saveWorkbench);
+
+  /* ---------- AI 设置 / 润色结果 ---------- */
+  $('btnAiSave').addEventListener('click',saveAiCfg);
+  $('btnAiTest').addEventListener('click',testAi);
+  $('btnAiCopy').addEventListener('click',function(){
+    var v=$('aiOut').value;
+    if(!v){ toast('没有可复制的内容'); return; }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(v).then(function(){toast('已复制润色结果');},function(){fallbackCopy(v,'润色结果');});
+    }else{ fallbackCopy(v,'润色结果'); }
+  });
+  $('btnAiSendWA').addEventListener('click',function(){ sendWhatsApp($('aiOut').value,'Polished'); });
+  $('btnAiSendMail').addEventListener('click',function(){ sendMail($('aiOut').value,'Polished'); });
+  $('btnAiClose').addEventListener('click',function(){ $('cardAiOut').classList.add('hidden'); });
+  $('aiProvider').addEventListener('change',function(){ applyAiPreset(true); });
 
   /* ---------- init ---------- */
+  fillAiCfgInputs();
+  applyAiPreset();
   buildIndex();
   renderCities();
   renderHist();
