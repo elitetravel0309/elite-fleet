@@ -1803,6 +1803,27 @@
       "status": "inquiry",
       "note": "6人家庭(2成人+4儿童10-16岁)；07:00酒店接；无导游英文司机；缆车上+滑道下含门票摆渡；长城停留3-4h；报价2300=车1000+成人票500(250x2)+儿童票800(200x4)；儿童票为优惠价；滑道关闭可退滑道部分",
       "city": "北京"
+    },
+    {
+      "id": "ord_20261222_legendale",
+      "date": "2026-12-22",
+      "time": "",
+      "type": "charter",
+      "airport": "",
+      "flight": "",
+      "route": "北京乐饭店(Legendale Hotel) → 慕田峪长城 → 返回酒店",
+      "vehicle": "五座",
+      "pax": 2,
+      "guest": "Legendale couple (2 pax)",
+      "contact": "",
+      "driver": "",
+      "plate": "",
+      "price": 0,
+      "quote": 1200,
+      "cost": 0,
+      "status": "inquiry",
+      "note": "2人(夫妻)；乐饭店往返慕田峪；五座英文司机；含油/路桥/停车/长城等待；无购物点；报价1200=车700+门票250x2(含门票/摆渡/往返缆车)；总行程约6-7h；接车时间待确认",
+      "city": "北京"
     }
   ],
   "vehicles": [
@@ -5174,13 +5195,29 @@
       "contact": "",
       "createdAt": "2026-10-17",
       "updatedAt": "2026-10-17"
+    },
+    {
+      "id": "gst_legendale_couple",
+      "name": "Legendale couple (2 pax)",
+      "phone": "",
+      "whatsapp": "",
+      "wechat": "",
+      "email": "",
+      "nationality": "",
+      "city": "北京",
+      "note": "2人(夫妻)，2026-12-22 乐饭店→慕田峪 五座英文司机 报价1200 询价中；姓名待补充",
+      "totalOrders": 1,
+      "totalSpent": 0,
+      "contact": "",
+      "createdAt": "2026-10-17",
+      "updatedAt": "2026-10-17"
     }
   ],
   "_meta": {
     "built": "2026-09-18T02:01:31.000Z",
     "source": "cost-entry-alfard",
-    "orderCount": 80,
-    "guestCount": 41,
+    "orderCount": 81,
+    "guestCount": 42,
     "lastOrderUpdate": "2026-10-17T00:00:00Z"
   },
   "_lastModified": 1727222400000,
