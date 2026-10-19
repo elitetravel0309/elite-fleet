@@ -1866,6 +1866,27 @@
             "status": "inquiry",
             "note": "11/3 09:00首都接→慕田峪→天坛→前门大街→22:00前返首都机场(11/4 02:00国际航班起飞)；2人五座车中文司机；报价1000全包(车/司机/油/路桥/停车/等待约13h)；超时100/小时；门票另计可代购：慕田峪250/人(门票+摆渡+往返缆车)x2=500、天坛大门票15/人或联票34/人、前门大街免费；到达航班号待客户提供",
             "city": "北京"
+        },
+        {
+            "id": "ord_20261026_jinshanling_sunrise",
+            "date": "2026-10-26",
+            "time": "03:30",
+            "type": "charter",
+            "airport": "",
+            "flight": "",
+            "route": "北京天坛希尔顿花园酒店 → 金山岭长城(拍日出+徒步4-5h) → 返回北京",
+            "vehicle": "五座",
+            "pax": 1,
+            "guest": "Hilton Garden Inn sunrise traveler",
+            "contact": "",
+            "driver": "",
+            "plate": "",
+            "price": 0,
+            "quote": 1100,
+            "cost": 0,
+            "status": "inquiry",
+            "note": "10/26(周一)03:30酒店出发→金山岭拍日出(10月底日出约06:25,景区旺季04:00开门)→徒步4-5h→返北京约13:30;1人(人数待确认)五座车;英文司机报价1100全包(车/司机/油/路桥/停车/等待约10h),中文司机1000;超时100/h;门票65/人另计可代购;徒步终点接驳方式待与客人确认",
+            "city": "北京"
         }
     ],
     "vehicles": [
@@ -5279,16 +5300,29 @@
             "note": "11/3 首都机场中转包车询价邮件；到达航班号待客户提供；姓名联系方式待补充",
             "createdAt": "",
             "updatedAt": ""
+        },
+        {
+            "id": "gst_jinshanling_sunrise",
+            "name": "Hilton Garden Inn sunrise traveler",
+            "phone": "",
+            "wechat": "",
+            "contact": "",
+            "country": "",
+            "city": "北京",
+            "source": "email",
+            "note": "10/26 金山岭拍日出询价邮件；姓名/联系方式/人数待补充",
+            "createdAt": "",
+            "updatedAt": ""
         }
     ],
     "_meta": {
         "built": "2026-09-18T02:01:31.000Z",
         "source": "cost-entry-alfard",
-        "orderCount": 83,
-        "guestCount": 44,
+        "orderCount": 84,
+        "guestCount": 45,
         "lastOrderUpdate": "2026-10-19T00:00:00Z"
     },
-    "_lastModified": 1792380232760,
+    "_lastModified": 1792386575384,
     "inquiries": [],
     "payments": [
         {
