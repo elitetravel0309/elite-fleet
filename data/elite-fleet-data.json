@@ -1887,6 +1887,27 @@
             "status": "inquiry",
             "note": "10/26(周一)03:30酒店出发→金山岭拍日出(10月底日出约06:25,景区旺季04:00开门)→徒步4-5h→返北京约13:30;1人(人数待确认)五座车;英文司机报价1100全包(车/司机/油/路桥/停车/等待约10h),中文司机1000;超时100/h;门票65/人另计可代购;徒步终点接驳方式待与客人确认",
             "city": "北京"
+        },
+        {
+            "id": "ord_20261106_jaimy_mutianyu",
+            "date": "2026-11-06",
+            "time": "",
+            "type": "charter",
+            "airport": "",
+            "flight": "",
+            "route": "北京东圣酒店(East Sacred Hotel Tiananmen, 王府井) → 慕田峪长城 → 返回酒店",
+            "vehicle": "五座轿车",
+            "pax": 3,
+            "guest": "Jaimy Verbauwe",
+            "contact": "jaimy_verbauwe@telenet.be / +86 15026456060",
+            "driver": "",
+            "plate": "",
+            "price": 0,
+            "quote": 880,
+            "cost": 0,
+            "status": "confirmed",
+            "note": "11/6(或11/7备选)酒店往返慕田峪；3人五座轿车；880全包(车/司机/路桥/油/停车/接送/长城等待)；定金440(50%)已收PayPal(10/18),尾款440服务日付；微信/支付宝/PayPal/现金；门票250/人x3=750可代购(含门票+摆渡+往返缆车),待客人提供姓名护照；接车时间待确认；确认邮件10/19发送",
+            "city": "北京"
         }
     ],
     "vehicles": [
@@ -5313,16 +5334,29 @@
             "note": "10/26 金山岭拍日出询价邮件；姓名/联系方式/人数待补充",
             "createdAt": "",
             "updatedAt": ""
+        },
+        {
+            "id": "gst_jaimy",
+            "name": "Jaimy Verbauwe",
+            "phone": "+86 15026456060",
+            "wechat": "",
+            "contact": "jaimy_verbauwe@telenet.be",
+            "country": "",
+            "city": "北京",
+            "source": "whatsapp",
+            "note": "11/6 慕田峪包车；11/6确认（11/7为备选日）；3人五座；总价880；定金440 PayPal已付(10/18)",
+            "createdAt": "",
+            "updatedAt": ""
         }
     ],
     "_meta": {
         "built": "2026-09-18T02:01:31.000Z",
         "source": "cost-entry-alfard",
-        "orderCount": 84,
-        "guestCount": 45,
+        "orderCount": 85,
+        "guestCount": 46,
         "lastOrderUpdate": "2026-10-19T00:00:00Z"
     },
-    "_lastModified": 1792386575384,
+    "_lastModified": 1792387006942,
     "inquiries": [],
     "payments": [
         {
