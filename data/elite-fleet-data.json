@@ -1845,6 +1845,27 @@
             "status": "inquiry",
             "note": "10/25(周日)10:30酒店接→司马台长城→古北水镇夜游→约21:00-21:30返酒店；2人五座车英文司机；车费报价1300全包(车/司机/油/路桥/停车/等待约10-11h)；门票另计：古北水镇+司马台夜游(含往返索道)联票260/人×2=520可代购(官方小程序价)；客人姓名联系方式待补充",
             "city": "北京"
+        },
+        {
+            "id": "ord_20261103_pek_mutianyu",
+            "date": "2026-11-03",
+            "time": "09:00",
+            "type": "charter",
+            "airport": "首都机场PEK",
+            "flight": "",
+            "route": "首都机场 → 慕田峪长城(缆车往返) → 天坛 → 前门大街 → 22:00前返首都机场",
+            "vehicle": "五座",
+            "pax": 2,
+            "guest": "PEK layover travelers (2 pax)",
+            "contact": "",
+            "driver": "",
+            "plate": "",
+            "price": 0,
+            "quote": 1200,
+            "cost": 0,
+            "status": "inquiry",
+            "note": "11/3 09:00首都接→慕田峪→天坛→前门大街→22:00前返首都机场(11/4 02:00国际航班起飞)；2人五座车英文司机；报价1200全包(车/司机/油/路桥/停车/等待约13h)；超时100/小时；门票另计可代购：慕田峪250/人(门票+摆渡+往返缆车)x2=500、天坛大门票15/人或联票34/人、前门大街免费；到达航班号待客户提供",
+            "city": "北京"
         }
     ],
     "vehicles": [
@@ -5245,16 +5266,29 @@
             "note": "10/25 司马台+古北水镇询价邮件；客人姓名与联系方式待补充",
             "createdAt": "",
             "updatedAt": ""
+        },
+        {
+            "id": "gst_pek_nov3_travelers",
+            "name": "PEK layover travelers (2 pax)",
+            "phone": "",
+            "wechat": "",
+            "contact": "",
+            "country": "",
+            "city": "北京",
+            "source": "email",
+            "note": "11/3 首都机场中转包车询价邮件；到达航班号待客户提供；姓名联系方式待补充",
+            "createdAt": "",
+            "updatedAt": ""
         }
     ],
     "_meta": {
         "built": "2026-09-18T02:01:31.000Z",
         "source": "cost-entry-alfard",
-        "orderCount": 82,
-        "guestCount": 43,
-        "lastOrderUpdate": "2026-10-18T00:00:00Z"
+        "orderCount": 83,
+        "guestCount": 44,
+        "lastOrderUpdate": "2026-10-19T00:00:00Z"
     },
-    "_lastModified": 1792330309040,
+    "_lastModified": 1792374335886,
     "inquiries": [],
     "payments": [
         {
