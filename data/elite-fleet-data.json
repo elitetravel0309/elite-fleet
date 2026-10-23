@@ -1929,6 +1929,27 @@
             "status": "confirmed",
             "note": "11/2(周一)06:30-06:45国际艺苑酒店(Guo Ji Yi Yuan Hotel,北京东城区王府井大街48号100006)接→慕田峪长城(车程约1.5h)→回市区游览2-3景点及晚餐(具体地点待告)→23:00前送PEK T3(客人11/3 01:55 CA907飞马德里);6成人+6大行李,7座车不够,需9座或大马(哪个便宜用哪个);总价RMB1500固定全包(车/司机/油/路桥/停车/长城等待/酒店接/机场送);50%定金USD115已收(PayPal,10/21),余额服务日收;司机信息提前1天发;游览长城期间行李锁车内",
             "city": "北京"
+        },
+        {
+            "id": "ord_20261026_rima_arrival",
+            "date": "2026-10-26",
+            "time": "09:15",
+            "type": "arrival",
+            "airport": "上海浦东PVG T2",
+            "flight": "EY866 (Etihad)",
+            "route": "PVG T2 → Holiday Inn Shanghai Pudong Nanpu (55 Huanlong Road, 浦东)",
+            "vehicle": "待定（5人+4大行李箱+5登机箱）",
+            "pax": 5,
+            "guest": "Rima Rawady（接机牌 Team Mozart Chahine）",
+            "contact": "",
+            "driver": "",
+            "plate": "",
+            "price": 0,
+            "quote": 0,
+            "cost": 0,
+            "status": "confirmed",
+            "note": "10/26接机已确认：Etihad EY866 约09:15到达PVG T2，举牌'Team Mozart Chahine'接机并送酒店；5人+4大行李箱+5登机箱（询价时行李为5大箱，确认邮件为4大箱）；已收USD108 via Alipay（2026-10-23邮件确认到账）；司机联系方式提前1天发；历史询价10/26-11/1 Music China展会包车两方案(Option1全程14座¥10,800/Option2日常7座+14座专跑机场¥6,800)未最终选定，本单为其中接机部分；酒店Holiday Inn Shanghai Pudong Nanpu 55 Huanlong Road 浦东",
+            "city": "上海"
         }
     ],
     "vehicles": [
@@ -5383,16 +5404,31 @@
             "createdAt": "2026-10-23",
             "updatedAt": "2026-10-23",
             "_lastModified": 1792725314366
+        },
+        {
+            "id": "gst_rima_rawady",
+            "name": "Rima Rawady",
+            "phone": "",
+            "whatsapp": "",
+            "wechat": "",
+            "email": "",
+            "nationality": "",
+            "city": "上海",
+            "note": "Music China展会团5人(10/26-11/1)，接机牌名'Team Mozart Chahine'；10/26 PVG接机已确认+已收USD108；酒店Holiday Inn Shanghai Pudong Nanpu(55 Huanlong Road)",
+            "contact": "",
+            "createdAt": "2026-10-23",
+            "updatedAt": "2026-10-23",
+            "_lastModified": 1792758214094
         }
     ],
     "_meta": {
         "built": "2026-09-18T02:01:31.000Z",
         "source": "cost-entry-alfard",
-        "orderCount": 86,
+        "orderCount": 87,
         "guestCount": 46,
         "lastOrderUpdate": "2026-10-23T00:00:00Z"
     },
-    "_lastModified": 1792725314366,
+    "_lastModified": 1792758214094,
     "inquiries": [],
     "payments": [
         {
@@ -5420,6 +5456,19 @@
             "status": "received",
             "note": "50% deposit of total RMB 1,500; balance payable on service day",
             "_lastModified": 1792725314366
+        },
+        {
+            "id": "pay_20261026_rima_alipay",
+            "orderId": "ord_20261026_rima_arrival",
+            "guest": "Rima Rawady",
+            "amount": 108,
+            "currency": "USD",
+            "method": "Alipay",
+            "type": "定金",
+            "date": "2026-10-23",
+            "status": "received",
+            "note": "USD 108 via Alipay 确认收到（2026-10-23）；总价/尾款口径待确认（历史报价方案未定）",
+            "_lastModified": 1792758214094
         }
     ],
     "driverRatings": [],
