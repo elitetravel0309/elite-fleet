@@ -1908,6 +1908,27 @@
             "status": "confirmed",
             "note": "11/6(或11/7备选)酒店往返慕田峪；3人五座轿车；880全包(车/司机/路桥/油/停车/接送/长城等待)；定金440(50%)已收PayPal(10/18),尾款440服务日付；微信/支付宝/PayPal/现金；门票250/人x3=750可代购(含门票+摆渡+往返缆车),待客人提供姓名护照；接车时间待确认；确认邮件10/19发送",
             "city": "北京"
+        },
+        {
+            "id": "ord_20261102_esther",
+            "date": "2026-11-02",
+            "time": "06:30",
+            "type": "charter",
+            "airport": "首都机场PEK T3",
+            "flight": "CA907 (dep 11/3 01:55)",
+            "route": "国际艺苑酒店(王府井大街48号) → 慕田峪长城 → 市区游览2-3景点+晚餐 → PEK首都机场T3",
+            "vehicle": "九座/大马（取价低者）",
+            "pax": 6,
+            "guest": "Esther Zugasti 一行",
+            "contact": "ezugasti@genesal.com",
+            "driver": "",
+            "plate": "",
+            "price": 1500,
+            "quote": 1500,
+            "cost": 0,
+            "status": "confirmed",
+            "note": "11/2(周一)06:30-06:45国际艺苑酒店(Guo Ji Yi Yuan Hotel,北京东城区王府井大街48号100006)接→慕田峪长城(车程约1.5h)→回市区游览2-3景点及晚餐(具体地点待告)→23:00前送PEK T3(客人11/3 01:55 CA907飞马德里);6成人+6大行李,7座车不够,需9座或大马(哪个便宜用哪个);总价RMB1500固定全包(车/司机/油/路桥/停车/长城等待/酒店接/机场送);50%定金USD115已收(PayPal,10/21),余额服务日收;司机信息提前1天发;游览长城期间行李锁车内",
+            "city": "北京"
         }
     ],
     "vehicles": [
@@ -5347,16 +5368,31 @@
             "note": "11/6 慕田峪包车；11/6确认（11/7为备选日）；3人五座；总价880；定金440 PayPal已付(10/18)",
             "createdAt": "",
             "updatedAt": ""
+        },
+        {
+            "id": "gst_esther_zugasti",
+            "name": "Esther Zugasti",
+            "phone": "615739482",
+            "whatsapp": "",
+            "wechat": "",
+            "email": "ezugasti@genesal.com",
+            "nationality": "西班牙",
+            "city": "北京",
+            "note": "6人(6成人+6大行李)，2026-11-02 国际艺苑酒店→慕田峪→市区→PEK T3送机 九座/大马包车；Genesal Energy 战略发展总监",
+            "contact": "ezugasti@genesal.com",
+            "createdAt": "2026-10-23",
+            "updatedAt": "2026-10-23",
+            "_lastModified": 1792725314366
         }
     ],
     "_meta": {
         "built": "2026-09-18T02:01:31.000Z",
         "source": "cost-entry-alfard",
-        "orderCount": 85,
+        "orderCount": 86,
         "guestCount": 46,
-        "lastOrderUpdate": "2026-10-19T00:00:00Z"
+        "lastOrderUpdate": "2026-10-23T00:00:00Z"
     },
-    "_lastModified": 1792387006942,
+    "_lastModified": 1792725314366,
     "inquiries": [],
     "payments": [
         {
@@ -5371,6 +5407,19 @@
             "status": "received",
             "note": "50% deposit of RMB 1,250; balance RMB 625 payable on service day",
             "_lastModified": 1791382972170
+        },
+        {
+            "id": "pay_20261102_esther_dep",
+            "orderId": "ord_20261102_esther",
+            "guest": "Esther Zugasti",
+            "amount": 115,
+            "currency": "USD",
+            "method": "PayPal",
+            "type": "定金",
+            "date": "2026-10-21",
+            "status": "received",
+            "note": "50% deposit of total RMB 1,500; balance payable on service day",
+            "_lastModified": 1792725314366
         }
     ],
     "driverRatings": [],
