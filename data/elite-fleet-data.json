@@ -1950,6 +1950,27 @@
             "status": "confirmed",
             "note": "10/26接机已确认：Etihad EY866 约09:15到达PVG T2，举牌'Team Mozart Chahine'接机并送酒店；5人+4大行李箱+5登机箱（询价时行李为5大箱，确认邮件为4大箱）；已收USD108 via Alipay（2026-10-23邮件确认到账）；司机联系方式提前1天发；历史询价10/26-11/1 Music China展会包车两方案(Option1全程14座¥10,800/Option2日常7座+14座专跑机场¥6,800)未最终选定，本单为其中接机部分；酒店Holiday Inn Shanghai Pudong Nanpu 55 Huanlong Road 浦东",
             "city": "上海"
+        },
+        {
+            "id": "ord_20261026_benjamin_suzhou",
+            "date": "2026-10-26",
+            "time": "06:00",
+            "type": "charter",
+            "airport": "上海浦东PVG",
+            "flight": "arrival 05:10（航班号待客人提供）",
+            "route": "PVG接机 → THE KUNLUN JING AN(华山路上250号) → 苏州明志科技(西同路1999号) → 苏州利达铸造(阳澄湖镇澄阳路1号,相城区) → 回THE KUNLUN JING AN",
+            "vehicle": "五座轿车（英文司机）",
+            "pax": 2,
+            "guest": "Benjamin Seefried（2人，德国商务）",
+            "contact": "",
+            "driver": "",
+            "plate": "",
+            "price": 0,
+            "quote": 2000,
+            "cost": 0,
+            "status": "quoted",
+            "note": "10/26(周一)全天约12.5h(06:00接机-18:30回酒店)：05:10航班落地PVG举牌接机→THE KUNLUN JING AN(静安华山路250号,预计08:00前到)→08:30出发苏州→10:30-12:30明志科技→12:30-14:30午餐转场→14:30-16:30利达铸造→16:30返程约18:30回酒店；2人+行李五座轿车,英文司机;报价RMB2000全包(接机/车/司机/油/路桥/停车/等待,含凌晨接机),超时100/h;成本估算约1400(浦东接机210+跨城一日900+油路桥停车300),毛利约43%;50%定金RMB1000确认,余款服务日付;提前72h免费取消;司机信息提前1天发;航班跟踪按实际到达调整",
+            "city": "上海"
         }
     ],
     "vehicles": [
@@ -5419,16 +5440,31 @@
             "createdAt": "2026-10-23",
             "updatedAt": "2026-10-23",
             "_lastModified": 1792758214094
+        },
+        {
+            "id": "gst_benjamin_seefried",
+            "name": "Benjamin Seefried",
+            "phone": "",
+            "whatsapp": "",
+            "wechat": "",
+            "email": "",
+            "nationality": "德国",
+            "city": "上海",
+            "note": "德国商务2人(10/26)：PVG接机+苏州两工厂一日包车；THE KUNLUN JING AN 华山路250号；采购负责人Head of procurement(ppa.)",
+            "contact": "",
+            "createdAt": "2026-10-23",
+            "updatedAt": "2026-10-23",
+            "_lastModified": 1792759906802
         }
     ],
     "_meta": {
         "built": "2026-09-18T02:01:31.000Z",
         "source": "cost-entry-alfard",
-        "orderCount": 87,
+        "orderCount": 88,
         "guestCount": 46,
         "lastOrderUpdate": "2026-10-23T00:00:00Z"
     },
-    "_lastModified": 1792758214094,
+    "_lastModified": 1792759906802,
     "inquiries": [],
     "payments": [
         {
