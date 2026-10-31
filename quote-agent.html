@@ -649,11 +649,30 @@ const PRICE_BASE = [{"c":"北京","r":"慕田峪 · 机场接送","v":"五座","
             rebuild();
           }
         }
-        if(j&&j.orders){ CLOUD_ORDERS=j.orders; renderOrderSelect(); }
       }catch(e){}
     };
     xhr.onerror=function(){};
     xhr.send();
+    // 订单下拉走独立接口（需登录）。quote-agent.html 是公开页，
+    // 未登录时静默降级为"暂无待处理订单"，不影响公开报价功能。
+    loadCloudOrders();
+  }
+  function loadCloudOrders(){
+    if(location.protocol==='file:'){ renderOrderSelect(); return; }
+    var xhr2=new XMLHttpRequest();
+    xhr2.open('GET','/api/quote-orders?t='+Date.now(),true);
+    xhr2.timeout=8000;
+    xhr2.withCredentials=true;
+    xhr2.onload=function(){
+      try{
+        var j=JSON.parse(xhr2.responseText);
+        if(j&&j.ok&&j.orders){ CLOUD_ORDERS=j.orders; renderOrderSelect(); }
+        else renderOrderSelect();
+      }catch(e){ renderOrderSelect(); }
+    };
+    xhr2.onerror=function(){ renderOrderSelect(); };
+    xhr2.ontimeout=function(){ renderOrderSelect(); };
+    xhr2.send();
   }
   function buildIndex(){
     var seen={};

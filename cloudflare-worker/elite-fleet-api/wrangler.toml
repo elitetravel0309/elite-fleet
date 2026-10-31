@@ -1,0 +1,12 @@
+name = "elite-fleet-api"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+workers_dev = true
+
+routes = [
+  { pattern = "fleet.chinawondercars.com/*", zone_id = "01a2cdca3d8780b5206c54599225f11a" }
+]
+
+[[kv_namespaces]]
+binding = "EF_DATA"
+id = "fc3158c616b44ee49ea73ffc8118394e"
