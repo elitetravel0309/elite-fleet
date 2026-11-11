@@ -18,6 +18,7 @@
   --text-2:#5A6478;
   --text-3:#8A93A6;
   --accent:#E8833A;
+  --accent-2:#D06B24;
   --accent-dark:#D06B24;
   --accent-soft:#FCEFE3;
   --arrival:#3E6FB0;
@@ -182,6 +183,8 @@ textarea{resize:vertical;line-height:1.5}
 .order-table .st{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .order-table .rowbtn{opacity:0;transition:opacity .12s}
 .order-table tr:hover .rowbtn{opacity:1}
+/* 表格横滑容器：桌面端不改变宽度，窄屏内滚动 */
+.tbl-scroll{width:100%;max-width:100%;min-width:0}
 .filters{display:flex;gap:10px;flex-wrap:wrap}
 .filters input,.filters select{min-width:120px}
 /* ===== 名册 ===== */
@@ -265,6 +268,14 @@ textarea{resize:vertical;line-height:1.5}
   #ordersWrap,#rpBody,#smartPreview,#fleetPastePreview,#driverPastePreview{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .price-grid{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
   #ordersWrap .order-table,#rpBody .order-table,#smartPreview .order-table,#fleetPastePreview .order-table,#driverPastePreview .order-table,.price-grid .order-table{min-width:720px}
+  /* 窄屏表格：统一在 .tbl-scroll 内横滑，不再把整页顶宽 */
+  .tbl-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+  .tbl-scroll>table{min-width:640px}
+  .tbl-scroll>table.order-table,.tbl-scroll>table.finance-table{min-width:760px}
+  /* 数据与同步页双列卡片窄屏塌成单列 */
+  .sync-grid{grid-template-columns:1fr}
+  /* grid 子项默认 min-width:auto 会被内部宽表顶宽，显式归零让容器自己横滑 */
+  .sync-grid>*,.trade-grid>*,.fgrid>*{min-width:0}
   .date-nav .date-txt{min-width:120px}
 /* 排班视图切换（今日 / 周历） */
 .seg{display:flex;background:var(--bg);border:1px solid var(--line-2);border-radius:10px;padding:3px;gap:2px;flex:0 0 auto}
@@ -341,8 +352,9 @@ textarea{resize:vertical;line-height:1.5}
 .finance-tabs .tab{padding:10px 18px;font-size:13.5px;font-weight:600;color:var(--text-2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 .finance-tabs .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .finance-table{width:100%;border-collapse:collapse;font-size:13px}
-.finance-table th{background:var(--bg);padding:10px 12px;text-align:left;font-weight:600;color:var(--text-2);border-bottom:1px solid var(--line)}
+.finance-table th{background:var(--bg);padding:10px 12px;text-align:left;font-weight:600;color:var(--text-2);border-bottom:1px solid var(--line);white-space:nowrap}
 .finance-table td{padding:10px 12px;border-bottom:1px solid var(--line)}
+.finance-table td:nth-child(n+4),.finance-table th:nth-child(n+4){white-space:nowrap}
 .finance-table tr:hover td{background:var(--bg)}
 .finance-table .amount-receive{color:var(--confirmed);font-weight:600}
 .finance-table .amount-pay{color:var(--danger);font-weight:600}
@@ -496,6 +508,7 @@ textarea{resize:vertical;line-height:1.5}
     <div class="nav-label">业务</div>
     <button data-route="inquiries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>询价管理<span class="count" id="inquiryCount"></span></button>
     <button data-route="agent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M9 17h6"/></svg>智能客服<span class="count" id="agentCount"></span><span class="tag">NEW</span></button>
+    <a class="qa-link" href="cost-calculator.html" target="_blank" rel="noopener" title="打开包车成本计算器，按车型测算采购成本、每公里成本与建议报价"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="12" y1="11" x2="12.01" y2="11"/><line x1="16" y1="11" x2="16.01" y2="11"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="12" y1="15" x2="12.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/><line x1="8" y1="19" x2="16" y2="19"/></svg>成本计算器<span class="tag">NEW</span></a>
     <button data-route="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>订单管理<span class="count" id="orderCount"></span></button>
     <button data-route="confirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/><path d="M12 6v6l3 2"/></svg>确认单<span class="count" id="confirmCount"></span></button>
     <button data-route="guests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>客人库<span class="count" id="guestCount"></span></button>
@@ -2359,6 +2372,38 @@ function redo(){
   toast('已重做：'+next.label);
 }
 function renderAll(){ renderToday(); renderOrders(); renderGuests(); renderHotels(); renderFleet(); renderPrices(); renderKpis(); renderInquiries(); renderFinance(); renderTrade(); renderAgentQueue(); }
+
+/* ---- 窄屏表格横向滚动：给每张表套一个 .tbl-scroll 容器 ----
+   桌面端容器不改变任何宽度；手机端容器 overflow-x:auto + 表格 min-width，
+   宽表在表内横滑，不再把整页顶宽或把单元格文字裁掉。 */
+function wrapTables(){
+  document.querySelectorAll('table').forEach(t=>{
+    if(t.dataset && t.dataset.tblScroll) return;
+    const p = t.parentElement;
+    if(!p) return;
+    if(p.classList.contains('tbl-scroll')){ t.dataset.tblScroll='1'; return; }
+    const w = document.createElement('div');
+    w.className = 'tbl-scroll';
+    p.insertBefore(w, t);
+    w.appendChild(t);
+    t.dataset.tblScroll = '1';
+  });
+}
+let _tblWrapTimer = 0;
+function scheduleWrapTables(){
+  if(_tblWrapTimer) return;
+  _tblWrapTimer = setTimeout(()=>{ _tblWrapTimer = 0; wrapTables(); }, 60);
+}
+/* 脚本可能在 head 里执行，此时 body 还不存在，统一等 DOM 就绪再挂监听 */
+function startTableWrap(){
+  if(!document.body) return;
+  wrapTables();
+  if(typeof MutationObserver === 'function'){
+    new MutationObserver(scheduleWrapTables).observe(document.body, {childList:true, subtree:true});
+  }
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startTableWrap);
+else startTableWrap();
 document.addEventListener('keydown', e=>{
   if((e.ctrlKey||e.metaKey) && e.key==='z' && !e.shiftKey){ e.preventDefault(); undo(); }
   if((e.ctrlKey||e.metaKey) && (e.key==='y' || (e.key==='z' && e.shiftKey))){ e.preventDefault(); redo(); }
@@ -3446,9 +3491,10 @@ function goThisWeek(){ weekOffset=0; renderWeek(); }
 /* =========================================================
    订单管理
    ========================================================= */
-function renderOrders(){
+// 当前筛选条件下的订单列表（列表页与批量全选/反选共用同一口径）
+function filterOrders(){
   const fFrom=$('fFrom').value, fTo=$('fTo').value, fType=$('fType').value, fStatus=$('fStatus').value, fCity=$('fCity').value, fKw=($('fKw').value||'').trim().toLowerCase(), fNoDriver=$('fNoDriver').checked, fInquiry=$('fInquiry').checked;
-  let list=getOrders().filter(o=>{
+  return getOrders().filter(o=>{
     if(fFrom && o.date<fFrom) return false;
     if(fTo && o.date>fTo) return false;
     if(fType && o.type!==fType) return false;
@@ -3459,6 +3505,9 @@ function renderOrders(){
     if(fKw){ const h=[o.guest,o.route,o.driver,o.contact,o.flight,o.plate].join(' ').toLowerCase(); if(!h.includes(fKw)) return false; }
     return true;
   });
+}
+function renderOrders(){
+  const list=filterOrders();
   if(!list.length){
     $('ordersWrap').innerHTML='<div style="text-align:center;color:var(--text-3);padding:50px 0">没有符合条件的订单，点击右上角「新增订单」开始。</div>';
     return;
@@ -3576,6 +3625,21 @@ function paidOf(o){
   if(o.paidFull) return Math.max(+o.quote||0, dep, recv);
   return Math.max(dep, recv);
 }
+// 订单已付车队/司机的金额：完成态付款记录；若订单已标记「车队已结算」但未记付款，则按成本计
+function costPaidOf(o, payments){
+  if(!o) return 0;
+  const list = payments || normalizedPayments();
+  const paid = list
+    .filter(p=>p.type==='pay' && p.orderId===o.id && p.status==='completed')
+    .reduce((t,p)=>t+p.amountCNY,0);
+  const cost = +o.cost||0;
+  return o.settled ? Math.max(cost, paid) : paid;
+}
+// 订单待收：报价 - 已收（未报价返回 0）
+function orderDue(o){
+  if(!o) return 0;
+  return Math.max(0, (+(o.quote||o.price||0)) - paidOf(o));
+}
 function delOrder(id){
   if(!confirm('确定删除该订单？')) return;
   S.orders = S.orders.filter(o=>o.id!==id); saveState(S); renderOrders(); renderGuests(); renderKpis();
@@ -3623,8 +3687,8 @@ function confirmQa(){
   const d=S.drivers.find(x=>x.name===$('qaDriver').value);
   if(!d){ toast('请选择司机'); return; }
   // 司机冲突检测
-  const conflict = checkDriverConflict(d.name, o.date, o.id);
-  if(conflict && !confirm('司机 '+d.name+' 在 '+o.date+' 已有订单：\n'+conflict+'\n\n确定还要指派吗？')){ return; }
+  const conflicts = checkDriverConflict(d.name, o.date, o.id);
+  if(conflicts.length && !confirm('司机 '+d.name+' 在 '+o.date+' 已有订单：\n'+driverConflictText(conflicts)+'\n\n确定还要指派吗？')){ return; }
   o.driver=d.name; o.plate=d.plate||'';
   if(d){ d.lastUsed=Date.now(); }
   saveState(S); renderOrders(); renderKpis(); closeQa();
@@ -4314,7 +4378,12 @@ function openGuestDetail(id){
   $('gdEditBtn').onclick=function(){ closeGuestDetail(); editGuest(id); };
   $('guestDetailModal').classList.add('open');
 }
-function closeGuestDetail(){ $('guestDetailModal').classList.remove('open'); viewingGuestId=''; }
+function closeGuestDetail(){
+  ['guestDetailModal','guestDetailOverlay'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.remove('open');
+  });
+  viewingGuestId='';
+}
 document.getElementById('guestDetailModal').addEventListener('click', e=>{ if(e.target.id==='guestDetailModal') closeGuestDetail(); });
 
 /* ---- 车队：粘贴导入 ---- */
@@ -5069,8 +5138,8 @@ function saveOrder(){
   }
   // 司机冲突检测
   if(obj.driver){
-    const conflict = checkDriverConflict(obj.driver, obj.date, editingId);
-    if(conflict && !confirm('司机 '+obj.driver+' 在 '+obj.date+' 已有订单：\n'+conflict+'\n\n确定还要指派吗？')){ return; }
+    const conflicts = checkDriverConflict(obj.driver, obj.date, editingId);
+    if(conflicts.length && !confirm('司机 '+obj.driver+' 在 '+obj.date+' 已有订单：\n'+driverConflictText(conflicts)+'\n\n确定还要指派吗？')){ return; }
   }
   // 记录司机最近使用时间（用于智能推荐排序）
   if(obj.driver){ const drv=S.drivers.find(x=>x.name===obj.driver); if(drv){ drv.lastUsed=Date.now(); } }
@@ -5158,11 +5227,11 @@ function deleteOrderTemplate(templateId){
 
 function openTemplateModal(){
   renderTemplateList();
-  $('templateOverlay').classList.add('open');
+  $('orderTemplateOverlay').classList.add('open');
 }
 
 function closeTemplateModal(){
-  $('templateOverlay').classList.remove('open');
+  $('orderTemplateOverlay').classList.remove('open');
 }
 
 function renderTemplateList(){
@@ -6487,11 +6556,9 @@ function checkDriverAvailability(date){
   $('driverAvailOverlay').classList.add('open');
 }
 
-function checkDriverConflict(driverName, date, excludeId){
-  if(!driverName || !date) return null;
-  const conflicts = S.orders.filter(o=>o.driver===driverName && o.date===date && o.id!==excludeId && o.status!=='cancelled');
-  if(!conflicts.length) return null;
-  return conflicts.map(o=>(o.time||'')+' '+o.guest+' '+o.route.slice(0,30)).join('\n');
+/* 司机冲突检测统一返回数组（见上方 checkDriverConflict 单一定义） */
+function driverConflictText(list){
+  return (Array.isArray(list)? list : []).map(o=>[o.time||'',o.guest||'',(o.route||'').slice(0,30)].join(' ').trim()).join('\n');
 }
 
 /* 临近订单预警：未来3天内未派司机或未确认的订单 */
@@ -6606,6 +6673,14 @@ function addDays(dateStr, n){
   const d=new Date(dateStr); d.setDate(d.getDate()+n);
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
+// 两个日期相差天数（b - a），按本地零点计算，避免夏令时误差
+function daysBetween(a, b){
+  if(!a || !b) return 0;
+  const da = parseDate(String(a).slice(0,10));
+  const db = parseDate(String(b).slice(0,10));
+  if(isNaN(da) || isNaN(db)) return 0;
+  return Math.round((db - da) / 86400000);
+}
 
 /* 客人档案：查看客人所有历史订单 */
 function showGuestDetail(name){
@@ -6653,7 +6728,6 @@ function showGuestDetail(name){
   $('gdBody').innerHTML=html;
   $('guestDetailOverlay').classList.add('open');
 }
-function closeGuestDetail(){ $('guestDetailOverlay').classList.remove('open'); }
 document.getElementById('guestDetailOverlay').addEventListener('click',e=>{ if(e.target.id==='guestDetailOverlay') closeGuestDetail(); });
 
 /* 车队对账：按车队汇总应付金额 */
@@ -7743,58 +7817,103 @@ let currentPaymentId = null;
 let currentPaymentType = 'receive';
 
 function renderFinance(){
-  const monthFilter = $('financeMonthFilter') ? $('financeMonthFilter').value : '';
+  let monthFilter = $('financeMonthFilter') ? $('financeMonthFilter').value : '';
   // 使用归一化数据：统一 type/status 口径，并把外币折算成人民币
-  let payments = normalizedPayments().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const allPayments = normalizedPayments();
+  let payments = allPayments.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if(monthFilter) payments = payments.filter(p=>(p.date||'').startsWith(monthFilter));
-  // 填充月份筛选
+  // 填充月份筛选（订单月份 + 收支月份合并，保证按月对账时两端都能选到）
   const monthSel = $('financeMonthFilter');
-  if(monthSel && monthSel.options.length<=1){
-    const months = [...new Set(normalizedPayments().map(p=>(p.date||'').slice(0,7)).filter(Boolean))].sort().reverse();
-    months.forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; monthSel.appendChild(o); });
+  if(monthSel){
+    const cur = monthSel.value;
+    const months = [...new Set([
+      ...S.orders.map(o=>(o.date||'').slice(0,7)),
+      ...allPayments.map(p=>(p.date||'').slice(0,7))
+    ].filter(Boolean))].sort().reverse();
+    const sig = months.join('|');
+    if(monthSel.dataset.sig !== sig){
+      monthSel.innerHTML = '<option value="">全部月份</option>' +
+        months.map(m=>`<option value="${m}">${m}</option>`).join('');
+      monthSel.dataset.sig = sig;
+      monthSel.value = months.includes(cur) ? cur : '';
+    }
   }
-  // KPI
+  // 若选中月份已被清空，同步本地变量，避免上下半段口径打架
+  monthFilter = monthSel ? monthSel.value : '';
+  // KPI —— 口径以订单为准（未收 = 报价 - 已收），与订单列表「已收/待收」、报表中心「未收款预警」保持一致
   const kpiEl = $('financeKpis');
   if(kpiEl){
     const done = p=>p.status==='completed';
-    const totalReceive = payments.filter(p=>p.type==='receive'&&done(p)).reduce((s,p)=>s+p.amountCNY,0);
-    const totalPay = payments.filter(p=>p.type==='pay'&&done(p)).reduce((s,p)=>s+p.amountCNY,0);
-    const pendingReceive = payments.filter(p=>p.type==='receive'&&!done(p)&&p.status!=='cancelled'&&p.status!=='failed').reduce((s,p)=>s+p.amountCNY,0);
-    const pendingPay = payments.filter(p=>p.type==='pay'&&!done(p)&&p.status!=='cancelled'&&p.status!=='failed').reduce((s,p)=>s+p.amountCNY,0);
+    // 月份筛选同时作用于订单（按服务日期）与收支记录（按记账日期），避免两套口径打架
+    const scopedOrders = S.orders.filter(o=> !monthFilter || (o.date||'').startsWith(monthFilter));
+    const activeOrders = scopedOrders.filter(o=>o.status!=='cancelled');
+    const receivableOrders = activeOrders.filter(o=>!['inquiry','quoted'].includes(o.status));
+    const linkedIds = new Set(S.orders.map(o=>o.id));
+    const orphanReceive = payments.filter(p=>p.type==='receive'&&done(p)&&!linkedIds.has(p.orderId)).reduce((s,p)=>s+p.amountCNY,0);
+    const orphanPay = payments.filter(p=>p.type==='pay'&&done(p)&&!linkedIds.has(p.orderId)).reduce((s,p)=>s+p.amountCNY,0);
+    // 收入/成本按应收应付口径（= 订单报价 / 订单成本），与「数据看板」「报表中心」一致；已收/已付仅作副标题
+    const revenue = activeOrders.reduce((s,o)=>s+(+(o.quote||o.price||0)),0);
+    const costTotal = activeOrders.reduce((s,o)=>s+(+o.cost||0),0);
+    const cashIn = activeOrders.reduce((s,o)=>s+paidOf(o),0) + orphanReceive;
+    const cashOut = activeOrders.reduce((s,o)=>s+costPaidOf(o, allPayments),0) + orphanPay;
+    const dueReceiveList = receivableOrders
+      .map(o=>({ o, due: (+(o.quote||o.price||0)) - paidOf(o) }))
+      .filter(x=>x.due>0 && (+(x.o.quote||x.o.price||0))>0);
+    const pendingReceive = dueReceiveList.reduce((s,x)=>s+x.due,0);
+    const overdueCount = dueReceiveList.filter(x=>x.o.date && x.o.date<todayStr()).length;
+    const duePayList = activeOrders
+      .map(o=>({ o, due: (+o.cost||0) - costPaidOf(o, allPayments) }))
+      .filter(x=>x.due>0);
+    const pendingPay = duePayList.reduce((s,x)=>s+x.due,0);
     const foreignCount = payments.filter(p=>p.currency!=='CNY').length;
     kpiEl.innerHTML = `
-      <div class="kpi-card hl"><div class="kpi-label">总收入</div><div class="kpi-value">¥${totalReceive.toLocaleString()}</div></div>
-      <div class="kpi-card"><div class="kpi-label">总支出</div><div class="kpi-value" style="color:var(--danger)">¥${totalPay.toLocaleString()}</div></div>
-      <div class="kpi-card"><div class="kpi-label">净利润</div><div class="kpi-value" style="color:var(--confirmed)">¥${(totalReceive-totalPay).toLocaleString()}</div></div>
-      <div class="kpi-card"><div class="kpi-label">应收未收</div><div class="kpi-value" style="color:var(--pending)">¥${pendingReceive.toLocaleString()}</div></div>
-      <div class="kpi-card"><div class="kpi-label">应付未付</div><div class="kpi-value" style="color:var(--pending)">¥${pendingPay.toLocaleString()}</div></div>
+      <div class="kpi-card hl"><div class="kpi-label">总收入</div><div class="kpi-value">¥${revenue.toLocaleString()}</div><div class="kpi-sub">订单应收 · 已收 ¥${cashIn.toLocaleString()}</div></div>
+      <div class="kpi-card"><div class="kpi-label">总支出</div><div class="kpi-value" style="color:var(--danger)">¥${costTotal.toLocaleString()}</div><div class="kpi-sub">订单成本 · 已付 ¥${cashOut.toLocaleString()}</div></div>
+      <div class="kpi-card"><div class="kpi-label">净利润</div><div class="kpi-value" style="color:var(--confirmed)">¥${(revenue-costTotal).toLocaleString()}</div><div class="kpi-sub">利润率 ${revenue?Math.round((revenue-costTotal)/revenue*100):0}%</div></div>
+      <div class="kpi-card warning"><div class="kpi-label">应收未收</div><div class="kpi-value" style="color:var(--pending)">¥${pendingReceive.toLocaleString()}</div><div class="kpi-sub">${dueReceiveList.length} 单待收${overdueCount?' · 逾期 '+overdueCount+' 单':''}</div></div>
+      <div class="kpi-card warning"><div class="kpi-label">应付未付</div><div class="kpi-value" style="color:var(--pending)">¥${pendingPay.toLocaleString()}</div><div class="kpi-sub">${duePayList.length} 单待付</div></div>
       ${foreignCount?`<div class="kpi-card"><div class="kpi-label">外币折算</div><div class="kpi-value" style="font-size:14px">${foreignCount} 笔已按汇率折人民币</div></div>`:''}`;
   }
   // 内容
   const content = $('financeContent');
   if(!content) return;
   if(currentFinanceTab==='receivable'){
-    // 应收应付：按订单汇总
-    const orders = [...S.orders].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    content.innerHTML = `<table class="finance-table">
-      <thead><tr><th>日期</th><th>客人</th><th>线路</th><th>应收（报价）</th><th>已收</th><th>未收</th><th>应付（成本）</th><th>已付</th><th>未付</th><th>操作</th></tr></thead>
+    // 应收应付：按订单汇总（未收/未付 = 报价/成本 - 已收/已付，与订单页同口径）
+    const orders = S.orders
+      .filter(o=> !monthFilter || (o.date||'').startsWith(monthFilter))
+      .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const dueRows = orders.filter(o=>o.status!=='cancelled' && !['inquiry','quoted'].includes(o.status) && orderDue(o)>0);
+    const dueTotal = dueRows.reduce((s,o)=>s+orderDue(o),0);
+    content.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:13px;color:var(--text-2)">待收 <b style="color:var(--pending)">${dueRows.length}</b> 单 · 合计 <b style="color:var(--pending)">¥${dueTotal.toLocaleString()}</b></span>
+        <button class="btn small ghost" onclick="exportReceivableCSV()" title="导出未收款订单（含逾期天数），用于逐单催收">导出催收清单</button>
+        <button class="btn small ghost" onclick="renderFinance()">刷新</button>
+      </div>
+      <table class="finance-table">
+      <thead><tr><th>日期</th><th>客人</th><th>线路</th><th>应收</th><th>已收</th><th>未收</th><th>逾期</th><th>应付</th><th>已付</th><th>未付</th><th>操作</th></tr></thead>
       <tbody>${orders.map(o=>{
-        const orderPayments = payments.filter(p=>p.orderId===o.id);
-        const received = orderPayments.filter(p=>p.type==='receive'&&p.status==='completed').reduce((s,p)=>s+p.amountCNY,0);
-        const paid = orderPayments.filter(p=>p.type==='pay'&&p.status==='completed').reduce((s,p)=>s+p.amountCNY,0);
-        const quote = o.quote||o.price||0;
-        const cost = o.cost||0;
+        const received = paidOf(o);
+        const paid = costPaidOf(o, allPayments);
+        const quote = +(o.quote||o.price||0);
+        const cost = +(o.cost||0);
+        // 询价/已报价未成交的单不列入「未收」，避免虚增待收金额（与顶部 KPI 同口径）
+        const isDeal = !['inquiry','quoted'].includes(o.status);
+        const due = isDeal ? quote - received : 0;
+        const duePay = cost - paid;
+        const overdueDays = (due>0 && o.date && o.date<todayStr()) ? daysBetween(o.date, todayStr()) : 0;
         return `<tr>
           <td>${o.date||''}</td>
           <td>${escapeHtml(o.guest||'')}</td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(o.route||'')}</td>
           <td class="amount-receive">${quote?quote+'元':'-'}</td>
-          <td>${received?received+'元':'-'}</td>
-          <td style="color:${quote-received>0?'var(--pending)':'var(--confirmed)'}">${quote-received>0?(quote-received)+'元':'已结清'}</td>
+          <td>${received?'<span style="color:var(--confirmed)">'+received+'元</span>':'-'}</td>
+          <td style="color:${due>0?'var(--pending)':'var(--confirmed)'}">${!isDeal?'<span style="color:var(--text-3)">待成交</span>':(due>0?due+'元':'已结清')}</td>
+          <td>${overdueDays?('<span class="tag" style="background:var(--danger-soft);color:var(--danger)">'+overdueDays+' 天</span>'):'-'}</td>
           <td class="amount-pay">${cost?cost+'元':'-'}</td>
           <td>${paid?paid+'元':'-'}</td>
-          <td style="color:${cost-paid>0?'var(--pending)':'var(--confirmed)'}">${cost-paid>0?(cost-paid)+'元':'已结清'}</td>
-          <td><button class="btn small ghost" onclick="openPayment('receive','${o.id}')">收款</button> <button class="btn small ghost" onclick="openPayment('pay','${o.id}')">付款</button></td>
+          <td style="color:${cost>0?(duePay>0?'var(--pending)':'var(--confirmed)'):'var(--text-3)'}">${cost>0?(duePay>0?duePay+'元':'已结清'):'-'}</td>
+          <td style="white-space:nowrap"><button class="btn small ghost" onclick="openPayment('receive','${o.id}')">收款</button> <button class="btn small ghost" onclick="openPayment('pay','${o.id}')">付款</button>${due>0?' <button class="btn small ghost" onclick="copyPaymentReminder(\''+o.id+'\')" title="复制英文催收文案">催收</button>':''}</td>
         </tr>`;
       }).join('')}</tbody></table>`;
   } else if(currentFinanceTab==='records'){
@@ -7818,31 +7937,40 @@ function renderFinance(){
           <td><button class="btn small ghost" onclick="editPayment('${p.id}')">编辑</button></td>
         </tr>`).join('')}</tbody></table>`;
   } else if(currentFinanceTab==='monthly'){
-    // 月度结算
+    // 月度结算：按订单服务月份做权责发生制汇总（营业额/成本取订单报价与成本，与「报表中心」同口径）
     const months = {};
+    const ensureM = m=>{ if(!months[m]) months[m] = {revenue:0,cost:0,receivePending:0,payPending:0,orders:0}; return months[m]; };
+    S.orders.forEach(o=>{
+      const m = (o.date||'').slice(0,7);
+      if(!m) return;
+      if(monthFilter && m!==monthFilter) return;
+      if(o.status==='cancelled') return;
+      const d = ensureM(m);
+      d.orders++;
+      d.revenue += (+(o.quote||o.price||0));
+      d.cost += (+o.cost||0);
+      if(!['inquiry','quoted'].includes(o.status)) d.receivePending += orderDue(o);
+      d.payPending += Math.max(0, (+o.cost||0) - costPaidOf(o, allPayments));
+    });
+    // 无订单但有零星收支的月份也列出来
     payments.forEach(p=>{
       const m = (p.date||'').slice(0,7);
-      if(!m) return;
-      if(!months[m]) months[m] = {receive:0,pay:0,receivePending:0,payPending:0};
-      if(p.status==='completed'){
-        if(p.type==='receive') months[m].receive += p.amountCNY||0;
-        else months[m].pay += p.amountCNY||0;
-      } else {
-        if(p.type==='receive') months[m].receivePending += p.amountCNY||0;
-        else months[m].payPending += p.amountCNY||0;
-      }
+      if(!m || months[m]) return;
+      ensureM(m);
     });
     const monthKeys = Object.keys(months).sort().reverse();
+    if(!monthKeys.length){ content.innerHTML='<div class="empty">暂无数据</div>'; return; }
     content.innerHTML = `<table class="finance-table">
-      <thead><tr><th>月份</th><th>收入</th><th>支出</th><th>净利润</th><th>利润率</th><th>应收未收</th><th>应付未付</th></tr></thead>
+      <thead><tr><th>月份</th><th>订单数</th><th>营业额</th><th>成本</th><th>净利润</th><th>利润率</th><th>应收未收</th><th>应付未付</th></tr></thead>
       <tbody>${monthKeys.map(m=>{
         const d = months[m];
-        const profit = d.receive - d.pay;
-        const rate = d.receive>0 ? Math.round(profit/d.receive*100) : 0;
+        const profit = d.revenue - d.cost;
+        const rate = d.revenue>0 ? Math.round(profit/d.revenue*100) : 0;
         return `<tr>
           <td><b>${m}</b></td>
-          <td class="amount-receive">${d.receive.toFixed(0)}元</td>
-          <td class="amount-pay">${d.pay.toFixed(0)}元</td>
+          <td>${d.orders}</td>
+          <td class="amount-receive">${d.revenue.toFixed(0)}元</td>
+          <td class="amount-pay">${d.cost.toFixed(0)}元</td>
           <td style="color:${profit>=0?'var(--confirmed)':'var(--danger)'};font-weight:600">${profit.toFixed(0)}元</td>
           <td>${rate}%</td>
           <td style="color:var(--pending)">${d.receivePending?d.receivePending+'元':'-'}</td>
@@ -7858,6 +7986,97 @@ function switchFinanceTab(tab){
     b.classList.toggle('active', ['receivable','records','monthly'][i]===tab);
   });
   renderFinance();
+}
+// 催收文案（可按客人语言生成中/英文，直接粘贴 WhatsApp / 微信 / 邮件）
+function paymentReminderText(orderId){
+  const o = S.orders.find(x=>x.id===orderId);
+  if(!o) return '';
+  const quote = +(o.quote||o.price||0);
+  const paid = paidOf(o);
+  const due = Math.max(0, quote-paid);
+  if(due<=0) return '';
+  const isCN = /[\u4e00-\u9fa5]/.test((o.guest||'')+'' ) || /[\u4e00-\u9fa5]/.test((o.contact||'')+'');
+  const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let dateStr = o.date||'';
+  let dateCN = o.date||'';
+  if(o.date && /^\d{4}-\d{2}-\d{2}$/.test(o.date)){
+    const d = parseDate(o.date);
+    dateStr = d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear();
+    dateCN = d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
+  }
+  if(isCN){
+    return [
+      '您好'+(o.guest?' '+o.guest:'')+'：',
+      '',
+      '温馨提醒，您在 '+(dateCN||'')+(o.route?' 的用车订单（'+o.route+'）':' 的用车订单')+'尚有余款未结：',
+      '',
+      '订单金额：¥'+quote,
+      '已收：¥'+paid,
+      '待收：¥'+due,
+      '',
+      '可通过银行转账 / 微信 / 支付宝支付。如已付款，请忽略本消息并回传付款凭证，谢谢！',
+      '',
+      'Alice Li',
+      'China Wonder Cars / China Wonder Tours',
+      '邮箱：booking@chinawondertours.com',
+      'WhatsApp：+86 15347723823',
+      'https://www.chinawondercars.com',
+      'https://www.chinawondertours.com'
+    ].join('\n');
+  }
+  return [
+    'Dear '+(o.guest||'Guest')+',',
+    '',
+    'Gentle reminder for your booking'+(dateStr?' on '+dateStr:'')+(o.route?' — '+o.route:'')+'.',
+    '',
+    'Total: RMB '+quote,
+    'Received: RMB '+paid,
+    'Balance due: RMB '+due,
+    '',
+    'You may settle by bank transfer, WeChat Pay or Alipay. If payment has already been made, please ignore this message and kindly send us the receipt.',
+    '',
+    'Thank you!',
+    'Alice Li',
+    'China Wonder Cars / China Wonder Tours',
+    'E-mail: booking@chinawondertours.com',
+    'WhatsApp: +86 15347723823',
+    'https://www.chinawondercars.com',
+    'https://www.chinawondertours.com'
+  ].join('\n');
+}
+function copyPaymentReminder(orderId){
+  const txt = paymentReminderText(orderId);
+  if(!txt){ toast('该单已结清，无需催收'); return; }
+  copyText(txt);
+}
+// 导出未收款订单（含逾期天数），用于逐单催收
+function exportReceivableCSV(){
+  const monthFilter = $('financeMonthFilter') ? $('financeMonthFilter').value : '';
+  const rows = S.orders
+    .filter(o=>o.status!=='cancelled' && !['inquiry','quoted'].includes(o.status) && (!monthFilter || (o.date||'').startsWith(monthFilter)) && orderDue(o)>0)
+    .map(o=>({
+      o,
+      quote:+(o.quote||o.price||0),
+      paid:paidOf(o),
+      due:orderDue(o),
+      overdue:(o.date && o.date<todayStr()) ? daysBetween(o.date, todayStr()) : 0
+    }))
+    .sort((a,b)=> (b.overdue-a.overdue) || (a.o.date||'').localeCompare(b.o.date||''));
+  if(!rows.length){ toast('当前没有未收款订单'); return; }
+  const clean = v=>String(v==null?'':v).replace(/,/g,'，').replace(/\n/g,' ').replace(/\r/g,'');
+  let csv = '日期,客人,联系方式,线路,报价,已收,未收,逾期天数,状态,备注\n';
+  rows.forEach(r=>{
+    const st = STATUS_META[r.o.status]? STATUS_META[r.o.status].label : (r.o.status||'');
+    csv += [r.o.date||'', clean(r.o.guest), clean(r.o.contact), clean(r.o.route), r.quote, r.paid, r.due, r.overdue, st, clean(r.o.note)].join(',')+'\n';
+  });
+  csv += ['合计','', '', '', rows.reduce((s,r)=>s+r.quote,0), rows.reduce((s,r)=>s+r.paid,0), rows.reduce((s,r)=>s+r.due,0), '', '', ''].join(',')+'\n';
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '催收清单_' + (monthFilter || todayStr()) + '_' + rows.length + '单.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出 '+rows.length+' 单待收，合计 ¥'+rows.reduce((s,r)=>s+r.due,0));
 }
 
 function openPayment(type, orderId){
@@ -9299,8 +9518,7 @@ function renderDashboard(){
   const topCity = Object.entries(cityCount).sort((a,b)=>b[1]-a[1])[0];
   
   // 计算车队和司机结算
-  const fleetSettled = orders.filter(o=>o.settled).length;
-  const driverSettled = orders.filter(o=>o.driverSettled).length;
+  const unsettledFleetOrders = orders.filter(o=>!o.settled && (+o.cost||0)>0).length;
   const unsettledFleetAmount = orders.filter(o=>!o.settled).reduce((s,o)=>s+((+o.cost)||0),0);
   
   $('dashboardKpis').innerHTML = `
@@ -9311,7 +9529,7 @@ function renderDashboard(){
     <div class="kpi-card warning"><div class="kpi-label">待跟进</div><div class="kpi-value">${pendingOrders}</div><div class="kpi-sub">询价/已报价/待确认</div></div>
     <div class="kpi-card danger"><div class="kpi-label">未派司机</div><div class="kpi-value">${unassignedDrivers}</div><div class="kpi-sub">需尽快安排</div></div>
     <div class="kpi-card"><div class="kpi-label">热门城市</div><div class="kpi-value" style="font-size:18px">${topCity?topCity[0]:'-'}</div><div class="kpi-sub">${topCity?topCity[1]+' 单':'暂无数据'}</div></div>
-    <div class="kpi-card warning"><div class="kpi-label">待结算车队</div><div class="kpi-value">¥${unsettledFleetAmount.toLocaleString()}</div><div class="kpi-sub">${orders.length-fleetSettled} 单未结算</div></div>
+    <div class="kpi-card warning"><div class="kpi-label">待结算车队</div><div class="kpi-value">¥${unsettledFleetAmount.toLocaleString()}</div><div class="kpi-sub">${unsettledFleetOrders} 单未结算</div></div>
   `;
 
   // 订单与收入趋势（按月）
@@ -9917,6 +10135,39 @@ function updateBatchCount(){
   const el = $('batchCount');
   if(el) el.textContent = selectedOrders.size;
 }
+// 全选当前筛选结果（批量模式下）
+function selectAllFiltered(){
+  const list = filterOrders();
+  if(!list.length){ toast('当前筛选没有订单'); return; }
+  selectedOrders.clear();
+  list.forEach(o=>selectedOrders.add(o.id));
+  updateBatchCount(); renderOrders();
+  toast('已全选 '+list.length+' 单');
+}
+// 反选当前筛选结果
+function invertSelection(){
+  const list = filterOrders();
+  if(!list.length){ toast('当前筛选没有订单'); return; }
+  list.forEach(o=>{ if(selectedOrders.has(o.id)) selectedOrders.delete(o.id); else selectedOrders.add(o.id); });
+  updateBatchCount(); renderOrders();
+  toast('已反选，当前选中 '+selectedOrders.size+' 单');
+}
+/* 弹窗关闭 / 复制（补齐缺失处理函数） */
+function closeSmartQuote(){
+  const el=$('smartQuoteOverlay'); if(el) el.classList.remove('open','show');
+}
+function closeBatchServiceMsg(){
+  const el=$('batchServiceMsgOverlay'); if(el) el.classList.remove('open','show');
+}
+function copyBatchServiceMsg(){
+  const el=$('batchServiceMsgContent');
+  const txt = el? el.value : '';
+  if(!txt){ toast('没有可复制的内容'); return; }
+  copyText(txt);
+}
+function closeOrderHistory(){
+  const el=$('orderHistoryOverlay'); if(el) el.classList.remove('open','show');
+}
 function batchSetStatus(status){
   if(!selectedOrders.size){ toast('请先选择订单'); return; }
   if(!confirm('确定将选中的 '+selectedOrders.size+' 单标记为「'+(STATUS_META[status]?STATUS_META[status].label:status)+'」？')) return;
@@ -10242,7 +10493,7 @@ function deleteCommunication(id){
 </div>
 
 <!-- ===== 订单模板弹窗 ===== -->
-<div class="overlay" id="templateOverlay">
+<div class="overlay" id="orderTemplateOverlay">
   <div class="modal" style="max-width:500px">
     <h3>订单模板</h3>
     <div id="templateList" style="max-height:400px;overflow-y:auto"></div>

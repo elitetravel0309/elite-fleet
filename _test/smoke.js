@@ -135,8 +135,8 @@ check('重复检测：不同客人查不出', '(()=>{ const o=S.orders[0]; const
 check('重复检测：排除自己', '(()=>{ const o=S.orders[0]; const d=findDuplicateOrders(o); return !d.some(x=>x.id===o.id); })()', true);
 check('未收款预警能算出条目', 'getUnpaidAlerts().length>0', true);
 check('未收款预警含金额差', '(()=>{ const a=getUnpaidAlerts(); return a.length===0 || (a[0].due>0 && a[0].quote>=a[0].paid); })()', true);
-check('司机负载统计有数据', 'getDriverWorkload().length>0', true);
-check('司机负载含接单数与工时', '(()=>{ const l=getDriverWorkload(); return l.length===0 || (l[0].orders>0 && l[0].estHours===l[0].orders*4); })()', true);
+check('司机负载统计有数据', '(()=>{ const d=S.orders.find(o=>o.driver && o.date); return !!d && getDriverWorkload(d.date.slice(0,7)).length>0; })()', true);
+check('司机负载含接单数与工时', '(()=>{ const d=S.orders.find(o=>o.driver && o.date); const l=d? getDriverWorkload(d.date.slice(0,7)) : []; return l.length===0 || (l[0].orders>0 && l[0].estHours===l[0].orders*4); })()', true);
 check('司机负载按月过滤', '(()=>{ const l=getDriverWorkload("1999-01"); return l.length===0; })()', true);
 check('WhatsApp 转询价单建记录', '(()=>{ waMessages=[{mid:"m1",name:"WA客户",wa_id:"+8613800000000",text:"Hi, need airport pickup at PVG on Nov 5, 7-seater",ts:Date.now(),status:"new"}]; const n0=(S.inquiries||[]).length; waToInquiry("m1"); return (S.inquiries||[]).length===n0+1; })()', true);
 check('WhatsApp 消息解析出城市/车型', '(()=>{ const i=(S.inquiries||[]).find(x=>x.id==="wa_m1"); return i? (i.vehicle!=="" ) : false; })()', true);
