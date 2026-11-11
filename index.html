@@ -5887,7 +5887,11 @@ function mergeCloud(d){
     prices: dedupById((local.prices||[]).concat(d.prices||[]), x=>(x.city||'')+'|'+(x.route||'')+'|'+(x.vehicle||'')),
     vehicles: dedupById((local.vehicles||[]).concat(d.vehicles||[]), x=>(x.plate||'')),
     vehicleGallery: dedupById((local.vehicleGallery||[]).concat(d.vehicleGallery||[]), x=>(x.id||'')),
-    guests: dedupById((local.guests||[]).concat(d.guests||[]), x=>(x.name||'').trim().toLowerCase())
+    guests: dedupById((local.guests||[]).concat(d.guests||[]), x=>(x.name||'').trim().toLowerCase()),
+    payments: dedupById((local.payments||[]).concat(d.payments||[]), x=>[x.orderId||'',x.date||'',x.type||'',x.amount||''].join('|')),
+    inquiries: dedupById((local.inquiries||[]).concat(d.inquiries||[]), x=>JSON.stringify(x)),
+    driverRatings: dedupById((local.driverRatings||[]).concat(d.driverRatings||[]), x=>JSON.stringify(x)),
+    hotels: dedupById((local.hotels||[]).concat(d.hotels||[]), x=>JSON.stringify(x))
   });
 }
 function fetchCloudData(){
