@@ -118,6 +118,7 @@ h2.section{font-family:var(--serif);font-size:22px;font-weight:900;color:var(--i
 .bar .spacer{flex:1}
 input,select,textarea{background:var(--card);border:1px solid var(--line-2);border-radius:9px;padding:8px 11px;outline:none;transition:border-color .15s}
 input,select,textarea{max-width:100%}
+.qc-bar>div{min-width:0}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 textarea{resize:vertical;line-height:1.5}
 /* ===== 今日时间轴（签名元素） ===== */
@@ -843,7 +844,7 @@ textarea{resize:vertical;line-height:1.5}
       <!-- 智能计价器 -->
       <div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)">
         <div style="display:flex;align-items:baseline;gap:10px"><b style="font-size:15px">智能计价器</b><span style="font-size:12px;color:var(--text-3)">按参考价库自动算成本与对外报价，超时按小时加价，节假日可加成</span></div>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px">
+        <div class="qc-bar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px">
           <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">城市</label><select id="qcCity" onchange="rebuildCalcRoutes()"></select></div>
           <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">线路</label><select id="qcRoute" onchange="rebuildCalcVehicles()"></select></div>
           <div><label style="display:block;font-size:11px;color:var(--text-3);margin-bottom:4px">车型</label><select id="qcVehicle" onchange="runCalc()"></select></div>
