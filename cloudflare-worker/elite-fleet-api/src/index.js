@@ -546,6 +546,23 @@ export default {
     }
 
 
+    // ---------- WhatsApp 询盘导入源（scripts/wa_inquiry_import.py 生成 → 上传到 KV） ----------
+    // 工作台「数据与同步 → WhatsApp 询盘并入」一键拉取；同源自动带 Basic，跨域可填 x-api-secret。
+    // 只读导出文件，不含任何密钥；?all=1 拉全量历史，默认拉优先跟进清单。
+    if (request.method === 'GET' && path === '/api/wa-inquiries') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      const all = url.searchParams.get('all') === '1';
+      const key = all ? 'page:whatsapp-inquiries.json' : 'page:whatsapp-priority.json';
+      const raw = await env.EF_DATA.get(key, 'text');
+      if (!raw) {
+        return json({ ok: false, error: key + ' 未上传到 KV；请先运行 scripts/wa_inquiry_import.py 再上传' }, 404);
+      }
+      return new Response(raw, {
+        status: 200,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...cors }
+      });
+    }
+
     // ---------- 以下全部需要登录 ----------
     if (!checkAuth(request, env)) return unauthorized();
 

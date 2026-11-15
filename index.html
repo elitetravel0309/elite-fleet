@@ -1039,6 +1039,18 @@ textarea{resize:vertical;line-height:1.5}
           </div>
         </div>
         <div class="panel">
+          <h3>WhatsApp 询盘并入</h3>
+          <p class="desc">把本机 WhatsApp Business 会话（wacli 只读库）+ 人工台账转成询价单。运行 scripts/wa_inquiry_import.py 生成 JSON 并上传到云端 KV 后，这里可一键拉取；按 id 幂等去重，不覆盖已手工修改的状态/报价/备注。也可直接导入本地 JSON。</p>
+          <div class="stack">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn primary" onclick="syncWaInquiries(false)">拉取优先跟进清单</button>
+              <button class="btn ghost" onclick="syncWaInquiries(true)">拉取全量历史</button>
+            </div>
+            <label class="btn ghost" style="justify-content:center">导入本地 JSON 文件<input type="file" accept=".json" style="display:none" onchange="importWaInquiriesFile(event)"></label>
+            <div id="waImportStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
+          </div>
+        </div>
+        <div class="panel">
           <h3>云端每日快照（KV 备份）</h3>
           <p class="desc">Worker 每天北京时间 02:00 自动备份工作台数据 / 询盘 / WhatsApp 收件箱，保留最近 14 天。可手动触发或下载任意一天的原始数据。</p>
           <div class="stack">
@@ -5961,6 +5973,82 @@ async function syncSiteInquiries(){
     if(st) st.textContent = '✗ 同步失败：' + (e.message||e) + (sec?'':'（跨域使用请在下方填写询盘接口密钥）');
     toast('网站询盘同步失败：' + (e.message||e));
   }
+}
+
+/* =========================================================
+   WhatsApp 询盘并入（wacli 只读库 + 人工台账 → S.inquiries）
+   生成脚本：scripts/wa_inquiry_import.py；云端源：/api/wa-inquiries（KV）
+   ========================================================= */
+const WA_INQ_API = location.protocol==='file:' ? '' : '/api/wa-inquiries';
+function waImportHeaders(){ const s=webInqSecret(); return s? {'x-api-secret':s} : {}; }
+const WA_INQ_FIELDS = ['guest','contact','email','date','serviceDate','city','pax','vehicle','status',
+  'route','quote','cost','followUp','followUps','fleetQuotes','note','source',
+  '_waJid','_waLastQuoteAt','_ledgerDate','_autoImported','_fromLedger','_serviceDateGuessed'];
+// 纯函数：按 id + 手机号幂等合并，便于测试；绝不覆盖用户已手工修改的字段
+function mergeWaInquiries(records){
+  if(!Array.isArray(records)) return {added:0,updated:0,skipped:0,total:(S.inquiries||[]).length};
+  if(!S.inquiries) S.inquiries=[];
+  const map=new Map(S.inquiries.map(i=>[i.id,i]));
+  const byPhone=new Map();
+  S.inquiries.forEach(i=>{ const p=String(i.contact||'').replace(/\D/g,'').slice(-9); if(p&&!byPhone.has(p)) byPhone.set(p,i); });
+  let added=0,updated=0,skipped=0;
+  records.forEach(r=>{
+    if(!r||!r.id||!r.guest) return;
+    if(map.has(r.id)){
+      const cur=map.get(r.id); let ch=false;
+      ['contact','email','date','serviceDate','city','pax','vehicle','route','note','source',
+       '_waJid','_waLastQuoteAt','_ledgerDate'].forEach(k=>{
+        const v=r[k]; if(v==null||v==='') return;
+        const old=cur[k]; if(v===old) return;
+        if(old==null||old===''||(old===0&&v!==0)){ cur[k]=v; ch=true; }
+      });
+      if(ch) updated++; else skipped++;
+      return;
+    }
+    const p=String(r.contact||'').replace(/\D/g,'').slice(-9);
+    if(p&&byPhone.has(p)){ skipped++; return; }  // 已由 WA 收件箱/网站表单转过同一客人
+    const rec={id:r.id};
+    WA_INQ_FIELDS.forEach(k=>{ if(r[k]!==undefined) rec[k]=r[k]; });
+    rec._lastModified=Date.now();
+    map.set(rec.id,rec); if(p) byPhone.set(p,rec);
+    added++;
+  });
+  S.inquiries=[...map.values()];
+  return {added,updated,skipped,total:S.inquiries.length};
+}
+function applyWaInquiries(d,label){
+  const list=Array.isArray(d)?d:(d&&Array.isArray(d.inquiries)?d.inquiries:null);
+  if(!list) throw new Error('数据格式不对：缺少 inquiries 数组');
+  const r=mergeWaInquiries(list);
+  if(r.added||r.updated){ saveState(S); renderAll(); }
+  const st=$('waImportStatus');
+  if(st) st.textContent='✓ '+label+'：新增 '+r.added+' 条，补全 '+r.updated+' 条，跳过 '+r.skipped+' 条（已存在/号码重复）｜询价单共 '+r.total+' 条';
+  toast('WhatsApp 询盘已并入：新增 '+r.added+' 条');
+  return r;
+}
+async function syncWaInquiries(all){
+  const st=$('waImportStatus');
+  if(!WA_INQ_API){ if(st) st.textContent='✗ 本地文件模式无法拉取云端，请用下方「导入本地 JSON 文件」'; return; }
+  if(st) st.textContent='正在拉取'+(all?'全量历史':'优先跟进清单')+'…';
+  try{
+    const res=await fetch(WA_INQ_API+(all?'?all=1':''),{cache:'no-store',headers:waImportHeaders()});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    applyWaInquiries(await res.json(), all?'全量历史':'优先跟进清单');
+  }catch(e){
+    const msg='✗ 拉取失败：'+(e.message||e)+'（跨域请填上方询盘接口密钥，或改用本地 JSON 导入）';
+    if(st) st.textContent=msg; toast(msg);
+  }
+}
+function importWaInquiriesFile(ev){
+  const f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{ applyWaInquiries(JSON.parse(rd.result), f.name); }
+    catch(e){ const st=$('waImportStatus'); if(st) st.textContent='✗ 导入失败：'+(e.message||e); toast('导入失败：'+(e.message||e)); }
+    ev.target.value='';
+  };
+  rd.onerror=()=>{ toast('文件读取失败'); ev.target.value=''; };
+  rd.readAsText(f);
 }
 
 async function pushSiteInquiryStatus(){

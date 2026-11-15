@@ -158,6 +158,27 @@ check('财务口径自检渲染不报错', 'renderFinanceAudit(); true', true);
 check('WhatsApp 回复目标可开关', '(()=>{ waMessages=[{mid:"m2",name:"客人",wa_id:"8613800000000",text:"Hi",status:"new"}]; openWaReply("m2"); const a=waReplyTarget==="m2"; closeWaReply(); return a&&waReplyTarget===""; })()', true);
 check('收款单 payload 含邮箱/金额字段', '(()=>{ const o=S.orders.find(x=>x.id==="ord_20261102_esther")||S.orders[0]; currentOrderId=o.id; const p=buildReceiptPayload(); return !!p && "email" in p && "paid" in p && "service" in p; })()', true);
 
+console.log('\n=== WhatsApp 询盘并入（wacli → S.inquiries）===');
+const fns4 = ['waImportHeaders','mergeWaInquiries','applyWaInquiries','syncWaInquiries','importWaInquiriesFile'];
+for(const f of fns4){ check('定义 ' + f, `typeof ${f}`, 'function'); }
+const waPri = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','whatsapp-priority.json'),'utf8'));
+const waAll = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','whatsapp-inquiries.json'),'utf8'));
+check('优先清单文件结构完整', String(waPri.inquiries.length>0 && waPri.inquiries.every(r=>r.id&&r.guest&&r.contact&&r.status)), true);
+check('全量清单记录数大于优先清单', String(waAll.inquiries.length>waPri.inquiries.length), true);
+check('全量记录 id 唯一', String(new Set(waAll.inquiries.map(r=>r.id)).size===waAll.inquiries.length), true);
+check('全量记录含来源与原文摘录', String(waAll.inquiries.every(r=>r.source==='whatsapp'&&r.note&&r.note.length>20)), true);
+check('台账成交与跟进状态齐全', String(
+  waPri.inquiries.some(r=>r.status==='won') &&
+  waPri.inquiries.some(r=>r.status==='following') &&
+  waAll.inquiries.filter(r=>r.status==='quoted').length>0), true);
+const waSample = JSON.stringify(waPri.inquiries.slice(0,3));
+check('WA 导入新增记录', `(()=>{ const n0=S.inquiries.length; const r=mergeWaInquiries(${waSample}); return r.added===3 && S.inquiries.length===n0+3; })()`, true);
+check('WA 导入重复执行幂等', `(()=>{ const r=mergeWaInquiries(${waSample}); return r.added===0 && r.skipped===3; })()`, true);
+check('WA 导入不覆盖手改状态与报价', `(()=>{ const id=${JSON.stringify(waPri.inquiries[0].id)}; const i=S.inquiries.find(x=>x.id===id); i.status='won'; i.quote=12345; mergeWaInquiries(${waSample}); return i.status==='won' && i.quote===12345; })()`, true);
+check('WA 导入按手机号排除重复客人', `(()=>{ const r=mergeWaInquiries([{id:'waq_other',guest:'同号另一人',contact:'+8613800000000',status:'new'}]); return r.added===0 && r.skipped===1; })()`, true);
+check('applyWaInquiries 兼容数组与对象', `(()=>{ try{ const a=applyWaInquiries([], '单元测试'); const b=applyWaInquiries({inquiries:[]}, '单元测试'); return a.total===b.total; }catch(e){ return false; } })()`, true);
+check('云端导入端点常量存在', `typeof WA_INQ_API`, 'string');
+
 console.log('\n=== 结果 ===');
 let pass=0, fail=0;
 for(const c of checks){

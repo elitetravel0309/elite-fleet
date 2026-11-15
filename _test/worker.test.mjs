@@ -267,5 +267,28 @@ r = await call('/api/inquiry', {
 body = await r.json().catch(()=>({}));
 check('蜜罐字段 → 假成功不落库', body.ok===true && !body.id, JSON.stringify(body));
 
+console.log('\n=== WhatsApp 询盘导入源（KV 只读）===');
+kv.set('page:whatsapp-priority.json', JSON.stringify({ ok:true, inquiries:[
+  { id:'waq_1', guest:'优先客人', contact:'+8613800000000', status:'following' }
+] }));
+kv.set('page:whatsapp-inquiries.json', JSON.stringify({ ok:true, inquiries:[
+  { id:'waq_1', guest:'优先客人', contact:'+8613800000000', status:'following' },
+  { id:'waq_2', guest:'历史客人', contact:'+8613900000000', status:'quoted' }
+] }));
+r = await call('/api/wa-inquiries');
+check('未登录拉取 WA 询盘 → 401', r.status===401);
+r = await call('/api/wa-inquiries', { headers:{ Authorization:basic } });
+body = await r.json().catch(()=>({}));
+check('Basic Auth 拉取优先清单 → 200', r.status===200 && body.inquiries.length===1, JSON.stringify(body).slice(0,120));
+r = await call('/api/wa-inquiries', { headers:inq });
+body = await r.json().catch(()=>({}));
+check('x-api-secret 跨域拉取 → 200', r.status===200 && body.inquiries.length===1);
+r = await call('/api/wa-inquiries?all=1', { headers:inq });
+body = await r.json().catch(()=>({}));
+check('?all=1 拉取全量 → 200', r.status===200 && body.inquiries.length===2);
+kv.delete('page:whatsapp-priority.json');
+r = await call('/api/wa-inquiries', { headers:inq });
+check('KV 未上传时明确返回 404', r.status===404);
+
 console.log(`\n通过 ${pass} / ${pass+fail}`+(fail?`  失败 ${fail}`:''));
 process.exit(fail?1:0);
