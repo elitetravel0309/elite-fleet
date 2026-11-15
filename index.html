@@ -1030,9 +1030,9 @@ textarea{resize:vertical;line-height:1.5}
         </div>
         <div class="panel">
           <h3>网站询盘对接（chinawondercars.com）</h3>
-          <p class="desc">一键拉取网站表单询盘到本工作台询价单（按 id 自动去重合并）。处理询价后修改状态，可一键回推网站后台。</p>
+          <p class="desc">一键拉取网站表单询盘到本工作台询价单（按 id 自动去重合并）。处理询价后修改状态，可一键回推网站后台。工作台同源访问自动走登录凭据；从 GitHub Pages / 本地文件跨域访问时才需填写下方密钥。</p>
           <div class="stack">
-            <input type="password" id="webInqKey" placeholder="询盘接口密钥（Worker 的 EF_INQ_SECRET，仅存本机）" onchange="saveWebInqSecret(this.value)">
+            <input type="password" id="webInqKey" placeholder="询盘接口密钥 EF_INQ_SECRET（仅跨设备/文件模式需填，仅存本机）" onchange="saveWebInqSecret(this.value)">
             <button class="btn primary" onclick="syncSiteInquiries()">同步网站询盘</button>
             <button class="btn ghost" onclick="pushSiteInquiryStatus()">推送询价状态到网站</button>
             <div id="webInqStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
@@ -5914,13 +5914,13 @@ const WEB_INQ_SERVICE_LABELS = { airport:'机场接送', city:'城市包车', bu
 
 async function syncSiteInquiries(){
   const st = webInqStatus;
-  if(!webInqSecret()){
-    if(st) st.textContent = '✗ 请先在下方填写「询盘接口密钥」（与 Worker 的 EF_INQ_SECRET 一致）';
-    toast('请先填写询盘接口密钥'); return;
-  }
+  // 同源工作台（fleet.chinawondercars.com）浏览器会自动带 Basic Auth，无需密钥；
+  // 跨设备/文件模式才需要填写 x-api-secret（Worker 的 EF_INQ_SECRET）。
+  const sec = webInqSecret();
   if(st) st.textContent = '正在拉取网站询盘…';
   try{
-    const res = await fetch(WEB_INQ_API + '?limit=500', { cache:'no-store', headers:{ 'x-api-secret': webInqSecret() } });
+    const h = sec? {'x-api-secret': sec} : {};
+    const res = await fetch(WEB_INQ_API + '?limit=500', { cache:'no-store', headers:h });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();
     if(!d.ok) throw new Error(d.error || '接口错误');
@@ -5958,17 +5958,14 @@ async function syncSiteInquiries(){
     if(st) st.textContent = '✓ 同步完成：新增 '+added+' 条，更新 '+updated+' 条（询价单共 '+S.inquiries.length+' 条）';
     toast('网站询盘同步完成：新增 '+added+'，更新 '+updated);
   }catch(e){
-    if(st) st.textContent = '✗ 同步失败：' + (e.message||e);
+    if(st) st.textContent = '✗ 同步失败：' + (e.message||e) + (sec?'':'（跨域使用请在下方填写询盘接口密钥）');
     toast('网站询盘同步失败：' + (e.message||e));
   }
 }
 
 async function pushSiteInquiryStatus(){
   const st = webInqStatus;
-  if(!webInqSecret()){
-    if(st) st.textContent = '✗ 请先在下方填写「询盘接口密钥」（与 Worker 的 EF_INQ_SECRET 一致）';
-    toast('请先填写询盘接口密钥'); return;
-  }
+  const sec = webInqSecret();
   if(st) st.textContent = '正在推送询价状态…';
   try{
     const pending = (S.inquiries||[]).filter(i=>/^web_\d+$/.test(i.id));
@@ -5978,9 +5975,11 @@ async function pushSiteInquiryStatus(){
       const wid = i.id.replace('web_','');
       const status = WEB_INQ_STATUS_RMAP[i.status] || i.status;
       if(!status){ skipped++; continue; }
+      const h = { 'Content-Type':'application/json' };
+      if(sec) h['x-api-secret'] = sec;
       const res = await fetch(WEB_INQ_API + '/' + wid, {
         method:'PUT',
-        headers:{ 'Content-Type':'application/json', 'x-api-secret': webInqSecret() },
+        headers:h,
         body: JSON.stringify({ status: status })
       });
       const d = await res.json().catch(()=>({ok:false}));
