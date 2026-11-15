@@ -338,6 +338,8 @@ def build():
             'fleetQuotes': [],
             'note': '',
             'source': 'whatsapp',
+            'channel': 'whatsapp',
+            'sourceRef': 'WhatsApp 会话 +' + phone,
             '_waJid': jid,
             '_waLastQuoteAt': datetime.fromtimestamp(last_ts).strftime('%Y-%m-%d %H:%M'),
             '_autoImported': True,
@@ -459,6 +461,8 @@ def build():
             'followUps': [], 'fleetQuotes': [],
             'note': note,
             'source': 'whatsapp',
+            'channel': 'whatsapp',
+            'sourceRef': 'WhatsApp 会话 +' + phone,
             '_waJid': jid,
             '_autoImported': True,
             '_fromLedger': True,
@@ -477,6 +481,28 @@ def build():
             stats['followup_merged'] += 1
 
     records.sort(key=lambda r: (r['date'], r['id']), reverse=True)
+
+    # 统一全渠道模型字段：口径与 index.html 的 inquiryGuestKey() / inquiryChannel() 保持一致。
+    # 放在所有台账/草稿合并之后，避免 contact/email 被后续补全时 guestKey 变陈旧。
+    def _norm_digits(s):
+        return re.sub(r'\D', '', str(s or ''))[-11:]
+
+    def _guest_key(r):
+        e = str(r.get('email') or r.get('contact') or '').strip().lower()
+        if '@' in e:
+            return 'e:' + e
+        p = _norm_digits(r.get('contact'))
+        if len(p) >= 7:
+            return 'p:' + p
+        g = re.sub(r'\s+', '', str(r.get('guest') or '')).lower()
+        return 'g:' + g if g else ''
+
+    for r in records:
+        r['channel'] = 'whatsapp'
+        r['guestKey'] = _guest_key(r)
+        if not r.get('sourceRef'):
+            r['sourceRef'] = 'WhatsApp 会话 +' + _norm_digits(r.get('contact'))
+        r['_threadId'] = r.get('_threadId') or r.get('_waJid') or ('wa:' + r['id'])
 
     priority = [r for r in records if r['status'] in ('following', 'won', 'lost')]
     priority_payload = {

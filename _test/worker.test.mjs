@@ -290,5 +290,42 @@ kv.delete('page:whatsapp-priority.json');
 r = await call('/api/wa-inquiries', { headers:inq });
 check('KV 未上传时明确返回 404', r.status===404);
 
+console.log('\n=== 全渠道 feed 与话术知识库端点 ===');
+kv.set('page:email-priority.json', JSON.stringify({ ok:true, channel:'email', inquiries:[
+  { id:'eml_1', guest:'邮件客人', channel:'email' }
+] }));
+kv.set('page:email-inquiries.json', JSON.stringify({ ok:true, channel:'email', inquiries:[
+  { id:'eml_1', guest:'邮件客人', channel:'email' },
+  { id:'eml_2', guest:'历史邮件客人', channel:'email' }
+] }));
+kv.set('page:wechat-priority.json', JSON.stringify({ ok:true, channel:'wechat', inquiries:[] }));
+kv.set('page:wa-kb.json', JSON.stringify({ ok:true, items:[
+  { id:'kb_1', title:'/payment', type:'shortcut', body:'50% deposit' }
+] }));
+r = await call('/api/inquiry-feed?channel=email');
+check('未登录拉取邮件 feed → 401', r.status===401);
+r = await call('/api/inquiry-feed?channel=email', { headers:inq });
+body = await r.json().catch(()=>({}));
+check('邮件 feed 默认优先清单 → 200', r.status===200 && body.inquiries.length===1, JSON.stringify(body).slice(0,120));
+r = await call('/api/inquiry-feed?channel=email&all=1', { headers:inq });
+body = await r.json().catch(()=>({}));
+check('邮件 feed ?all=1 拉全量 → 200', r.status===200 && body.inquiries.length===2);
+r = await call('/api/inquiry-feed?channel=wechat', { headers:inq });
+body = await r.json().catch(()=>({}));
+check('微信 feed 空清单也返回 200', r.status===200 && Array.isArray(body.inquiries) && body.inquiries.length===0);
+r = await call('/api/inquiry-feed?channel=whatsapp', { headers:inq });
+body = await r.json().catch(()=>({}));
+check('优先清单缺失时回退全量文件', r.status===200 && body.inquiries.length===2);
+r = await call('/api/inquiry-feed?channel=unknown', { headers:inq });
+check('不支持的渠道 → 400', r.status===400);
+r = await call('/api/wa-kb');
+check('未登录取知识库 → 401', r.status===401);
+r = await call('/api/wa-kb', { headers:{ Authorization:basic } });
+body = await r.json().catch(()=>({}));
+check('知识库端点返回条目', r.status===200 && body.items.length===1);
+kv.delete('page:wa-kb.json');
+r = await call('/api/wa-kb', { headers:inq });
+check('知识库未上传 → 404', r.status===404);
+
 console.log(`\n通过 ${pass} / ${pass+fail}`+(fail?`  失败 ${fail}`:''));
 process.exit(fail?1:0);

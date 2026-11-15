@@ -1,0 +1,471 @@
+{
+  "ok": true,
+  "type": "elite-fleet/wa-kb",
+  "version": 1,
+  "generatedAt": "2026-11-15 20:39:33",
+  "sourceDir": "E:\\WorkBuddy\\WorkBuddy\\2026-11-12-23-11-44",
+  "note": "逐节保留源文档原文；工作台「智能客服 → 话术与模板速查」可检索并一键插入回复",
+  "stats": {
+    "items": 31,
+    "shortcut": 12,
+    "template": 10,
+    "table": 6,
+    "missing": []
+  },
+  "items": [
+    {
+      "id": "kb_e71af21382",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "快捷回复库 · 文档说明与使用方式",
+      "tags": [
+        "收款",
+        "包含项"
+      ],
+      "body": "# WhatsApp 快捷回复库（基于历史消息聚类，2026-11-13 生成）\n\n> 使用方式：\n> 1. **手机端**：WhatsApp Business → 商业工具 → 快捷回复，逐条添加（最多 50 条），聊天时输入 `/` + 指令即可调出\n> 2. **WorkBuddy 拟稿时**：告诉我要用哪个指令（如「用 /payment 和 /included 组合」），我直接嵌入回复\n> `{ }` 内为变量，发送前替换\n\n---",
+      "order": 0
+    },
+    {
+      "id": "kb_4b6f99f28b",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "1. `/welcome` — 新客户欢迎语（已设为自动回复，x340）",
+      "tags": [],
+      "body": "```\nDear customer, welcome to our WhatsApp business service chat! Feel free to reach out to us at any time, and we'll do our best to ensure your satisfaction. Looking forward to a wonderful interaction with you! 😊\n```",
+      "order": 1
+    },
+    {
+      "id": "kb_e977b033e8",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "2. `/quote` — 报价单骨架（x37）",
+      "tags": [
+        "报价单",
+        "价格"
+      ],
+      "body": "```\n📋 Inquiry & Quotation Summary\n👤 Customer: {姓名}\n📅 Date: {日期}\n👥 Passengers: {人数}\n🚗 Service: {服务内容}\n💰 Price: RMB {金额}（{计价说明}）\n```",
+      "order": 2
+    },
+    {
+      "id": "kb_ef473a3060",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "3. `/cars` — 机场接送车型价格表（x37）",
+      "tags": [
+        "接机",
+        "车型",
+        "价格"
+      ],
+      "body": "```\nPrivate Car Cost\n🚗 5 seater sedan car (4 passenger seat) RMB {900}\n🚐 7 seater business van (6 passenger seat) RMB {1000}\n```",
+      "order": 3
+    },
+    {
+      "id": "kb_634aec8c50",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "4. `/included` — 包车价格包含项（x16-20）",
+      "tags": [
+        "包含项",
+        "长城",
+        "包车",
+        "价格"
+      ],
+      "body": "```\nIncluding car, driver, toll, fuel, parking, pick up, drop off, waiting time during your visit\n```\n长城版结尾用：`...during your Great Wall visit`",
+      "order": 4
+    },
+    {
+      "id": "kb_8e8b8c7dff",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "5. `/meetgreet` — 接机服务标准（x7-10）",
+      "tags": [
+        "接机"
+      ],
+      "body": "```\n✅ Private vehicle and professional driver\n✅ Fuel, highway tolls and parking fees\n✅ Airport meet-and-greet with name sign\n✅ Flight tracking for the arrival transfer\n✅ Waiting time (no extra charge for up to 120 minutes after scheduled landing, to allow for immigration and baggage claim)\n```",
+      "order": 5
+    },
+    {
+      "id": "kb_a286a51273",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "6. `/payment` — 收款与定金政策（x12-15）",
+      "tags": [
+        "收款"
+      ],
+      "body": "```\nPayment by Paypal, Alipay, Wechat.\nAlipay supports credit card. Paypal supports credit card, apply pay.\n\n50% as to reserve and to confirm the booking\n50% on service day before end of the tour\n```",
+      "order": 6
+    },
+    {
+      "id": "kb_23dcadf4c8",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "7. `/charter` — 全天包车规格（x5）",
+      "tags": [
+        "包含项",
+        "包车",
+        "车型",
+        "价格"
+      ],
+      "body": "```\n7 seater business van RMB {1200} per day\nService hour/distance: 8 hours / 100km per day\nIncluding driver, car, fuel, toll, driver allowance\n```",
+      "order": 7
+    },
+    {
+      "id": "kb_847a655e3d",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "8. `/carinfo` — 车辆信息",
+      "tags": [
+        "车型"
+      ],
+      "body": "```\nModel: Arcfox New Intelligent Driving HI Edition\n（如客户要车照片，发车辆图 + 此行）\n```",
+      "order": 8
+    },
+    {
+      "id": "kb_df274ccf29",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "9. `/sign` — 落款（x8）",
+      "tags": [
+        "车型"
+      ],
+      "body": "```\nChina Wonder Cars / China Wonder Tours\nE-mail: booking@chinawondertours.com\n```",
+      "order": 9
+    },
+    {
+      "id": "kb_54b83a95b4",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "10. 常用短语（口头快速回）",
+      "tags": [],
+      "body": "| 场景 | 回复 |\n|---|---|\n| 稍等 | one moment / Yes one moment |\n| 询人数 | How many people? |\n| 可安排 | Yes available / Yes can |\n| 拒绝还价 | Cannot |\n\n---",
+      "order": 10
+    },
+    {
+      "id": "kb_e8e3a2220b",
+      "source": "快捷回复库",
+      "file": "WhatsApp快捷回复库.md",
+      "type": "shortcut",
+      "title": "数据说明",
+      "tags": [
+        "收款",
+        "车型",
+        "报价单"
+      ],
+      "body": "- 样本：最近 5,000 条消息中你发出的 1,993 条文字消息（约 3–4 天窗口）\n- 最高频：欢迎语 x340（已自动化，无需再手动发）；报价骨架 x37；车型表 x37；收款政策 x15\n- 拼写勘误建议：原文中 `apply pay` 建议改为 `Apple Pay`；`Alipay supports credit card` 单独成行即可",
+      "order": 11
+    },
+    {
+      "id": "kb_f721e94b9c",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "报价模板库 · 文档说明与使用方式",
+      "tags": [
+        "收款",
+        "包含项",
+        "报价单",
+        "成交",
+        "价格"
+      ],
+      "body": "# 报价模板库（WhatsApp 询盘用）\n\n> 依据：98 份历史报价 + 70 单成交数据提取（2026-08 ~ 11-13）\n> 用法：选模板 → 填 `{变量}` → 发送。价格是历史默认值，**调价只改数字，别改结构**\n> 组合律：任意模板 + `/payment`（收款政策）+ 对应包含项，即完整报价\n\n---",
+      "order": 0
+    },
+    {
+      "id": "kb_d210579153",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "通用骨架（所有报价的开头，x37 高频格式）",
+      "tags": [
+        "车型",
+        "报价单",
+        "价格"
+      ],
+      "body": "```\n📋 Inquiry & Quotation Summary\n\n👤 Customer: {姓名}\n📅 Date: {日期}\n👥 Passengers: {人数（注明大人/儿童/行李数）}\n🚗 Vehicle: {车型}\n📍 Service: {服务内容一句话}\n💰 Total: RMB {总价}\n```\n\n---",
+      "order": 1
+    },
+    {
+      "id": "kb_ca5d3bf2e4",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "T1 · 北京⇄慕田峪长城往返（占比最高，51 报价/33 成交）",
+      "tags": [
+        "包含项",
+        "长城",
+        "车型",
+        "报价单",
+        "成交",
+        "价格"
+      ],
+      "body": "**默认价**：轿车（5 座 4 客）**RMB 900** ｜ 7 座商务 **RMB 1,000**\n**金山岭/八达岭**：轿车 980–1,200 ｜ 车程更远时上浮 100–200\n\n```\nPrivate Car Cost\n\n🚗 5 seater sedan car (4 passenger seat) RMB 900\n🚐 7 seater business van (6 passenger seat) RMB 1,000\n\nIncluding car, driver, toll, fuel, parking, pick up, drop off, waiting time during your Mutianyu Great Wall visit.\n```\n\n**注意**：\n- 客户问门票 → 明确「门票和缆车不含，可代订需加 RMB {实价}」（历史成交中 Nicole 就是这样加订的）\n- 儿童同行 → 提醒安全座椅（免费提供与否待定口径）\n\n---",
+      "order": 2
+    },
+    {
+      "id": "kb_da2142d755",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "T2 · 机场接送（单程）",
+      "tags": [
+        "接机",
+        "长城",
+        "车型",
+        "报价单",
+        "价格"
+      ],
+      "body": "**默认价**：轿车 **RMB 600–900**（按距离）｜ 7 座 **RMB 700–1,000**\n参考锚点：PEK↔市区 700–800 ｜ PVG↔市区 700–900 ｜ 慕田峪村→PKX 600\n\n```\n📋 Inquiry & Quotation Summary\n\n👤 Customer: {姓名}\n📅 Date: {日期}（注明航班号与落地时间）\n👥 Passengers: {人数} with {行李数}\n🚗 Vehicle: 5 seater sedan / 7 seater business van\n📍 Service: {机场代码} Airport → {酒店/目的地}\n💰 Total: RMB {金额}\n```\n\n**接机必附（/meetgreet）**：\n\n```\n✅ Private vehicle and professional driver\n✅ Fuel, highway tolls and parking fees\n✅ Airport meet-and-greet with name sign\n✅ Flight tracking for the arrival transfer\n✅ Waiting time (no extra charge for up to 120 minutes after scheduled landing, to allow for immigration and baggage claim)\n```\n\n**注意**：\n- 行李多必问件数（历史报价 90% 带行李描述）\n- VIP 举牌入关协助服务 → **尚无定价，报前补口径**\n- 7 座车装 8 件大箱装不下 → 主动建议 9 座或两台车\n\n---",
+      "order": 3
+    },
+    {
+      "id": "kb_0fa235561e",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "T3 · 长城 Layover 一日游（机场中转，PEK/PKG 落地当天返）",
+      "tags": [
+        "接机",
+        "长城",
+        "报价单",
+        "价格"
+      ],
+      "body": "**默认价**：轿车 **RMB 900–1,000** ｜ 含总时长 9–10 小时\n\n```\n📋 Inquiry & Quotation Summary\n\n👤 Customer: {姓名}\n📅 Date: {日期}\n✈️ Layover: Landing {时间} at {机场}, departing {时间}\n👥 Passengers: {人数} with {行李数}\n📍 Plan: Airport → Mutianyu Great Wall (2–3 hrs) → Airport or nearby hotel\n💰 Total: RMB {金额}\n\nLuggage can stay in the car with the driver during the visit.\n```\n\n**注意**：结尾这句「行李留车上」是 layover 客最关心的点，保留。\n\n---",
+      "order": 4
+    },
+    {
+      "id": "kb_c84d2a2161",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "T4 · 全天包车（市内一日，8h/100km）",
+      "tags": [
+        "包含项",
+        "包车",
+        "车型",
+        "价格"
+      ],
+      "body": "**默认价**：轿车 **RMB 1,000** ｜ 7 座商务 **RMB 1,200–1,500**\n\n```\nPrivate Car Cost\n\n🚗 5 seater sedan RMB 1,000 per day\n🚐 7 seater business van RMB 1,200 per day\n\nService hour/distance: 8 hours / 100 km per day\nIncluding driver, car, fuel, toll, driver allowance\n```\n\n**超时/超公里**：历史报价未见统一口径 → 建议定为「超时 RMB 100/小时，超公里 RMB 5/km」并固化\n\n---",
+      "order": 5
+    },
+    {
+      "id": "kb_d876c3df22",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "T5 · 多日包车（按天计）",
+      "tags": [
+        "收款",
+        "包含项",
+        "包车",
+        "车型",
+        "报价单",
+        "成交",
+        "价格"
+      ],
+      "body": "**默认价**：**RMB 1,480/天**（两个成交单验证：Abrar、Alejandro 均按此价付款）\n\n```\n📋 Multi-day Charter Quotation\n\n👤 Customer: {姓名}\n📅 Dates: {起始} – {结束}（{N} days）\n👥 Passengers: {人数}\n🚗 Vehicle: {车型}\n💰 Total: RMB 1,480 × {N} days = RMB {总价} per day including:\n   ✅ Private vehicle and professional driver\n   ✅ Fuel, highway tolls and parking fees\n   ✅ Driver's accommodation and meals are {含/不含——需客户当地安排时注明}\n```\n\n---",
+      "order": 6
+    },
+    {
+      "id": "kb_b42dfe7897",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "T6 · 城际接送（沪杭/粤港澳等）",
+      "tags": [
+        "车型",
+        "报价单",
+        "价格",
+        "线路",
+        "纪律"
+      ],
+      "body": "**默认价**：单程 **RMB 1,580–1,800**（杭州⇄上海 1,580–2,100 ｜ 广州→香港 1,800 ｜ 澳门⇄广州按距离）\n\n```\n📋 Inquiry & Quotation Summary\n\n👤 Customer: {姓名}\n📅 Date: {日期}\n👥 Passengers: {人数}\n🚗 Vehicle: {车型}\n📍 Route: {起点} → {终点}（含中途经停时写明 Stop at {地点}）\n💰 Total: RMB {金额}\n```\n\n**注意**：粤港澳线涉及两地车牌/口岸，接单前先确认车辆可通关（历史已做成澳门⇄广州，说明有资源）。\n\n---",
+      "order": 7
+    },
+    {
+      "id": "kb_cc99025e68",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "T7 · 大团/中巴（10 人以上，需询价后报）",
+      "tags": [
+        "长城",
+        "报价单",
+        "价格",
+        "大团"
+      ],
+      "body": "**无固定价**——历史案例：11 人 17–19 座中巴长沙⇄张家界、24–26 人桂林大巴、30 人北京⇄长城大巴\n**策略**：先回「Let me check availability and the best rate for your group size. One moment please.」→ 问清日期/人数/行李/起点终点 → 询到价再套 T1 骨架\n\n```\nHello! Thank you for your inquiry. For a group of {人数}, we would arrange a {车型}.\nMay I confirm: {日期}、{起点→终点}、{行李数}? I will send you the best quotation shortly.\n```\n\n---",
+      "order": 8
+    },
+    {
+      "id": "kb_4ec93693ea",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "template",
+      "title": "通用附件段（按需拼装）",
+      "tags": [
+        "收款"
+      ],
+      "body": "**/payment 收款政策（每单必附）**：\n\n```\nPayment by Paypal, Alipay, Wechat.\nAlipay supports credit card. Paypal supports credit card, Apple Pay.\n\n50% as to reserve and to confirm the booking\n50% on service day before end of the tour\n```\n\n**/sign 落款**：\n\n```\nChina Wonder Cars / China Wonder Tours\nE-mail: booking@chinawondertours.com\n```\n\n---",
+      "order": 9
+    },
+    {
+      "id": "kb_9eefe93766",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "table",
+      "title": "定价速查表",
+      "tags": [
+        "接机",
+        "长城",
+        "包车",
+        "车型",
+        "成交",
+        "价格"
+      ],
+      "body": "| 服务 | 轿车 5 座 | 7 座商务 | 备注 |\n|---|---|---|---|\n| 北京⇄慕田峪往返 | 900 | 1,000 | 金山岭 +100–200 |\n| 接送机单程（市区） | 600–900 | 700–1,000 | 按距离 |\n| Layover 长城一日 | 900–1,000 | — | 含 9–10h |\n| 全天包车 8h/100km | 1,000 | 1,200–1,500 | |\n| 多日包车（每天） | 1,480 | 待定 | 成交验证价 |\n| 城际单程 | 1,580–1,800 | — | 按线路 |\n| 云南/桂林一日 | 880–900 | — | 丽江/桂林参考 |",
+      "order": 10
+    },
+    {
+      "id": "kb_08c602a6da",
+      "source": "报价模板库",
+      "file": "报价模板库.md",
+      "type": "rule",
+      "title": "使用纪律（从历史丢单教训提炼）",
+      "tags": [
+        "收款",
+        "长城",
+        "成交",
+        "纪律"
+      ],
+      "body": "1. **行李数必问**——几乎每单客户都主动报行李，说明他们在意\n2. **门票划清界线**——长城/缆车不含，可代订加价，避免事后扯皮\n3. **还价策略**：历史口径「Cannot」守价成功过（Nick、Sonali 均按 900 成交）——降价空间最多 50–100，别一次让太多\n4. **50% 定金写进每单**——付款信号单几乎都是按这个政策走的\n5. `apply pay` → `Apple Pay`（已修正）",
+      "order": 11
+    },
+    {
+      "id": "kb_f8e3ebf39c",
+      "source": "成交线路报价台账",
+      "file": "WhatsApp成交线路报价台账.md",
+      "type": "overview",
+      "title": "成交线路报价台账 · 文档说明与使用方式",
+      "tags": [
+        "报价单",
+        "成交",
+        "线路"
+      ],
+      "body": "# WhatsApp 询盘线路与报价台账\n\n> 数据来源：WhatsApp Business（+86 153 4772 3823）全部 24,626 条消息\n> 覆盖时间：2026-08 中旬 – 11-13 ｜ 生成时间：2026-11-13 02:30\n\n---",
+      "order": 0
+    },
+    {
+      "id": "kb_f04f601a92",
+      "source": "成交线路报价台账",
+      "file": "WhatsApp成交线路报价台账.md",
+      "type": "table",
+      "title": "一、总览",
+      "tags": [
+        "收款",
+        "报价单",
+        "成交",
+        "价格"
+      ],
+      "body": "| 指标 | 数值 |\n|---|---|\n| 私聊会话总数 | 1,279 |\n| 发过报价的会话 | **98** |\n| 检出付款信号的会话 | **70**（8 月–11 月累计，其中 11 月高置信度成交 14 单） |\n| 明确取消 | 1（~Winnie，11-11） |\n| 报价中位价 | **RMB 980**（区间 100–4,000） |\n\n价格带分布（按报价单金额）：≤700 元 21 单 ｜ 701–1,000 元 62 单 ｜ 1,001–1,500 元 29 单 ｜ 1,501–2,500 元 16 单 ｜ >2,500 元 6 单\n\n---",
+      "order": 1
+    },
+    {
+      "id": "kb_960a630e07",
+      "source": "成交线路报价台账",
+      "file": "WhatsApp成交线路报价台账.md",
+      "type": "table",
+      "title": "二、成交线路排行（按会话数）",
+      "tags": [
+        "收款",
+        "接机",
+        "长城",
+        "报价单",
+        "成交",
+        "线路"
+      ],
+      "body": "| 排名 | 线路类型 | 报价数 | 成交付款信号 |\n|---|---|---|---|\n| 1 | **北京长城**（慕田峪/金山岭/八达岭） | 51 | **33** |\n| 2 | **机场接送**（PEK/PKX/PVG/CTU 等） | 22 | **30** |\n| 3 | 粤港澳城际（澳门/香港/深圳） | 1 | 2 |\n| 4 | 上海苏州 | 1 | 2 |\n| 5 | 云南（大理/丽江/昆明） | — | 1 |\n| 5 | 成都 | 2 | 1 |\n| 5 | 杭州周边 | 5 | 1 |\n\n**结论：业务高度集中在北京长城一日游和机场接送两大类，合计占成交的 ~85%。**\n\n---",
+      "order": 2
+    },
+    {
+      "id": "kb_099e969b53",
+      "source": "成交线路报价台账",
+      "file": "WhatsApp成交线路报价台账.md",
+      "type": "table",
+      "title": "三、11 月确认成交明细（高置信度）",
+      "tags": [
+        "接机",
+        "长城",
+        "包车",
+        "成交",
+        "价格",
+        "线路"
+      ],
+      "body": "| 日期 | 客户 | 线路/服务 | 金额 RMB |\n|---|---|---|---|\n| 11-09 | Natalie Sapuppo | 酒店⇄慕田峪长城往返（4 人） | 900 |\n| 11-09 | Marcin | PEK 接机→慕田峪（等 2-3h）→机场酒店（6 人） | 980 |\n| 11-08 | Nick | 长城包车 | 900 |\n| 11-07 | Sonali Weerasuriya | 长城包车（含确认价 900） | 900 |\n| 11-07 | Abrar | 包车 | 1,480 |\n| 11-04 | Alejandro Zamudio | 包车 | 1,480 |\n| 10-31 | 伊朗团体（جهانگرد） | 团体包车 | 1,500+1,200 |\n| 10-30 | Novai Lyons | 多段包车 | 1,080+250+750+1,830 |\n| 10-29 | Edurne | 接送（尾款 100） | 100 |\n| 10-28 | Hung Nguyen | 丽江一日游（玉龙雪山） | 900 |\n| 10-27 | Nazim Aslam | 上海⇄杭州一日往返 | 2,100 |\n| 10-27 | Madina | 包车 | 880 |\n| 10-27 | Jas | 城际接送 | 1,580/1,980 |\n| 10-24 | Andrew Tran | 长城包车 | 900 |",
+      "order": 3
+    },
+    {
+      "id": "kb_9d55b4939a",
+      "source": "成交线路报价台账",
+      "file": "WhatsApp成交线路报价台账.md",
+      "type": "table",
+      "title": "四、8–10 月典型成交（抽样）",
+      "tags": [
+        "收款",
+        "接机",
+        "长城",
+        "包车",
+        "成交",
+        "价格",
+        "线路"
+      ],
+      "body": "| 客户 | 线路 | 备注 |\n|---|---|---|\n| Nicole（巴西） | 慕田峪长城一日（含门票+缆车代订） | 付定金 |\n| Aniqa（英国） | 慕田峪村→PKX 送机，7 座 | RMB 600 |\n| V（印尼） | 昆明机场接机 9 日包车 | 多日行程 |\n| Marcin（英国） | PEK→慕田峪→机场酒店 | 6 人 |\n| Ellice（英国） | 金山岭长城一日（06:30 早出发） | 2 人 |\n| Ralf（德国） | 大同包车一日（Mercure 酒店） | 微信付款 |\n| Marek（捷克） | PEK 14 小时中转长城游 | 2 人 |\n| Barbara（克罗地亚） | PEK 接机→长城→机场一日 | 支付宝 50% 定金 |\n| Narelle（澳） | 成都接机 + 西安兵马俑一日（复购） | 老客户加单 |\n| Anna Flávia（美） | PVG 接机→徐汇酒店 | 付定金 |\n| Daniela（巴西） | 上海 8 小时全天包车（3 人 6 箱） | 50% 定金流程 |\n| José Antonio（西班牙） | 9-21 两人口译服务 | 接受条款 |\n\n---",
+      "order": 4
+    },
+    {
+      "id": "kb_b4fa59d796",
+      "source": "成交线路报价台账",
+      "file": "WhatsApp成交线路报价台账.md",
+      "type": "table",
+      "title": "五、价格口径参考（从历史报价提取）",
+      "tags": [
+        "接机",
+        "长城",
+        "包车",
+        "车型",
+        "报价单",
+        "价格",
+        "线路"
+      ],
+      "body": "| 服务 | 报价区间 | 备注 |\n|---|---|---|\n| 北京⇄慕田峪长城往返（轿车 5 座） | 880–1,000 | 最常见 900 |\n| 北京⇄慕田峪（7 座商务） | 950–1,100 | |\n| 接送机单程（轿车） | 600–900 | 视距离 |\n| 全天包车 8h/100km（7 座） | 1,200–1,500 | |\n| 城际单程（如杭州⇄上海、广州⇄香港） | 1,580–1,800 | |\n| 中转 layover 一日游 | 900–1,050 | |\n| 多日包车/大型团 | 2,500–4,000+ | 少量 |\n\n---",
+      "order": 5
+    },
+    {
+      "id": "kb_0613ba17e1",
+      "source": "成交线路报价台账",
+      "file": "WhatsApp成交线路报价台账.md",
+      "type": "overview",
+      "title": "六、报价未成交但值得跟进（近期高意向）",
+      "tags": [
+        "收款",
+        "接机",
+        "包车",
+        "报价单",
+        "成交",
+        "线路"
+      ],
+      "body": "| 客户 | 线路 | 金额 | 状态 |\n|---|---|---|---|\n| Gianluigi（意大利） | 罗马人 2 人接机含门票 | 690×2=1,380 | 客户确认中 |\n| Nadeen（沙特） | 桂林龙脊梯田全天包车 | 880+门票 100 | 等回复 |\n| Agata（意大利） | 元阳梯田 3 日包车 | 详见会话 | 等回复 |\n| Nikos（希腊） | 重庆→芙蓉镇 12-25 | 2,500 | 行程已确认待付款 |\n| Jessie（新加坡） | 杭州 4 人导游定制 | 未报价 | **催回复中** |\n| Bette（荷兰） | 11-13 往返包车 | 980 | **明天用车** |\n| Jake（澳） | PVG→虹桥送机 11-13 | 已发 PayPal | 待付款 |",
+      "order": 6
+    }
+  ]
+}

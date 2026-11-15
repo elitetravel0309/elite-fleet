@@ -588,14 +588,23 @@ textarea{resize:vertical;line-height:1.5}
 
     <!-- 订单 -->
     <section class="view" data-route="inquiries">
-      <h2 class="section">询价管理</h2>
-      <p class="sub">管理客人询价、跟进记录、报价历史和转化率</p>
+      <h2 class="section">全渠道询盘中枢</h2>
+      <p class="sub">网站表单 · WhatsApp · 微信 · 邮件 · 飞书 · 手工录入，统一去重、统一跟进、统一转化统计</p>
       <div class="toolbar">
         <button class="btn primary" onclick="openInquiry()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增询价</button>
+        <button class="btn ghost small" onclick="showView('data')">全渠道接入设置</button>
         <button class="btn ghost small" onclick="openFeishuImportModal()">导入飞书询盘</button>
         <button class="btn ghost small" onclick="qaImportOpen()">导入 quote-agent 回写</button>
-        <button class="btn ghost small" onclick="fsExportStatus()">导出回写飞书</button>
         <div class="spacer"></div>
+        <select id="inquiryChannelFilter" onchange="renderInquiries()">
+          <option value="">全部渠道</option>
+          <option value="web">网站表单</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="wechat">微信</option>
+          <option value="email">邮件</option>
+          <option value="feishu">飞书</option>
+          <option value="manual">手工录入</option>
+        </select>
         <select id="inquiryStatusFilter" onchange="renderInquiries()">
           <option value="">全部状态</option>
           <option value="new">新询价</option>
@@ -604,8 +613,9 @@ textarea{resize:vertical;line-height:1.5}
           <option value="won">已成交</option>
           <option value="lost">已流失</option>
         </select>
-        <input type="text" id="inquirySearch" placeholder="搜索客人/线路..." oninput="renderInquiries()" style="width:200px">
+        <input type="text" id="inquirySearch" placeholder="搜索客人/线路/邮箱/来源..." oninput="renderInquiries()" style="width:200px">
       </div>
+      <div id="inquiryChannelStrip" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
       <div class="kpi-row" id="inquiryKpis" style="margin-bottom:16px"></div>
       <div id="inquiryList" class="card-list"></div>
     </section>
@@ -654,8 +664,25 @@ textarea{resize:vertical;line-height:1.5}
           <div id="agentQueue" class="agent-queue-list"></div>
         </div>
         <div class="agent-ws panel">
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:8px">
+            <div class="field" style="flex:0 0 150px;margin:0">
+              <label>来源渠道</label>
+              <select id="agentChannel">
+                <option value="whatsapp">WhatsApp</option>
+                <option value="wechat">微信</option>
+                <option value="email">邮件</option>
+                <option value="web">网站表单</option>
+                <option value="feishu">飞书</option>
+                <option value="manual">手工录入</option>
+              </select>
+            </div>
+            <div class="field" style="flex:1 1 200px;margin:0">
+              <label>来源线索（会话名 / 邮件主题 / 微信号）</label>
+              <input type="text" id="agentSourceRef" placeholder="选填，归档后可回溯原始会话">
+            </div>
+          </div>
           <div class="field" style="margin-bottom:8px">
-            <label>客户消息（WhatsApp / 微信 / 邮件原文）</label>
+            <label>客户消息（WhatsApp / 微信 / 邮件原文，粘贴即可归档到全渠道询盘中枢）</label>
             <textarea id="agentMsg" rows="4" placeholder="例如：Hi, we are 3 people, need airport pickup at Shanghai Pudong on Oct 20, flight CA123 at 14:30, to Grand Kempinski Hotel. 7-seater please."></textarea>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -709,6 +736,18 @@ textarea{resize:vertical;line-height:1.5}
             <button class="btn ghost small" onclick="agentSaveAi()">保存 AI 设置</button>
             <button class="btn ghost small" onclick="agentAiTest()">测试连接</button>
             <span id="agentAiStatus" style="font-size:12px;color:var(--text-3);margin-left:8px"></span>
+          </div>
+          <div style="margin-top:12px;border-top:1px dashed var(--line);padding-top:10px">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+              <b style="font-size:13px">话术与模板速查</b>
+              <span id="waKbCount" style="font-size:11px;color:var(--text-3)"></span>
+              <div style="flex:1"></div>
+              <button class="btn ghost small" onclick="loadWaKb(true)">刷新知识库</button>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-3);margin-bottom:8px">快捷回复库 / 报价模板库 / 成交线路报价台账，逐条保留原文；点「插入回复」拼到下方回复框（发送前记得替换 {变量}）</div>
+            <input type="text" id="waKbSearch" placeholder="搜索：/payment、长城、接机、定金、多日包车…" oninput="renderWaKb()" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:12.5px">
+            <div id="waKbTypeChips" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"></div>
+            <div id="waKbList" style="max-height:300px;overflow-y:auto"></div>
           </div>
         </div>
       </div>
@@ -1029,6 +1068,40 @@ textarea{resize:vertical;line-height:1.5}
           </div>
         </div>
         <div class="panel">
+          <h3>全渠道询盘接入总览</h3>
+          <p class="desc">网站表单、WhatsApp、微信、邮件、飞书与手工录入统一进入「全渠道询盘中枢」；按 id + 同渠道联系方式幂等去重，跨渠道同客人会互相提示，所有导入只补空字段、绝不覆盖你手改过的状态/报价/备注。</p>
+          <div id="channelStatus" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn ghost small" onclick="renderChannelStatus()">刷新渠道统计</button>
+            <button class="btn ghost small" onclick="showView('inquiries')">打开全渠道询盘中枢</button>
+            <button class="btn ghost small" onclick="showView('agent')">粘贴任意渠道原文建档</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>邮件询盘并入</h3>
+          <p class="desc">从业务邮箱（booking@ / elitetravel@）筛出客户询盘，去掉广告、系统通知和自发晨报，生成 channel=email 的标准 JSON。运行 scripts/email_inquiry_import.py 生成并上传 KV 后，这里一键拉取；也可直接导入本地 JSON。</p>
+          <div class="stack">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn primary" onclick="syncInquiryFeed('email',false)">拉取邮件询盘清单</button>
+              <button class="btn ghost" onclick="syncInquiryFeed('email',true)">拉取全量历史</button>
+            </div>
+            <label class="btn ghost" style="justify-content:center">导入本地 JSON 文件<input type="file" accept=".json" style="display:none" onchange="importInquiryFeedFile(event,'email')"></label>
+            <div id="emailImportStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>微信聊天询盘并入</h3>
+          <p class="desc">把微信聊天导出文本（.txt / .csv）按会话解析成询盘，运行 scripts/wechat_inquiry_import.py 生成 channel=wechat 的标准 JSON。也可在「智能客服」直接粘贴微信聊天原文，选择来源渠道=微信后一键存档。</p>
+          <div class="stack">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn primary" onclick="syncInquiryFeed('wechat',false)">拉取微信询盘清单</button>
+              <button class="btn ghost" onclick="syncInquiryFeed('wechat',true)">拉取全量历史</button>
+            </div>
+            <label class="btn ghost" style="justify-content:center">导入本地 JSON 文件<input type="file" accept=".json" style="display:none" onchange="importInquiryFeedFile(event,'wechat')"></label>
+            <div id="wechatImportStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
+          </div>
+        </div>
+        <div class="panel">
           <h3>网站询盘对接（chinawondercars.com）</h3>
           <p class="desc">一键拉取网站表单询盘到本工作台询价单（按 id 自动去重合并）。处理询价后修改状态，可一键回推网站后台。工作台同源访问自动走登录凭据；从 GitHub Pages / 本地文件跨域访问时才需填写下方密钥。</p>
           <div class="stack">
@@ -1217,7 +1290,19 @@ textarea{resize:vertical;line-height:1.5}
             <option value="lost">已流失</option>
           </select>
         </div>
+        <div class="field"><label>来源渠道</label>
+          <select id="iqChannel">
+            <option value="web">网站表单</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="wechat">微信</option>
+            <option value="email">邮件</option>
+            <option value="feishu">飞书</option>
+            <option value="manual">手工录入</option>
+          </select>
+        </div>
+        <div class="field"><label>邮箱</label><input type="text" id="iqEmail" placeholder="客人邮箱（邮件渠道必填）"></div>
       </div>
+      <div class="field"><label>来源线索（邮件主题 / 会话名 / 网站来源页）</label><input type="text" id="iqSourceRef" placeholder="选填，用于回溯原始会话"></div>
       <div class="field"><label>线路/需求</label><textarea id="iqRoute" rows="2" placeholder="如：首都机场接→慕田峪长城→市区酒店送"></textarea></div>
       <div class="field"><label>给客人报价</label><input type="number" id="iqQuote" placeholder="对外报价（元）"></div>
       <div class="field"><label>预估成本</label><input type="number" id="iqCost" placeholder="预估成本（元）"></div>
@@ -5938,7 +6023,7 @@ async function syncSiteInquiries(){
     if(!d.ok) throw new Error(d.error || '接口错误');
     if(!S.inquiries) S.inquiries = [];
     const map = new Map(S.inquiries.map(i=>[i.id, i]));
-    let added = 0, updated = 0;
+    let added = 0, updated = 0, skipped = 0;
     (d.inquiries||[]).forEach(q=>{
       const id = 'web_' + q.id;
       const label = WEB_INQ_SERVICE_LABELS[q.service_type] || q.service_type || '';
@@ -5959,15 +6044,27 @@ async function syncSiteInquiries(){
         followUp: '', followUps: [], fleetQuotes: [],
         note: note,
         source: 'chinawondercars.com',
+        channel: 'web',
+        sourceRef: q.source_page ? '网站来源页: '+q.source_page : 'chinawondercars.com 表单',
+        guestKey: inquiryGuestKey({email:q.email||'',contact:q.whatsapp||q.email||'',guest:q.name||''}),
         _lastModified: Date.now()
       };
-      if(map.has(id)){ updated++; map.set(id, Object.assign({}, map.get(id), rec)); }
+      if(map.has(id)){
+        const cur=map.get(id); let ch=false;
+        // 只补空字段：网站表单不能回滚你在工作台里改过的状态/报价/备注
+        ['guest','contact','email','date','serviceDate','city','pax','vehicle','route','source','sourceRef','guestKey'].forEach(k=>{
+          const v=rec[k]; if(v==null||v===''||v===0) return;
+          if(cur[k]==null||cur[k]===''||cur[k]===0){ cur[k]=v; ch=true; }
+        });
+        if(cur.channel!=='web'){ cur.channel='web'; ch=true; }
+        if(ch) updated++; else skipped++;
+      }
       else { added++; map.set(id, rec); }
     });
     S.inquiries = [...map.values()];
     saveState(S);
     renderInquiries();
-    if(st) st.textContent = '✓ 同步完成：新增 '+added+' 条，更新 '+updated+' 条（询价单共 '+S.inquiries.length+' 条）';
+    if(st) st.textContent = '✓ 同步完成：新增 '+added+' 条，补全 '+updated+' 条，跳过 '+skipped+' 条（询价单共 '+S.inquiries.length+' 条）';
     toast('网站询盘同步完成：新增 '+added+'，更新 '+updated);
   }catch(e){
     if(st) st.textContent = '✗ 同步失败：' + (e.message||e) + (sec?'':'（跨域使用请在下方填写询盘接口密钥）');
@@ -5981,23 +6078,32 @@ async function syncSiteInquiries(){
    ========================================================= */
 const WA_INQ_API = location.protocol==='file:' ? '' : '/api/wa-inquiries';
 function waImportHeaders(){ const s=webInqSecret(); return s? {'x-api-secret':s} : {}; }
-const WA_INQ_FIELDS = ['guest','contact','email','date','serviceDate','city','pax','vehicle','status',
-  'route','quote','cost','followUp','followUps','fleetQuotes','note','source',
-  '_waJid','_waLastQuoteAt','_ledgerDate','_autoImported','_fromLedger','_serviceDateGuessed'];
-// 纯函数：按 id + 手机号幂等合并，便于测试；绝不覆盖用户已手工修改的字段
-function mergeWaInquiries(records){
+/* 全渠道通用字段白名单：WhatsApp / 邮件 / 微信 / 网站 / 飞书都走这一套映射 */
+const INQ_IMPORT_FIELDS = ['guest','contact','email','date','serviceDate','city','pax','vehicle','status',
+  'route','quote','cost','followUp','followUps','fleetQuotes','note','source','channel','sourceRef','subject',
+  'guestKey','_waJid','_waLastQuoteAt','_ledgerDate','_autoImported','_fromLedger','_serviceDateGuessed',
+  '_threadId','_msgCount','_sourceSnippet','_fromMailbox'];
+const WA_INQ_FIELDS = INQ_IMPORT_FIELDS; // 兼容旧名称与既有测试
+/* 幂等键：同一渠道 + 同一手机/邮箱视为同一条线索；跨渠道同客人保留两条并在列表互相提示 */
+function inqContactKey(i){
+  const c=inquiryChannel(i), p=normPhone(i.contact||''), e=normEmail(i.email||i.contact);
+  const id=p&&p.length>=7 ? p : (e.indexOf('@')>0 ? e : '');
+  return id ? c+':'+id : '';
+}
+// 纯函数：按 id + 同渠道联系方式幂等合并，便于测试；绝不覆盖用户已手工修改的状态/报价/备注
+function mergeInquiryBatch(records){
   if(!Array.isArray(records)) return {added:0,updated:0,skipped:0,total:(S.inquiries||[]).length};
   if(!S.inquiries) S.inquiries=[];
   const map=new Map(S.inquiries.map(i=>[i.id,i]));
-  const byPhone=new Map();
-  S.inquiries.forEach(i=>{ const p=String(i.contact||'').replace(/\D/g,'').slice(-9); if(p&&!byPhone.has(p)) byPhone.set(p,i); });
+  const byContact=new Map();
+  S.inquiries.forEach(i=>{ const k=inqContactKey(i); if(k&&!byContact.has(k)) byContact.set(k,i); });
   let added=0,updated=0,skipped=0;
   records.forEach(r=>{
     if(!r||!r.id||!r.guest) return;
     if(map.has(r.id)){
       const cur=map.get(r.id); let ch=false;
       ['contact','email','date','serviceDate','city','pax','vehicle','route','note','source',
-       '_waJid','_waLastQuoteAt','_ledgerDate'].forEach(k=>{
+       'sourceRef','subject','_waJid','_waLastQuoteAt','_ledgerDate','_threadId','_sourceSnippet'].forEach(k=>{
         const v=r[k]; if(v==null||v==='') return;
         const old=cur[k]; if(v===old) return;
         if(old==null||old===''||(old===0&&v!==0)){ cur[k]=v; ch=true; }
@@ -6005,26 +6111,60 @@ function mergeWaInquiries(records){
       if(ch) updated++; else skipped++;
       return;
     }
-    const p=String(r.contact||'').replace(/\D/g,'').slice(-9);
-    if(p&&byPhone.has(p)){ skipped++; return; }  // 已由 WA 收件箱/网站表单转过同一客人
+    const probe={id:r.id,channel:r.channel,contact:r.contact,email:r.email,source:r.source};
+    const k=inqContactKey(probe);
+    if(k&&byContact.has(k)){ skipped++; return; }  // 同渠道同一联系方式已转过询价单
     const rec={id:r.id};
-    WA_INQ_FIELDS.forEach(k=>{ if(r[k]!==undefined) rec[k]=r[k]; });
+    INQ_IMPORT_FIELDS.forEach(k2=>{ if(r[k2]!==undefined) rec[k2]=r[k2]; });
+    rec.channel = rec.channel || inquiryChannel(rec);
+    rec.guestKey = inquiryGuestKey(rec);
+    if(!rec.email && normEmail(rec.contact).indexOf('@')>0) rec.email=normEmail(rec.contact);
     rec._lastModified=Date.now();
-    map.set(rec.id,rec); if(p) byPhone.set(p,rec);
+    map.set(rec.id,rec); if(k) byContact.set(k,rec);
     added++;
   });
   S.inquiries=[...map.values()];
   return {added,updated,skipped,total:S.inquiries.length};
 }
-function applyWaInquiries(d,label){
+function mergeWaInquiries(records){ return mergeInquiryBatch(records); }
+/* 全渠道通用导入入口：任何来源的 JSON（数组 / {inquiries:[...]}）都走同一套幂等合并 */
+function applyInquiryBatch(d,label,statusId,channelLabel){
   const list=Array.isArray(d)?d:(d&&Array.isArray(d.inquiries)?d.inquiries:null);
   if(!list) throw new Error('数据格式不对：缺少 inquiries 数组');
-  const r=mergeWaInquiries(list);
+  const r=mergeInquiryBatch(list);
   if(r.added||r.updated){ saveState(S); renderAll(); }
-  const st=$('waImportStatus');
-  if(st) st.textContent='✓ '+label+'：新增 '+r.added+' 条，补全 '+r.updated+' 条，跳过 '+r.skipped+' 条（已存在/号码重复）｜询价单共 '+r.total+' 条';
-  toast('WhatsApp 询盘已并入：新增 '+r.added+' 条');
+  const st=$(statusId)||$('waImportStatus');
+  if(st) st.textContent='✓ '+label+'：新增 '+r.added+' 条，补全 '+r.updated+' 条，跳过 '+r.skipped+' 条（已存在/同渠道重复）｜询价单共 '+r.total+' 条';
+  toast((channelLabel||'')+'询盘已并入：新增 '+r.added+' 条');
   return r;
+}
+function applyWaInquiries(d,label){ return applyInquiryBatch(d,label,'waImportStatus','WhatsApp'); }
+/* 邮件 / 微信 / 其它渠道：云端 KV feed 一键拉取 + 本地 JSON 导入 */
+function inqFeedLabel(ch){ return (INQ_CHANNELS[ch]||{}).label||ch; }
+async function syncInquiryFeed(ch,all){
+  const statusId=ch+'ImportStatus', st=$(statusId);
+  if(location.protocol==='file:'){ if(st) st.textContent='✗ 本地文件模式无法拉取云端，请用「导入本地 JSON 文件」'; return; }
+  if(st) st.textContent='正在拉取'+inqFeedLabel(ch)+(all?'全量':'清单')+'…';
+  try{
+    const res=await fetch('/api/inquiry-feed?channel='+encodeURIComponent(ch)+(all?'&all=1':''),
+      {cache:'no-store',headers:waImportHeaders()});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    applyInquiryBatch(await res.json(), inqFeedLabel(ch)+(all?'全量':'清单'), statusId, inqFeedLabel(ch));
+  }catch(e){
+    const msg='✗ 拉取失败：'+(e.message||e)+'（跨域请填询盘接口密钥，或改用本地 JSON 导入）';
+    if(st) st.textContent=msg; toast(msg);
+  }
+}
+function importInquiryFeedFile(ev,ch){
+  const f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{ applyInquiryBatch(JSON.parse(rd.result), f.name, ch+'ImportStatus', inqFeedLabel(ch)); }
+    catch(e){ const st=$(ch+'ImportStatus'); if(st) st.textContent='✗ 导入失败：'+(e.message||e); toast('导入失败：'+(e.message||e)); }
+    ev.target.value='';
+  };
+  rd.onerror=()=>{ toast('文件读取失败'); ev.target.value=''; };
+  rd.readAsText(f,'utf-8');
 }
 async function syncWaInquiries(all){
   const st=$('waImportStatus');
@@ -6325,6 +6465,40 @@ function reloadMergedCloud(){
 /* =========================================================
    报表中心：按月汇总 城市/车队 的订单、营业额、成本、利润
    ========================================================= */
+/* 全渠道询盘漏斗：各渠道询盘 → 报价 → 成交转化，用于判断投放与跟进重点 */
+function renderInquiryFunnel(){
+  const rows=S.inquiries||[];
+  if(!rows.length) return '';
+  const by={};
+  rows.forEach(i=>{ const c=inquiryChannel(i); (by[c]=by[c]||[]).push(i); });
+  const cell=(v)=>'<td>'+v+'</td>';
+  // fmtMoney 在 renderReport() 内是局部常量，此处需自带格式化，避免报表渲染报 ReferenceError
+  const fmtMoney=n=>'¥'+Number(n||0).toLocaleString('zh-CN');
+  let h='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">全渠道询盘漏斗</b>'
+    +'<div style="font-size:11.5px;color:var(--text-3);margin:4px 0 10px">口径：询价管理中的记录按来源渠道分组；成交率 = 已成交 / 该渠道询盘总数</div>'
+    +'<table class="order-table"><thead><tr><th>渠道</th><th>询盘数</th><th>待跟进</th><th>已报价</th><th>已成交</th><th>已流失</th><th>成交率</th><th>累计报价</th></tr></thead><tbody>';
+  let t=0,w=0;
+  INQ_CHANNELS_ORDER.forEach(c=>{
+    const a=by[c]||[]; if(!a.length) return;
+    const m=INQ_CHANNELS[c];
+    const won=a.filter(x=>x.status==='won').length;
+    const quoted=a.filter(x=>x.status==='quoted').length;
+    const pending=a.filter(x=>['new','following'].includes(x.status)).length;
+    const lost=a.filter(x=>x.status==='lost').length;
+    const quoteSum=a.reduce((s,x)=>s+(Number(x.quote)||0),0);
+    t+=a.length; w+=won;
+    h+='<tr><td><span style="color:'+m.color+';font-weight:600">'+m.icon+' '+m.label+'</span></td>'
+      +cell(a.length)+cell(pending)+cell(quoted)+cell(won)+cell(lost)
+      +cell((a.length?Math.round(won/a.length*100):0)+'%')+cell(fmtMoney(quoteSum))+'</tr>';
+  });
+  const pendingAll=rows.filter(x=>['new','following'].includes(x.status)).length;
+  const quotedAll=rows.filter(x=>x.status==='quoted').length;
+  const lostAll=rows.filter(x=>x.status==='lost').length;
+  const quoteAll=rows.reduce((s,x)=>s+(Number(x.quote)||0),0);
+  h+='<tr style="background:var(--ink);color:#fff;font-weight:700"><td>合计</td>'+cell(t)+cell(pendingAll)
+    +cell(quotedAll)+cell(w)+cell(lostAll)+cell((t?Math.round(w/t*100):0)+'%')+cell(fmtMoney(quoteAll))+'</tr>';
+  return h+'</tbody></table></div>';
+}
 function renderReport(){
   const s=$('rpMonth');
   const months=[...new Set((S.orders||[]).map(o=>(o.date||'').slice(0,7)).filter(Boolean))].sort().reverse();
@@ -6486,6 +6660,7 @@ function renderReport(){
     +'</div>'
     +unpaidPanel()
     +funnel()
+    +renderInquiryFunnel()
     +routeHeat(orders)
     +driverLoad()
     +trend()
@@ -7365,14 +7540,104 @@ let currentInquiryId = null;
 let inquiryFollowUps = [];
 let inquiryFleetQuotes = [];
 
+/* =========================================================
+   全渠道询盘中枢：统一渠道模型
+   网站表单 / WhatsApp / 微信 / 邮件 / 飞书 / 手工录入统一落到 S.inquiries，
+   channel 标来源，sourceRef 存原始会话或邮件线索，guestKey 做跨渠道同客人归并。
+   ========================================================= */
+const INQ_CHANNELS = {
+  web:      {label:'网站表单', icon:'🌐', color:'#2E8B8B', soft:'#E3F3F1'},
+  whatsapp: {label:'WhatsApp', icon:'💬', color:'#1E8A54', soft:'#E4F4EA'},
+  wechat:   {label:'微信',   icon:'🟩', color:'#2E9E6B', soft:'#E6F5EC'},
+  email:    {label:'邮件',   icon:'✉️', color:'#6B5BB5', soft:'#EFECFA'},
+  feishu:   {label:'飞书',   icon:'📋', color:'#3370FF', soft:'#E9F0FF'},
+  manual:   {label:'手工录入', icon:'✍️', color:'#7A8494', soft:'#EFF1F4'}
+};
+function normEmail(s){ return String(s||'').trim().toLowerCase(); }
+function normPhone(s){ return String(s||'').replace(/\D/g,'').slice(-11); }
+function inquiryChannel(i){
+  if(!i) return 'manual';
+  const c=String(i.channel||'').toLowerCase();
+  if(INQ_CHANNELS[c]) return c;
+  const id=String(i.id||'').toLowerCase(), src=String(i.source||'').toLowerCase();
+  if(/^web_\d+/.test(id)||src.indexOf('chinawondercars')>=0||src.indexOf('website')>=0) return 'web';
+  if(/^(wa_|waq_)/.test(id)||i._waJid||src.indexOf('whatsapp')>=0) return 'whatsapp';
+  if(/^(wx_|wxi_|wechat_)/.test(id)||src.indexOf('wechat')>=0) return 'wechat';
+  if(/^(eml_|mail_|email_)/.test(id)||src.indexOf('mail')>=0||src.indexOf('imap')>=0) return 'email';
+  if(i._fsRecordId||/^fs_/.test(id)||src.indexOf('feishu')>=0) return 'feishu';
+  if(normEmail(i.email).indexOf('@')>0 && !normPhone(i.contact)) return 'email';
+  return 'manual';
+}
+function inquiryGuestKey(i){
+  const e=normEmail(i.email||i.contact);
+  if(e.indexOf('@')>0) return 'e:'+e;
+  const p=normPhone(i.contact);
+  if(p && p.length>=7) return 'p:'+p;
+  const g=String(i.guest||'').trim().toLowerCase().replace(/\s+/g,'');
+  return g ? 'g:'+g : '';
+}
+/* 旧数据回填：历史记录没有 channel 时按 id 前缀/来源字段推断，不改动任何业务字段 */
+function normalizeInquiryChannels(){
+  let n=0;
+  (S.inquiries||[]).forEach(i=>{
+    const c=inquiryChannel(i);
+    if(i.channel!==c){ i.channel=c; n++; }
+    if(!i.email && normEmail(i.contact).indexOf('@')>0){ i.email=normEmail(i.contact); n++; }
+    const k=inquiryGuestKey(i);
+    if(k && i.guestKey!==k){ i.guestKey=k; n++; }
+  });
+  return n;
+}
+function inquiryChannelBadge(i){
+  const m=INQ_CHANNELS[inquiryChannel(i)]||INQ_CHANNELS.manual;
+  const ref=i.sourceRef||i._waJid||i.subject||'';
+  return '<span title="'+escapeHtml(ref||m.label)+'" style="font-size:11px;padding:2px 8px;border-radius:20px;background:'+m.soft+';color:'+m.color+';font-weight:600;white-space:nowrap">'+m.icon+' '+m.label+'</span>';
+}
+function renderChannelStatus(){
+  const el=$('channelStatus'); if(!el) return;
+  const all=S.inquiries||[];
+  el.innerHTML=INQ_CHANNELS_ORDER.map(c=>{
+    const m=INQ_CHANNELS[c], rows=all.filter(i=>inquiryChannel(i)===c);
+    const open=rows.filter(i=>['new','quoted','following'].includes(i.status)).length;
+    return '<div style="flex:1 1 140px;min-width:130px;background:'+m.soft+';border:1px solid '+m.color+'33;border-radius:10px;padding:10px 12px">'
+      +'<div style="font-size:12px;font-weight:700;color:'+m.color+'">'+m.icon+' '+m.label+'</div>'
+      +'<div style="font-size:18px;font-weight:700;color:var(--ink);margin-top:2px">'+rows.length+' <small style="font-size:11px;font-weight:400;color:var(--text-3)">条询盘</small></div>'
+      +'<div style="font-size:11px;color:var(--text-3)">待跟进 '+open+' · 成交 '+rows.filter(i=>i.status==='won').length+'</div></div>';
+  }).join('');
+}
+function renderInquiryChannelStrip(){
+  const el=$('inquiryChannelStrip'); if(!el) return;
+  const all=S.inquiries||[];
+  el.innerHTML=INQ_CHANNELS_ORDER.map(c=>{
+    const m=INQ_CHANNELS[c], rows=all.filter(i=>inquiryChannel(i)===c);
+    const open=rows.filter(i=>['new','quoted','following'].includes(i.status)).length;
+    const won=rows.filter(i=>i.status==='won').length;
+    return '<button class="chip'+(($('inquiryChannelFilter')||{}).value===c?' active':'')+'" '
+      +'onclick="setInquiryChannelFilter(\''+c+'\')" title="'+m.label+'：共 '+rows.length+' 条，待跟进 '+open+' 条，成交 '+won+' 条" '
+      +'style="border-color:'+m.color+'44;color:'+m.color+';background:'+m.soft+'">'
+      +m.icon+' '+m.label+' <b>'+rows.length+'</b>'+(open?' <small style="opacity:.75">待'+open+'</small>':'')+'</button>';
+  }).join('');
+}
+const INQ_CHANNELS_ORDER = ['web','whatsapp','wechat','email','feishu','manual'];
+function setInquiryChannelFilter(c){
+  const el=$('inquiryChannelFilter'); if(!el) return;
+  el.value = el.value===c ? '' : c;
+  renderInquiries();
+}
 function renderInquiries(){
+  normalizeInquiryChannels();
+  renderInquiryChannelStrip();
+  renderChannelStatus();
   const list = $('inquiryList');
   if(!list) return;
   const statusFilter = $('inquiryStatusFilter') ? $('inquiryStatusFilter').value : '';
+  const channelFilter = $('inquiryChannelFilter') ? $('inquiryChannelFilter').value : '';
   const search = ($('inquirySearch') ? $('inquirySearch').value : '').toLowerCase();
   let inquiries = [...(S.inquiries||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if(statusFilter) inquiries = inquiries.filter(i=>i.status===statusFilter);
-  if(search) inquiries = inquiries.filter(i=>(i.guest||'').toLowerCase().includes(search)||(i.route||'').toLowerCase().includes(search)||(i.city||'').toLowerCase().includes(search));
+  if(channelFilter) inquiries = inquiries.filter(i=>inquiryChannel(i)===channelFilter);
+  if(search) inquiries = inquiries.filter(i=>[i.guest,i.route,i.city,i.contact,i.email,i.sourceRef,i.subject,i.note]
+    .some(v=>String(v||'').toLowerCase().includes(search)));
   // 更新计数
   const countEl = $('inquiryCount');
   if(countEl) countEl.textContent = (S.inquiries||[]).filter(i=>i.status!=='won'&&i.status!=='lost').length;
@@ -7383,19 +7648,33 @@ function renderInquiries(){
     const won = (S.inquiries||[]).filter(i=>i.status==='won').length;
     const rate = total>0 ? Math.round(won/total*100) : 0;
     const pending = (S.inquiries||[]).filter(i=>i.status==='new'||i.status==='quoted'||i.status==='following').length;
+    const chans = new Set((S.inquiries||[]).map(inquiryChannel)).size;
+    const dupes = Object.values((S.inquiries||[]).reduce((m,i)=>{
+      const k=inquiryGuestKey(i); if(!k) return m;
+      (m[k]=m[k]||new Set()).add(inquiryChannel(i)); return m;
+    },{})).filter(s=>s.size>1).length;
     kpiEl.innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">总询价</div><div class="kpi-value">${total}</div></div>
+      <div class="kpi-card"><div class="kpi-label">总询价（全渠道）</div><div class="kpi-value">${total}</div></div>
       <div class="kpi-card hl"><div class="kpi-label">已成交</div><div class="kpi-value">${won}</div></div>
       <div class="kpi-card"><div class="kpi-label">转化率</div><div class="kpi-value">${rate}%</div></div>
-      <div class="kpi-card"><div class="kpi-label">待跟进</div><div class="kpi-value">${pending}</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">待跟进</div><div class="kpi-value">${pending}</div></div>
+      <div class="kpi-card"><div class="kpi-label">接入渠道</div><div class="kpi-value">${chans}</div></div>
+      <div class="kpi-card"><div class="kpi-label">跨渠道同客人</div><div class="kpi-value">${dupes}</div></div>`;
   }
-  if(!inquiries.length){ list.innerHTML = '<div class="empty">暂无询价记录，点击"新增询价"开始</div>'; return; }
+  if(!inquiries.length){ list.innerHTML = '<div class="empty">该筛选下暂无询价记录，点击"新增询价"或切换渠道</div>'; return; }
+  const byGuest = (S.inquiries||[]).reduce((m,i)=>{
+    const k=inquiryGuestKey(i); if(!k) return m;
+    (m[k]=m[k]||new Set()).add(inquiryChannel(i)); return m;
+  },{});
   list.innerHTML = inquiries.map(i=>{
     const statusMap = {new:'新询价',quoted:'已报价',following:'跟进中',won:'已成交',lost:'已流失'};
     const profit = (i.quote||0)-(i.cost||0);
+    const dup = (byGuest[inquiryGuestKey(i)]||new Set()).size>1;
+    const ref = i.sourceRef||i.subject||i._waJid||'';
     return `<div class="inquiry-card" onclick="openInquiry('${i.id}')">
       <div class="inquiry-head">
         <span class="inquiry-guest">${escapeHtml(i.guest||'未命名')}</span>
+        ${inquiryChannelBadge(i)}
         <span class="inquiry-status ${i.status||'new'}">${statusMap[i.status]||'新询价'}</span>
         <span style="margin-left:auto;font-size:12px;color:var(--text-3)">${i.date||''}</span>
       </div>
@@ -7405,17 +7684,27 @@ function renderInquiries(){
         <span>${i.vehicle||'未选车型'}</span>
         <span>用车：${i.serviceDate||'未定'}</span>
         ${i.contact?`<span>${escapeHtml(i.contact)}</span>`:''}
+        ${i.email&&i.email!==i.contact?`<span>${escapeHtml(i.email)}</span>`:''}
       </div>
       <div class="inquiry-route">${escapeHtml(i.route||'')}</div>
+      ${ref?`<div style="font-size:11.5px;color:var(--text-3);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">来源线索：${escapeHtml(String(ref).slice(0,120))}</div>`:''}
       <div class="inquiry-prices">
         <span>报价 <b style="color:var(--accent-dark)">${i.quote?i.quote+'元':'待报'}</b></span>
         <span>成本 <b style="color:var(--text-2)">${i.cost?i.cost+'元':'待估'}</b></span>
         ${profit>0?`<span>利润 <b style="color:var(--confirmed)">${profit}元</b></span>`:''}
         ${(i.fleetQuotes||[]).length?`<span>车队报价 <b>${i.fleetQuotes.length}家</b></span>`:''}
       </div>
+      ${dup?`<div style="margin-top:6px;font-size:11.5px;color:#6B5BB5;cursor:pointer" onclick="event.stopPropagation();filterInquiryByGuest(this.dataset.g)" data-g="${escapeHtml(i.guest||'')}">🔗 同一客人在多个渠道也有询盘，点此查看全部</div>`:''}
       ${i.followUp?`<div style="margin-top:6px;font-size:12px;color:var(--pending)">下次跟进：${i.followUp}</div>`:''}
     </div>`;
   }).join('');
+}
+function filterInquiryByGuest(g){
+  if($('inquirySearch')) $('inquirySearch').value=g||'';
+  if($('inquiryChannelFilter')) $('inquiryChannelFilter').value='';
+  if($('inquiryStatusFilter')) $('inquiryStatusFilter').value='';
+  renderInquiries();
+  showView('inquiries');
 }
 
 function openInquiry(id){
@@ -7434,6 +7723,9 @@ function openInquiry(id){
       $('iqPax').value = i.pax||1;
       $('iqVehicle').value = i.vehicle||'';
       $('iqStatus').value = i.status||'new';
+      $('iqChannel').value = inquiryChannel(i);
+      $('iqEmail').value = i.email||'';
+      $('iqSourceRef').value = i.sourceRef||'';
       $('iqRoute').value = i.route||'';
       $('iqQuote').value = i.quote||'';
       $('iqCost').value = i.cost||'';
@@ -7447,6 +7739,7 @@ function openInquiry(id){
     $('iqServiceDate').value=''; $('iqCity').value=''; $('iqPax').value=1;
     $('iqVehicle').value=''; $('iqStatus').value='new'; $('iqRoute').value='';
     $('iqQuote').value=''; $('iqCost').value=''; $('iqFollowUp').value=''; $('iqNote').value='';
+    $('iqChannel').value='manual'; $('iqEmail').value=''; $('iqSourceRef').value='';
   }
   renderInquiryFollowUps();
   renderInquiryFleetQuotes();
@@ -7456,7 +7749,8 @@ function openInquiry(id){
 function closeInquiry(){ $('inquiryOverlay').classList.remove('show'); currentInquiryId=null; }
 
 function saveInquiry(){
-  const data = {
+  const prev = currentInquiryId ? (S.inquiries||[]).find(i=>i.id===currentInquiryId) : null;
+  const data = Object.assign({}, prev||{}, {
     id: currentInquiryId || ('inq_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)),
     guest: $('iqGuest').value.trim(),
     contact: $('iqContact').value.trim(),
@@ -7473,8 +7767,13 @@ function saveInquiry(){
     note: $('iqNote').value.trim(),
     followUps: inquiryFollowUps,
     fleetQuotes: inquiryFleetQuotes,
+    channel: $('iqChannel') ? $('iqChannel').value : (prev ? inquiryChannel(prev) : 'manual'),
+    email: $('iqEmail') ? $('iqEmail').value.trim() : (prev ? prev.email||'' : ''),
+    sourceRef: $('iqSourceRef') ? $('iqSourceRef').value.trim() : (prev ? prev.sourceRef||'' : ''),
     _lastModified: Date.now()
-  };
+  });
+  if(!data.email && normEmail(data.contact).indexOf('@')>0) data.email=normEmail(data.contact);
+  data.guestKey = inquiryGuestKey(data);
   if(!data.guest){ toast('请填写客人姓名'); return; }
   if(!S.inquiries) S.inquiries = [];
   const idx = S.inquiries.findIndex(i=>i.id===data.id);
@@ -7786,6 +8085,7 @@ function csMsgFromInquiry(i){
 }
 function renderAgentPage(){
   renderAgentQueue();
+  try{ if(!waKbItems.length && typeof loadWaKb==='function') loadWaKb(false); }catch(e){}
   loadFx();   // 汇率：读缓存/默认，后台刷新一次
   const cfg=csAiCfg();
   if(cfg.key) $('agentAiBadge').textContent='✓';
@@ -7890,6 +8190,79 @@ function agentCopyReply(){
   const v=$('agentReply').value; if(!v){ toast('先生成回复文本'); return; }
   navigator.clipboard.writeText(v).then(()=>toast('已复制，可直接粘贴发送')).catch(()=>{ const ta=$('agentReply'); ta.select(); document.execCommand('copy'); toast('已复制'); });
 }
+/* ===== 话术与模板知识库：快捷回复 / 报价模板 / 成交台账，供全渠道回复复用 ===== */
+let waKbItems = [], waKbType = '';
+const WA_KB_TYPES = {all:'全部', shortcut:'快捷回复', template:'报价模板', table:'价格/台账', rule:'使用纪律', overview:'总览'};
+function loadWaKb(force){
+  if(!force){
+    try{
+      const c=localStorage.getItem('ef-wa-kb');
+      if(c){ const d=JSON.parse(c); if(d&&Array.isArray(d.items)&&d.items.length){ waKbItems=d.items; renderWaKb(); return; } }
+    }catch(e){}
+  }
+  if(location.protocol==='file:'){
+    if($('waKbCount')) $('waKbCount').textContent='本地文件模式：请用工作台线上地址加载知识库';
+    return;
+  }
+  if($('waKbCount')) $('waKbCount').textContent='正在加载知识库…';
+  fetch('/api/wa-kb',{cache:'no-store',headers:waImportHeaders()})
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(d=>{
+      waKbItems=Array.isArray(d.items)?d.items:[];
+      try{ localStorage.setItem('ef-wa-kb',JSON.stringify({at:Date.now(),items:waKbItems})); }catch(e){}
+      renderWaKb();
+    })
+    .catch(e=>{ if($('waKbCount')) $('waKbCount').textContent='✗ 知识库加载失败：'+(e.message||e)+'（跨域请填询盘接口密钥）'; });
+}
+function setWaKbType(t){ waKbType=t; renderWaKb(); }
+function waKbClean(body){ return String(body||'').split('\n').filter(l=>!/^\s*```/.test(l)).join('\n').trim(); }
+function renderWaKb(){
+  const chips=$('waKbTypeChips'), list=$('waKbList'), cnt=$('waKbCount');
+  if(!list) return;
+  if(chips) chips.innerHTML=Object.keys(WA_KB_TYPES).map(t=>
+    '<button class="chip'+((waKbType===t||(t==='all'&&!waKbType))?' active':'')+'" onclick="setWaKbType(\''+(t==='all'?'':t)+'\')">'+WA_KB_TYPES[t]+'</button>').join('');
+  const q=(($('waKbSearch')||{}).value||'').toLowerCase().trim();
+  const rows=waKbItems.filter(x=>{
+    if(waKbType && x.type!==waKbType) return false;
+    if(!q) return true;
+    return [x.title,x.body,x.source,(x.tags||[]).join(' ')].some(v=>String(v||'').toLowerCase().indexOf(q)>=0);
+  });
+  if(cnt) cnt.textContent='共 '+waKbItems.length+' 条 · 当前 '+rows.length+' 条';
+  if(!rows.length){ list.innerHTML='<div style="font-size:12px;color:var(--text-3);padding:8px 0">'+(waKbItems.length?'没有匹配的条目':'知识库尚未加载，点右上「刷新知识库」')+'</div>'; return; }
+  list.innerHTML=rows.slice(0,60).map(x=>{
+    const preview=String(x.body||'').replace(/\s+/g,' ').slice(0,110);
+    return '<div style="border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:7px;background:var(--card)">'
+      +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+      +'<b style="font-size:12.5px">'+escapeHtml(x.title||'')+'</b>'
+      +'<span style="font-size:10.5px;color:var(--text-3)">'+escapeHtml(WA_KB_TYPES[x.type]||x.type||'')+' · '+escapeHtml(x.source||'')+'</span>'
+      +'<div style="flex:1"></div>'
+      +'<button class="btn ghost small" onclick="waKbInsert(\''+x.id+'\')">插入回复</button>'
+      +'<button class="btn ghost small" onclick="waKbCopy(\''+x.id+'\')">复制</button>'
+      +'</div>'
+      +'<details style="margin-top:5px"><summary style="font-size:11.5px;color:var(--text-3);cursor:pointer">'+escapeHtml(preview)+'…</summary>'
+      +'<pre style="white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-height:1.5;margin:7px 0 0;padding:8px;background:var(--bg);border-radius:6px">'+escapeHtml(x.body||'')+'</pre></details>'
+      +'</div>';
+  }).join('');
+}
+function waKbFind(id){ return waKbItems.find(x=>x.id===id); }
+function waKbInsert(id){
+  const x=waKbFind(id); if(!x) return;
+  const box=$('agentReply'); if(!box){ toast('回复框不可用'); return; }
+  const txt=waKbClean(x.body);
+  box.value=(box.value?box.value.replace(/\s+$/,'')+'\n\n':'')+txt;
+  box.focus(); toast('已插入：'+x.title);
+}
+function waKbCopy(id){
+  const x=waKbFind(id); if(!x) return;
+  const txt=waKbClean(x.body);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast('已复制：'+x.title),()=>toast('复制失败'));
+  }else{
+    const t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select();
+    try{ document.execCommand('copy'); toast('已复制'); }catch(e){ toast('复制失败'); }
+    t.remove();
+  }
+}
 function agentSaveToInquiry(){
   const p=csParsed; if(!p){ toast('请先解析消息'); return; }
   if(!p.guest){ toast('请填写客人姓名（解析未识别时手动在消息里补充）'); return; }
@@ -7900,6 +8273,13 @@ function agentSaveToInquiry(){
   rec.pax=p.pax; rec.vehicle=p.vehicle; rec.route=p.route||rec.route;
   rec.quote=q.quote||rec.quote||0; rec.cost=q.cost||rec.cost||0;
   rec.note=p.note||rec.note; rec._lastModified=Date.now();
+  // 全渠道归档：粘贴任意渠道原文都带上来源，不改动已有记录的渠道归属
+  if(!rec.channel) rec.channel = $('agentChannel') ? $('agentChannel').value : 'manual';
+  const ref = $('agentSourceRef') ? $('agentSourceRef').value.trim() : '';
+  if(ref) rec.sourceRef = ref;
+  if(!rec.email && normEmail(rec.contact).indexOf('@')>0) rec.email = normEmail(rec.contact);
+  if(!rec._sourceSnippet && csRawMsg) rec._sourceSnippet = String(csRawMsg).replace(/\s+/g,' ').slice(0,300);
+  rec.guestKey = inquiryGuestKey(rec);
   const idx=S.inquiries.findIndex(x=>x.id===rec.id);
   if(idx>=0) S.inquiries[idx]=rec; else S.inquiries.push(rec);
   saveState(S); renderInquiries(); renderAgentQueue();
@@ -8045,14 +8425,26 @@ function fsImportData(d){
       quote:parseFloat(f['报价金额'])||parseFloat(f['成交金额'])||0,
       cost:0, followUp:String(f['下次跟进日期']||'').slice(0,10),
       followUps:[], fleetQuotes:[], note:notes.join('\n'),
-      source:'feishu-inquiry-workbench', _fsRecordId:r.recordId||r.record_id||'',
+      source:'feishu-inquiry-workbench', channel:'feishu',
+      sourceRef:'飞书询盘工作台 record: '+(r.recordId||r.record_id||''),
+      guestKey:inquiryGuestKey({email:f['邮箱'],contact:f['WhatsApp 号码'],guest:f['客户名称']}),
+      _fsRecordId:r.recordId||r.record_id||'',
       _fsDeposit:parseFloat(f['定金'])||0, _fsAiDraft:String(f['AI 回复草稿']||''),
       _lastModified:Date.now()
     };
     if(route && !route.includes('·') && !route.includes('→') && !route.includes('-')){
       const c=csExtractCity(route); if(c) rec.city=c;
     }
-    if(map.has(id)){ updated++; map.set(id,Object.assign({},map.get(id),rec)); }
+    if(map.has(id)){
+      // 全渠道口径：飞书导入只补空字段，保留工作台里手改过的状态/报价/备注
+      const cur=map.get(id); let ch=false;
+      ['guest','contact','email','date','serviceDate','city','pax','vehicle','route','source','sourceRef','guestKey','_fsRecordId'].forEach(k=>{
+        const v=rec[k]; if(v==null||v===''||v===0) return;
+        if(cur[k]==null||cur[k]===''||cur[k]===0){ cur[k]=v; ch=true; }
+      });
+      if(cur.channel!=='feishu'){ cur.channel='feishu'; ch=true; }
+      if(ch) updated++;
+    }
     else{ added++; map.set(id,rec); }
   });
   S.inquiries=[...map.values()];

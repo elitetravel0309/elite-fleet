@@ -563,6 +563,44 @@ export default {
       });
     }
 
+    // ---------- 全渠道询盘 feed（邮件 / 微信 / WhatsApp；KV 只读） ----------
+    // 统一端点：GET /api/inquiry-feed?channel=email|wechat|whatsapp[&all=1]
+    // 默认读「优先清单」，缺失时自动回退到全量文件；数据由 scripts/*_inquiry_import.py 生成并上传。
+    if (request.method === 'GET' && path === '/api/inquiry-feed') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      const ch = String(url.searchParams.get('channel') || '').toLowerCase();
+      const all = url.searchParams.get('all') === '1';
+      const FEEDS = {
+        email: ['page:email-inquiries.json', 'page:email-priority.json'],
+        wechat: ['page:wechat-inquiries.json', 'page:wechat-priority.json'],
+        whatsapp: ['page:whatsapp-inquiries.json', 'page:whatsapp-priority.json']
+      };
+      const pair = FEEDS[ch];
+      if (!pair) return json({ ok: false, error: '不支持的渠道：' + ch + '（可选 email / wechat / whatsapp）' }, 400);
+      let key = all ? pair[0] : pair[1];
+      let raw = await env.EF_DATA.get(key, 'text');
+      if (!raw) { key = pair[0]; raw = await env.EF_DATA.get(key, 'text'); }
+      if (!raw) {
+        return json({ ok: false, error: 'KV 中没有 ' + ch + ' 询盘数据；请先运行对应 scripts/*_inquiry_import.py 并上传' }, 404);
+      }
+      return new Response(raw, {
+        status: 200,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...cors }
+      });
+    }
+
+    // ---------- 话术与模板知识库（scripts/build_wa_kb.py 生成 → KV） ----------
+    // 智能客服页「话术与模板速查」检索用；只含业务话术/模板，不含客户个人信息。
+    if (request.method === 'GET' && path === '/api/wa-kb') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      const raw = await env.EF_DATA.get('page:wa-kb.json', 'text');
+      if (!raw) return json({ ok: false, error: '知识库未上传到 KV；请先运行 scripts/build_wa_kb.py' }, 404);
+      return new Response(raw, {
+        status: 200,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...cors }
+      });
+    }
+
     // ---------- 以下全部需要登录 ----------
     if (!checkAuth(request, env)) return unauthorized();
 

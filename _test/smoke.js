@@ -179,6 +179,43 @@ check('WA 导入按手机号排除重复客人', `(()=>{ const r=mergeWaInquirie
 check('applyWaInquiries 兼容数组与对象', `(()=>{ try{ const a=applyWaInquiries([], '单元测试'); const b=applyWaInquiries({inquiries:[]}, '单元测试'); return a.total===b.total; }catch(e){ return false; } })()`, true);
 check('云端导入端点常量存在', `typeof WA_INQ_API`, 'string');
 
+console.log('\n=== 全渠道询盘中枢（统一模型 + 邮件/微信/知识库）===');
+const fns5 = ['inquiryChannel','inquiryGuestKey','normalizeInquiryChannels','inquiryChannelBadge',
+              'renderChannelStatus','renderInquiryChannelStrip','setInquiryChannelFilter',
+              'filterInquiryByGuest','mergeInquiryBatch','applyInquiryBatch','syncInquiryFeed',
+              'importInquiryFeedFile','renderInquiryFunnel','loadWaKb','renderWaKb','waKbInsert','waKbCopy','waKbClean'];
+for(const f of fns5){ check('定义 ' + f, `typeof ${f}`, 'function'); }
+check('渠道推断：网站表单', `inquiryChannel({id:'web_123'})`, 'web');
+check('渠道推断：WhatsApp 历史', `inquiryChannel({id:'waq_123'})`, 'whatsapp');
+check('渠道推断：邮件', `inquiryChannel({id:'eml_123'})`, 'email');
+check('渠道推断：微信', `inquiryChannel({id:'wx_123'})`, 'wechat');
+check('渠道推断：飞书', `inquiryChannel({_fsRecordId:'rec123'})`, 'feishu');
+check('渠道推断：手工', `inquiryChannel({id:'inq_1'})`, 'manual');
+check('显式 channel 优先于 id 推断', `inquiryChannel({id:'web_1',channel:'wechat'})`, 'wechat');
+check('旧数据回填渠道与 guestKey', `(()=>{ S.inquiries.push({id:'legacy_unit_1',guest:'旧客人',contact:'+8613800000001'}); normalizeInquiryChannels(); const i=S.inquiries.find(x=>x.id==='legacy_unit_1'); return i.channel==='manual' && i.guestKey==='p:13800000001'; })()`, true);
+check('guestKey 邮箱优先', `inquiryGuestKey({email:'A@B.com',contact:'+8613800000000',guest:'X'})`, 'e:a@b.com');
+check('跨渠道同邮箱保留两条询盘', `(()=>{ const n0=S.inquiries.length; const r=mergeInquiryBatch([{id:'eml_unit_1',guest:'邮件客人',email:'unit@example.com',contact:'unit@example.com',channel:'email',status:'new'},{id:'web_unit_1',guest:'网站客人',email:'unit@example.com',contact:'unit@example.com',channel:'web',status:'new'}]); return r.added===2 && S.inquiries.length===n0+2; })()`, true);
+check('同渠道同邮箱重复导入跳过', `(()=>{ const r=mergeInquiryBatch([{id:'eml_unit_2',guest:'同邮箱',email:'unit@example.com',contact:'unit@example.com',channel:'email',status:'new'}]); return r.added===0 && r.skipped===1; })()`, true);
+check('批量导入不覆盖手改状态/报价/备注', `(()=>{ const i=S.inquiries.find(x=>x.id==='eml_unit_1'); i.status='won'; i.quote=999; i.note='手工跟进'; mergeInquiryBatch([{id:'eml_unit_1',guest:'邮件客人',email:'unit@example.com',status:'new',quote:100,note:'覆盖尝试',channel:'email'}]); return i.status==='won'&&i.quote===999&&i.note==='手工跟进'; })()`, true);
+check('渠道漏斗含合计行', `(()=>{ const h=renderInquiryFunnel(); return h.indexOf('全渠道询盘漏斗')>=0 && h.indexOf('合计')>=0; })()`, true);
+check('渠道状态卡片渲染不报错', 'renderChannelStatus(); true', true);
+check('询价列表渲染不报错（含渠道筛选）', 'renderInquiries(); true', true);
+const emlFeed = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','email-inquiries.json'),'utf8'));
+const wxFeed = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','wechat-inquiries.json'),'utf8'));
+const kbFeed = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','wa-kb.json'),'utf8'));
+check('邮件清单 channel 全为 email', String(emlFeed.inquiries.every(r=>r.channel==='email'&&r.id&&r.guest&&r.email)), true);
+check('邮件清单 id 唯一', String(new Set(emlFeed.inquiries.map(r=>r.id)).size===emlFeed.inquiries.length), true);
+check('邮件清单含原文摘录与来源线索', String(emlFeed.inquiries.every(r=>r.note&&r.note.length>40&&r.sourceRef)), true);
+check('微信清单结构合法（可为空）', String(Array.isArray(wxFeed.inquiries)&&wxFeed.channel==='wechat'), true);
+check('知识库条目完整且保留原文', String(kbFeed.items.length>20 && kbFeed.items.every(x=>x.id&&x.title&&x.body&&x.type)), true);
+check('知识库覆盖三类源文档', String(new Set(kbFeed.items.map(x=>x.source)).size===3), true);
+// 用变量拼接含反引号的输入，避免在模板字符串中嵌套反引号导致语法错误
+const kbFence = '```';
+const kbFenced = kbFence + '\nHello {name}\n' + kbFence;
+check('waKbClean 去掉代码块围栏', 'waKbClean(' + JSON.stringify(kbFenced) + ')', 'Hello {name}');
+const kbInsertItem = [{ id:'kb_unit_1', title:'测试话术', body: kbFence+'\nDear {name}, RMB 900\n'+kbFence, type:'shortcut', source:'单元测试' }];
+check('话术可插入回复框', '(()=>{ waKbItems=' + JSON.stringify(kbInsertItem) + '; waKbInsert("kb_unit_1"); return ($("agentReply")?$("agentReply").value:"").indexOf("Dear {name}, RMB 900")>=0; })()', true);
+
 console.log('\n=== 结果 ===');
 let pass=0, fail=0;
 for(const c of checks){
