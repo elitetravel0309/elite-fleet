@@ -641,6 +641,15 @@ textarea{resize:vertical;line-height:1.5}
               <button class="btn ghost small" onclick="toggleWaInbox()">收起</button>
             </div>
             <div id="waInboxList" style="max-height:280px;overflow-y:auto"></div>
+            <div id="waReplyBox" class="hidden" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px">回复 <span id="waReplyTo"></span></div>
+              <textarea id="waReplyText" rows="3" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px" placeholder="输入发给客人的 WhatsApp 消息（英文/中文均可）"></textarea>
+              <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+                <button class="btn primary small" onclick="sendWaReply()">发送 WhatsApp 消息</button>
+                <button class="btn ghost small" onclick="closeWaReply()">取消</button>
+                <span id="waReplyStat" style="font-size:11px;color:var(--text-3)"></span>
+              </div>
+            </div>
           </div>
           <div id="agentQueue" class="agent-queue-list"></div>
         </div>
@@ -799,6 +808,7 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn ghost" onclick="openFleetPaste()" title="从微信/表格/文件粘贴车队信息批量导入">粘贴导入</button>
         <button class="btn primary" onclick="addDriver()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加司机（带车）</button>
       </div>
+      <div id="fleetDataAlert"></div>
       <div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)">
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:15px">合作车队</b><span style="font-size:12px;color:var(--text-3)">车队给你的报价＝成本价，录入「参考价库」的 cost 列</span><button class="btn ghost small" style="margin-left:auto" onclick="addFleet()">+ 添加车队</button></div>
         <!-- 车队筛选 -->
@@ -867,6 +877,11 @@ textarea{resize:vertical;line-height:1.5}
           <button class="btn ghost small" id="priceViewTable" onclick="setPriceView('table')" style="padding:6px 10px">表格</button>
         </div>
         <span id="priceCount" style="font-size:12px;color:var(--text-3)"></span>
+        <button class="btn ghost small" id="priceMismatchBtn" onclick="togglePriceMismatch()" title="列出订单车型与命中的参考价车型档位不一致、需要人工复核的订单">错配复核</button>
+      </div>
+      <div id="priceMismatchPanel" class="hidden" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px;background:var(--card)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:13px">车型/价格错配复核清单</b><span id="priceMismatchStat" style="font-size:11px;color:var(--text-3)"></span></div>
+        <div id="priceMismatchList" style="max-height:260px;overflow-y:auto;font-size:12px"></div>
       </div>
       <div class="price-grid" id="priceGrid"></div>
     </section>
@@ -968,6 +983,14 @@ textarea{resize:vertical;line-height:1.5}
         <button class="tab" onclick="switchFinanceTab('monthly')">月度结算</button>
       </div>
       <div id="financeContent"></div>
+      <div class="panel" style="margin-top:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <h3 style="margin:0">财务口径自检</h3>
+          <button class="btn ghost small" onclick="renderFinanceAudit()">运行自检</button>
+        </div>
+        <p class="desc" style="margin:0 0 8px">核对收款归一化、外币汇率来源、孤儿收款与超额收款；飞书台账导出与此处使用同一份 payments/prices 数据。</p>
+        <div id="financeAudit" style="font-size:12px;color:var(--text-2)">点击「运行自检」查看结果</div>
+      </div>
     </section>
 
     <section class="view" data-route="data">
@@ -1009,9 +1032,21 @@ textarea{resize:vertical;line-height:1.5}
           <h3>网站询盘对接（chinawondercars.com）</h3>
           <p class="desc">一键拉取网站表单询盘到本工作台询价单（按 id 自动去重合并）。处理询价后修改状态，可一键回推网站后台。</p>
           <div class="stack">
+            <input type="password" id="webInqKey" placeholder="询盘接口密钥（Worker 的 EF_INQ_SECRET，仅存本机）" onchange="saveWebInqSecret(this.value)">
             <button class="btn primary" onclick="syncSiteInquiries()">同步网站询盘</button>
             <button class="btn ghost" onclick="pushSiteInquiryStatus()">推送询价状态到网站</button>
             <div id="webInqStatus" style="font-size:12px;color:var(--text-3);min-height:16px"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>云端每日快照（KV 备份）</h3>
+          <p class="desc">Worker 每天北京时间 02:00 自动备份工作台数据 / 询盘 / WhatsApp 收件箱，保留最近 14 天。可手动触发或下载任意一天的原始数据。</p>
+          <div class="stack">
+            <div style="display:flex;gap:8px">
+              <button class="btn ghost" onclick="listCloudBackups()">查看云端备份</button>
+              <button class="btn ghost" onclick="takeCloudSnapshot()">立即快照</button>
+            </div>
+            <div id="cloudBackupList" style="font-size:12px;color:var(--text-2);max-height:180px;overflow-y:auto"></div>
           </div>
         </div>
         <div class="panel">
@@ -1374,7 +1409,8 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn small ghost" onclick="copyReceipt()">复制</button>
         <button class="btn small ghost" onclick="printReceipt()">打印</button>
         <button class="btn small ghost" onclick="downloadReceipt()" title="下载为独立 HTML 文件，可直接作为邮件正文/附件">下载 HTML</button>
-        <button class="btn small ghost" onclick="exportReceiptJson()" title="导出 qa-receipt.json，配合脚本一键发 PDF 邮件">导出邮件 JSON</button>
+        <button class="btn small primary" onclick="emailCurrentReceipt()" title="通过 Worker SMTP 直接把中英双语收款确认单发到客人邮箱">一键发邮件</button>
+        <button class="btn small ghost" onclick="exportReceiptJson()" title="导出 qa-receipt.json，配合脚本一键发 PDF 邮件（离线备用）">导出邮件 JSON</button>
         <button class="btn small ghost" onclick="markCurrentReceiptSent()" title="标记该收款单已发送给客人">标记已发送</button>
         <button class="close" onclick="closeReceipt()">&times;</button>
       </div>
@@ -2420,6 +2456,7 @@ function saveState(s){
 let appReady = false;
 let autoSyncTimer = null;
 let cloudLastModified = 0;
+let cloudRev = 0;   // 云端 data:workbench 版本号（X-EF-Rev），上传时作为 baseVersion 做乐观锁
 function scheduleAutoSync(){
   clearTimeout(autoSyncTimer);
   autoSyncTimer = setTimeout(()=>{ if(appReady) uploadToCloud(true); }, 3000);
@@ -4010,6 +4047,7 @@ function resetDriverFilter(){
 
 function renderFleet(){
   normDrivers();
+  renderFleetDataAlert();
   // 构建筛选下拉选项
   buildFleetFilters();
   buildDriverFilters();
@@ -4567,6 +4605,7 @@ function setPriceView(mode){
 function renderPrices(){
   normPrices();
   initCalc();
+  updatePriceMismatchBadge();
   const allCities=[...new Set((S.prices||[]).map(p=>p.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh'));
   const fSel=$('priceCityFilter');
   if(fSel && (fSel.options.length!==allCities.length+1 || fSel.value!==pCityFilter)){
@@ -4676,6 +4715,74 @@ function renderPrices(){
     });
     $('priceGrid').innerHTML=html;
   }
+}
+/* ===== 车型/价格错配复核（P1-6） =====
+   定价引擎仍会退化到「就近档位/跨车型」兜底，这里把命中价格与订单车型档位
+   不一致的订单列出来供人工逐单确认，避免直接改引擎造成价格级联变动。 */
+function priceRouteRelated(p, o){
+  const r=o.route||'';
+  const kws=priceKeywords(p.route);
+  return kws.some(k=>k && r.includes(k)) || !!(p.route && r.includes(p.route));
+}
+function diagnosePriceMismatch(){
+  const mismatch=[], unmatched=[], unpriced=[];
+  (S.orders||[]).forEach(o=>{
+    if(!o.route||!o.vehicle) return;
+    const useCost = guessCost(o)!=null;
+    const field = useCost? 'cost':'quote';
+    const val = useCost? guessCost(o): guessQuote(o);
+    if(val==null){
+      unpriced.push({ id:o.id, date:o.date||'', guest:o.guest||'', route:o.route||'',
+        vehicle:o.vehicle||'', value:0, field:'—', city:o.city||'', priceVehicles:[], priceRoutes:[] });
+      return;
+    }
+    const city=o.city||detectCity(o.route,o.airport,'');
+    const cands=(S.prices||[]).filter(p=>
+      p[field]!=null && Number(p[field])===Number(val) && (!city||!p.city||p.city===city) && priceRouteRelated(p,o));
+    const rec={ id:o.id, date:o.date||'', guest:o.guest||'', route:o.route||'',
+      vehicle:o.vehicle||'', value:val, field, city,
+      priceVehicles:[...new Set(cands.map(p=>p.vehicle||'不限'))],
+      priceRoutes:[...new Set(cands.map(p=>p.route||''))].slice(0,2) };
+    if(!cands.length){ unmatched.push(rec); return; }
+    const sameTier=cands.some(p=>sameVehicleTier(o.vehicle,p.vehicle));
+    const charter=cands.some(p=>normalizeVehicle(p.vehicle).tier==='charter')||normalizeVehicle(o.vehicle).tier==='charter';
+    if(!sameTier && !charter) mismatch.push(rec);
+  });
+  return { mismatch, unmatched, unpriced };
+}
+function updatePriceMismatchBadge(){
+  const btn=$('priceMismatchBtn'); if(!btn) return;
+  try{
+    const n=diagnosePriceMismatch().mismatch.length;
+    btn.textContent = n? ('错配复核 ('+n+')') : '错配复核';
+    btn.style.color = n? 'var(--danger)':'';
+  }catch(e){ /* 渲染期异常不阻塞价格库 */ }
+}
+function togglePriceMismatch(){
+  const p=$('priceMismatchPanel'); if(!p) return;
+  p.classList.toggle('hidden');
+  if(!p.classList.contains('hidden')) renderPriceMismatch();
+}
+function renderPriceMismatch(){
+  const el=$('priceMismatchList'), stat=$('priceMismatchStat'); if(!el) return;
+  const {mismatch,unmatched,unpriced}=diagnosePriceMismatch();
+  if(stat) stat.textContent='需复核 '+mismatch.length+' 单 · 来源不明 '+unmatched.length+' 单 · 未命中参考价 '+unpriced.length+' 单';
+  const row=(r,tag)=>'<div style="padding:7px 0;border-bottom:1px solid var(--line)">'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+    +'<b>'+escapeHtml(r.date)+'</b><span>'+escapeHtml(r.guest||'—')+'</span>'
+    +'<span style="background:var(--accent-soft);border-radius:6px;padding:1px 6px">'+escapeHtml(tag)+'</span>'
+    +'<span style="flex:1"></span>'
+    +'<button class="btn ghost small" style="padding:2px 7px" onclick="openOrder(\''+escapeHtml(r.id)+'\')">查看订单</button>'
+    +'<button class="btn ghost small" style="padding:2px 7px" onclick="openPriceModal(-1)">补参考价</button></div>'
+    +'<div style="color:var(--text-3);margin-top:3px">订单车型 '+escapeHtml(r.vehicle)+' · '+(r.field==='—'?'未命中参考价':('命中价 ¥'+r.value+'（'+r.field+'）'))
+    +' · 参考价车型 '+escapeHtml(r.priceVehicles.join(' / ')||'—')
+    +' · 线路 '+escapeHtml((r.priceRoutes||[]).join(' / ')||r.route||'—')+'</div></div>';
+  let html='';
+  if(mismatch.length) html+='<div style="font-weight:600;margin:4px 0">① 车型档位不一致（优先复核）</div>'+mismatch.map(r=>row(r,'错配')).join('');
+  if(unmatched.length) html+='<div style="font-weight:600;margin:10px 0 4px">② 命中价在参考价库中找不到来源（可能为手工价/新线路）</div>'+unmatched.slice(0,30).map(r=>row(r,'来源不明')).join('');
+  if(unpriced.length) html+='<div style="font-weight:600;margin:10px 0 4px">③ 未命中任何参考价（新线路/跨城/缺价，建议补录参考价）</div>'+unpriced.slice(0,30).map(r=>row(r,'未命中')).join('');
+  if(!html) html='<div style="color:var(--text-3);padding:10px 0;text-align:center">未发现车型错配，定价引擎命中正常 ✓</div>';
+  el.innerHTML=html;
 }
 function calcCityRoutes(city){ return [...new Set((S.prices||[]).filter(p=>p.city===city).map(p=>p.route))]; }
 function calcRouteVehicles(city, route){ return [...new Set((S.prices||[]).filter(p=>p.city===city && p.route===route).map(p=>p.vehicle))]; }
@@ -5793,16 +5900,27 @@ function cloudUrl(){
   return '/api/data?t='+Date.now();
 }
 const WEB_INQ_API = location.protocol==='file:' ? 'https://www.chinawondercars.com/api/workbench' : (location.origin + '/api/inquiries');
-const WEB_INQ_SECRET = 'ef-inq-2026';
+// 安全（2026-11-15）：询盘接口密钥不再写死在页面源码里（页面本身是公开静态文件）。
+// 由运营在「数据与同步 → 网站询盘对接」里填写一次，存在本机 localStorage。
+function webInqSecret(){
+  try{ const s=JSON.parse(localStorage.getItem('ef-web-inq')||'{}'); return String(s.secret||''); }catch(e){ return ''; }
+}
+function saveWebInqSecret(v){
+  try{ localStorage.setItem('ef-web-inq', JSON.stringify({secret:String(v||'').trim()})); }catch(e){}
+}
 const WEB_INQ_STATUS_MAP = { new:'new', contacted:'following', converted:'won', lost:'lost' };
 const WEB_INQ_STATUS_RMAP = { new:'new', quoted:'contacted', following:'contacted', won:'converted', lost:'lost' };
 const WEB_INQ_SERVICE_LABELS = { airport:'机场接送', city:'城市包车', business:'商务用车', multiday:'多日包车', general:'一般询价' };
 
 async function syncSiteInquiries(){
   const st = webInqStatus;
+  if(!webInqSecret()){
+    if(st) st.textContent = '✗ 请先在下方填写「询盘接口密钥」（与 Worker 的 EF_INQ_SECRET 一致）';
+    toast('请先填写询盘接口密钥'); return;
+  }
   if(st) st.textContent = '正在拉取网站询盘…';
   try{
-    const res = await fetch(WEB_INQ_API + '?limit=500', { cache:'no-store', headers:{ 'x-api-secret': WEB_INQ_SECRET } });
+    const res = await fetch(WEB_INQ_API + '?limit=500', { cache:'no-store', headers:{ 'x-api-secret': webInqSecret() } });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();
     if(!d.ok) throw new Error(d.error || '接口错误');
@@ -5847,6 +5965,10 @@ async function syncSiteInquiries(){
 
 async function pushSiteInquiryStatus(){
   const st = webInqStatus;
+  if(!webInqSecret()){
+    if(st) st.textContent = '✗ 请先在下方填写「询盘接口密钥」（与 Worker 的 EF_INQ_SECRET 一致）';
+    toast('请先填写询盘接口密钥'); return;
+  }
   if(st) st.textContent = '正在推送询价状态…';
   try{
     const pending = (S.inquiries||[]).filter(i=>/^web_\d+$/.test(i.id));
@@ -5858,7 +5980,7 @@ async function pushSiteInquiryStatus(){
       if(!status){ skipped++; continue; }
       const res = await fetch(WEB_INQ_API + '/' + wid, {
         method:'PUT',
-        headers:{ 'Content-Type':'application/json', 'x-api-secret': WEB_INQ_SECRET },
+        headers:{ 'Content-Type':'application/json', 'x-api-secret': webInqSecret() },
         body: JSON.stringify({ status: status })
       });
       const d = await res.json().catch(()=>({ok:false}));
@@ -5905,7 +6027,11 @@ function fetchCloudData(){
     loading.innerHTML='<div style="font-size:16px;font-weight:600;margin-bottom:8px;">正在加载云端数据...</div><div style="color:#888;font-size:12px;">首次打开请稍候</div>';
     document.body.appendChild(loading);
   }
-  fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+  fetch(u,{cache:'no-store'}).then(r=>{
+    if(!r.ok) throw 0;
+    try{ const rv=Number(r.headers&&r.headers.get&&r.headers.get('X-EF-Rev')); if(isFinite(rv)&&rv>=0) cloudRev=rv; }catch(e){}
+    return r.json();
+  })
     .then(d=>{
       if(!d || !d.orders) throw 0;
       if(d._lastModified) cloudLastModified = d._lastModified;
@@ -5989,6 +6115,54 @@ function renderData(){ /* 默认值 */ if(!$('exTo').value) $('exTo').value=toda
 /* ---- 一键上云（Cloudflare Worker → GitHub 仓库 → Pages 自动发布） ---- */
 function loadCfSync(){
   try{ const s=JSON.parse(localStorage.getItem('ef-cf')||'{}'); if($('cfUrl')) $('cfUrl').value=s.url||''; if($('cfKey')) $('cfKey').value=s.key||''; }catch(e){}
+  try{ if($('webInqKey')) $('webInqKey').value=webInqSecret(); }catch(e){}
+}
+/* ---- 云端每日快照 ---- */
+function efApiBase(){
+  if(location.protocol==='file:') return '';
+  try{ const s=JSON.parse(localStorage.getItem('ef-cf')||'{}'); if(s.url) return s.url.replace(/\/$/,''); }catch(e){}
+  return location.origin;
+}
+async function listCloudBackups(){
+  const box=$('cloudBackupList'); const base=efApiBase();
+  if(!base){ if(box) box.textContent='本地文件模式无法读取云端备份'; return; }
+  if(box) box.textContent='正在读取…';
+  try{
+    const r=await fetch(base+'/api/backups',{cache:'no-store'});
+    const d=await r.json().catch(()=>({ok:false}));
+    if(!r.ok||!d.ok) throw new Error(d.error||('HTTP '+r.status));
+    const items=d.backups||[];
+    if(!items.length){ if(box) box.textContent='暂无备份（每天 02:00 自动生成，或点「立即快照」）'; return; }
+    if(box) box.innerHTML=items.slice().reverse().map(b=>{
+      const day=escapeHtml(b.day||'');
+      const links=(b.keys||[]).map(k=>{
+        const label=k.split(':').pop().replace('data:','');
+        return '<button class="btn ghost small" style="padding:2px 7px" onclick="downloadCloudBackup(\''+escapeHtml(k)+'\')">'+escapeHtml(label)+'</button>';
+      }).join(' ');
+      return '<div style="padding:5px 0;border-bottom:1px solid var(--line)"><b>'+day+'</b> · '+new Date(b.at).toLocaleString('zh-CN')+'<div style="margin-top:4px">'+links+'</div></div>';
+    }).join('');
+  }catch(e){ if(box) box.textContent='读取失败：'+(e.message||e); }
+}
+async function downloadCloudBackup(key){
+  const base=efApiBase(); if(!base) return;
+  try{
+    const r=await fetch(base+'/api/backups/'+encodeURIComponent(key),{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const text=await r.text();
+    const blob=new Blob([text],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=key.replace(/:/g,'_')+'.json'; a.click(); URL.revokeObjectURL(a.href);
+    toast('已下载备份 '+key);
+  }catch(e){ toast('下载失败：'+(e.message||e)); }
+}
+async function takeCloudSnapshot(){
+  const base=efApiBase(); if(!base){ toast('本地文件模式无法触发云端快照'); return; }
+  try{
+    const r=await fetch(base+'/api/snapshot',{method:'POST'});
+    const d=await r.json().catch(()=>({ok:false}));
+    toast(d.ok? ('✓ 已生成快照：'+d.day) : ('快照失败：'+(d.error||'HTTP '+r.status)));
+    if(d.ok) listCloudBackups();
+  }catch(e){ toast('快照失败：'+(e.message||e)); }
 }
 function uploadToCloud(silent){
   const url=$('cfUrl').value.trim(), key=$('cfKey').value.trim();
@@ -6018,17 +6192,47 @@ function uploadToCloud(silent){
 }
 function doUpload(url,key,n,silent){
   const st=$('cfStatus'); if(st) st.textContent='同步中…（'+n+' 单）';
+  // 带上最后一次读到的云端版本号；Worker 发现期间有别的设备写过会自动合并而不是整包覆盖
+  const payload={data:S};
+  if(cloudRev>0) payload.baseVersion=cloudRev;
   fetch(url.replace(/\/$/,'')+'/api/upload?key='+encodeURIComponent(key),{
     method:'POST',
     headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({data:S})
+    body:JSON.stringify(payload)
   }).then(r=>r.json().catch(()=>({ok:false,error:'响应解析失败'})))
     .then(d=>{
-      if(st) st.textContent = d.ok? '✓ 已同步 '+n+' 单' : '✗ '+(d.error||'失败');
-      if(d.ok){ cloudLastModified = S._lastModified || Date.now(); if(!silent) toast('已上云 '+n+' 单'); }
-      else if(!silent) toast('上云失败：'+(d.error||''));
+      if(d.ok){
+        const rv=Number(d.rev); if(isFinite(rv)&&rv>=0) cloudRev=rv;
+        cloudLastModified = S._lastModified || Date.now();
+        if(d.merged){
+          if(st) st.textContent='⚠ 检测到其他设备同时修改，服务端已自动合并';
+          if(!silent) toast('检测到其他设备更新，已自动合并（未丢失数据）');
+          reloadMergedCloud();
+        }else{
+          if(st) st.textContent = '✓ 已同步 '+n+' 单';
+          if(!silent) toast('已上云 '+n+' 单');
+        }
+      }else{
+        if(st) st.textContent = '✗ '+(d.error||'失败');
+        if(!silent) toast('上云失败：'+(d.error||''));
+      }
     })
     .catch(e=>{ if(st) st.textContent='✗ 网络错误'; if(!silent) toast('上云失败：网络错误'); });
+}
+// 服务端合并后把云端独有的记录拉回本地，避免本地视图与云端不一致
+function reloadMergedCloud(){
+  const u=cloudUrl(); if(!u) return;
+  fetch(u,{cache:'no-store'}).then(r=>{
+    if(!r.ok) throw 0;
+    try{ const rv=Number(r.headers&&r.headers.get&&r.headers.get('X-EF-Rev')); if(isFinite(rv)&&rv>=0) cloudRev=rv; }catch(e){}
+    return r.json();
+  }).then(d=>{
+    if(!d||!d.orders) return;
+    mergeCloud(d);
+    saveState(S);
+    renderToday(); renderOrders(); renderGuests(); renderFleet(); renderPrices(); renderKpis();
+    updateSyncStatus('已合并云端并发更新');
+  }).catch(()=>{});
 }
 
 /* =========================================================
@@ -6051,11 +6255,17 @@ function renderReport(){
   const profit=os=>money(os)-cost(os);
   const rate=(p,t)=>t>0? (p/t*100).toFixed(1)+'%' : '—';
   const fmtMoney=n=>'¥'+Number(n).toLocaleString('zh-CN');
-  const cityMap={}, fleetMap={}, guestMap={};
+  const cityMap={}, fleetMap={}, guestMap={}, sourceMap={};
   orders.forEach(o=>{
     const c=cityOf(o)||'未标注'; (cityMap[c]=cityMap[c]||[]).push(o);
     const f=o.fleet||'未指定'; (fleetMap[f]=fleetMap[f]||[]).push(o);
     const g=o.guest||'未命名'; (guestMap[g]=guestMap[g]||[]).push(o);
+    // 渠道归因：订单来源（网站表单 / WhatsApp / 报价智能体 / 飞书 / 工作台录入）
+    const src=o.source||'workbench';
+    const label={workbench:'工作台录入',website:'网站表单','chinawondercars.com':'网站表单',
+      whatsapp:'WhatsApp',wa:'WhatsApp','quote-agent':'报价智能体',feishu:'飞书询盘',
+      'travel-kb':'travel-kb'}[src]||src;
+    (sourceMap[label]=sourceMap[label]||[]).push(o);
   });
   function tbl(title,map){
     let html='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><b style="font-size:15px">'+title+'</b>';
@@ -6194,6 +6404,7 @@ function renderReport(){
     +trend()
     +tbl('按城市汇总', cityMap)
     +tbl('按对接车队汇总', fleetMap)
+    +tbl('按来源渠道汇总', sourceMap)
     +tbl('按客人汇总', guestMap)
     +renderFleetSettlement(orders);
 }
@@ -6262,6 +6473,7 @@ function renderWaInbox(counts){
       +'<div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap">'
       +'<button class="btn ghost small" onclick="waToInquiry(\''+mid+'\')">转询价单</button>'
       +'<button class="btn ghost small" onclick="waUseMessage(\''+mid+'\')">用于解析报价</button>'
+      +'<button class="btn ghost small" onclick="openWaReply(\''+mid+'\')">回复</button>'
       +'<button class="btn ghost small" onclick="waMarkReplied(\''+mid+'\')">标记已回复</button>'
       +'</div></div>';
   }).join('');
@@ -6309,6 +6521,48 @@ async function waMarkReplied(mid){
     if(m) m.status='replied';
     renderWaInbox({ total: waMessages.length, unread: waMessages.filter(x=>x.status==='new').length });
   }catch(e){ /* 静默失败，不打断主流程 */ }
+}
+/* ---- WhatsApp 出站回复（Worker /api/wa-send → Meta Cloud API） ---- */
+let waReplyTarget = '';
+function openWaReply(mid){
+  const m = waMessages.find(x=>x.mid===mid);
+  if(!m){ toast('消息不存在'); return; }
+  waReplyTarget = mid;
+  const to=$('waReplyTo'), box=$('waReplyBox'), txt=$('waReplyText'), stat=$('waReplyStat');
+  if(to) to.textContent = (m.name||'') + (m.wa_id? ' ('+m.wa_id+')' : '');
+  if(txt) txt.value = '';
+  if(stat) stat.textContent = '';
+  if(box) box.classList.remove('hidden');
+  if(txt && txt.focus) txt.focus();
+}
+function closeWaReply(){
+  waReplyTarget = '';
+  const box=$('waReplyBox'); if(box) box.classList.add('hidden');
+}
+async function sendWaReply(){
+  const base = waApiBase();
+  const stat = $('waReplyStat');
+  if(!base){ if(stat) stat.textContent='本地文件模式无法发送'; return; }
+  if(!waReplyTarget){ if(stat) stat.textContent='请先选择一条消息'; return; }
+  const m = waMessages.find(x=>x.mid===waReplyTarget);
+  const text = ($('waReplyText') && $('waReplyText').value || '').trim();
+  if(!text){ if(stat) stat.textContent='请输入回复内容'; return; }
+  if(stat) stat.textContent='发送中…';
+  try{
+    const r = await fetch(base + '/api/wa-send', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to:m.wa_id||'', text, mid:m.mid||'', name:m.name||'' })
+    });
+    const d = await r.json().catch(()=>({ok:false}));
+    if(!r.ok || !d.ok) throw new Error(d.error || ('HTTP '+r.status));
+    m.status='replied'; m.repliedAt=Date.now();
+    renderWaInbox({ total: waMessages.length, unread: waMessages.filter(x=>x.status==='new').length });
+    closeWaReply();
+    toast('✓ WhatsApp 消息已发送给 '+(m.name||m.wa_id||'客人'));
+  }catch(e){
+    if(stat) stat.textContent='✗ '+(e.message||e);
+    toast('WhatsApp 发送失败：'+(e.message||e));
+  }
 }
 
 /* =========================================================
@@ -6737,6 +6991,20 @@ function showGuestDetail(name){
 document.getElementById('guestDetailOverlay').addEventListener('click',e=>{ if(e.target.id==='guestDetailOverlay') closeGuestDetail(); });
 
 /* 车队对账：按车队汇总应付金额 */
+/* 车辆/司机档案完整度提示（P2-11）：只提示，不自动造数据 */
+function renderFleetDataAlert(){
+  const el=$('fleetDataAlert'); if(!el) return;
+  const vehicles=(S.vehicles||[]).length, drivers=(S.drivers||[]).length;
+  const plated=(S.drivers||[]).filter(d=>d.plate).length;
+  if(drivers===0) { el.innerHTML=''; return; }
+  const gaps=[];
+  if(vehicles < drivers/2) gaps.push('独立车辆档案 '+vehicles+' 条，远少于司机 '+drivers+' 人（多数车辆信息挂在司机记录里）');
+  if(plated < drivers) gaps.push((drivers-plated)+' 位司机未登记车牌');
+  if(!gaps.length){ el.innerHTML=''; return; }
+  el.innerHTML='<div style="background:#fff7e6;border:1px solid #ffe0a3;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:#8a5a00;line-height:1.7">'
+    +'<b>档案完整度待补：</b>'+gaps.map(escapeHtml).join('；')
+    +'。建议用「粘贴导入司机」逐批补录，排班/司机负载统计依赖车牌与车型字段。</div>';
+}
 function renderFleetSettlement(orders){
   const fleetMap={};
   orders.forEach(o=>{
@@ -6976,7 +7244,11 @@ function markBackupTime(){
 function checkCloudUpdates(){
   if(!appReady) return;
   const u=cloudUrl(); if(!u) return;
-  fetch(u,{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+  fetch(u,{cache:'no-store'}).then(r=>{
+    if(!r.ok) throw 0;
+    try{ const rv=Number(r.headers&&r.headers.get&&r.headers.get('X-EF-Rev')); if(isFinite(rv)&&rv>=0) cloudRev=rv; }catch(e){}
+    return r.json();
+  })
     .then(d=>{
       if(!d || !d._lastModified) return;
       const localTs = S._lastModified || 0;
@@ -7822,6 +8094,36 @@ let currentFinanceTab = 'receivable';
 let currentPaymentId = null;
 let currentPaymentType = 'receive';
 
+/* ===== 财务口径自检（P1-7）=====
+   不改任何计算口径，只把「汇率来源 / 孤儿收款 / 超额收款 / 未归一化记录」列出来，
+   供与飞书台账、司机结算逐笔对账时使用。 */
+function renderFinanceAudit(){
+  const el=$('financeAudit'); if(!el) return;
+  const pays=normalizedPayments();
+  const ids=new Set((S.orders||[]).map(o=>o.id));
+  const fxManual=readFxManual();
+  const fxItems=pays.filter(p=>p.currency!=='CNY').map(p=>{
+    const src = fxManual[p.currency] ? '人工设定' : (fxCache && fxCache.rates && fxCache.rates[p.currency] ? '在线汇率' : '默认汇率');
+    return { ...p, src, rate: fxRateOf(p.currency) };
+  });
+  const orphan=pays.filter(p=>p.orderId && !ids.has(p.orderId));
+  const unnormalized=pays.filter(p=>!p.type || p.status==='pending');
+  const overpaid=(S.orders||[]).filter(o=>(+o.quote||0)>0 && paidOf(o) > (+o.quote||0)+1);
+  const row=(k,v)=>'<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--line)"><span style="width:180px;color:var(--text-3)">'+k+'</span><span>'+v+'</span></div>';
+  let html='';
+  html+=row('收支记录总数', pays.length+' 条（已归一化 type/status/币种）');
+  html+=row('外币记录', fxItems.length? (fxItems.length+' 条 · '+[...new Set(fxItems.map(x=>x.currency))].join('/')+' · 汇率来源：'+[...new Set(fxItems.map(x=>x.src))].join('/')) : '无');
+  html+=row('孤儿记录（订单不存在）', orphan.length? ('<span style="color:var(--danger)">'+orphan.length+' 条：'+orphan.slice(0,5).map(p=>escapeHtml(p.orderId||'—')).join('、')+'</span>') : '无 ✓');
+  html+=row('已收 > 报价', overpaid.length? ('<span style="color:var(--danger)">'+overpaid.length+' 单：'+overpaid.slice(0,5).map(o=>escapeHtml(o.guest||o.id)).join('、')+'</span>') : '无 ✓');
+  html+=row('待确认 / 类型未识别', unnormalized.length? (unnormalized.length+' 条（状态 pending 或 type 为空，不计入已完成收支）') : '无 ✓');
+  if(fxItems.length){
+    html+='<div style="margin-top:8px;font-weight:600">外币折算明细（1 外币 = ? CNY）</div>';
+    html+=fxItems.slice(0,12).map(p=>row(escapeHtml((p.date||'')+' · '+(p.orderId||'无订单')),
+      p.currency+' '+p.amount+' × '+fmtFx(p.rate)+' = ¥'+p.amountCNY+'（'+p.src+'）')).join('');
+  }
+  html+='<div style="margin-top:8px;color:var(--text-3)">口径：收入/成本按订单 quote/cost；已收/已付按 normalizedPayments 的 amountCNY（已完成）。报表中心、数据看板、飞书台账导出均取同一份 S.orders / S.payments。</div>';
+  el.innerHTML=html;
+}
 function renderFinance(){
   let monthFilter = $('financeMonthFilter') ? $('financeMonthFilter').value : '';
   // 使用归一化数据：统一 type/status 口径，并把外币折算成人民币
@@ -9217,9 +9519,9 @@ function downloadReceipt(){
   URL.revokeObjectURL(a.href);
   toast('已下载收款单 HTML，可直接作为邮件正文/附件');
 }
-/* 收据导出 JSON（供 scripts/send_receipt.ps1 邮件外发 PDF） */
-function exportReceiptJson(){
-  const o=S.orders.find(x=>x.id===currentOrderId); if(!o){ toast('订单不存在'); return; }
+/* 收款确认单数据（一键发邮件 / 导出 JSON 共用同一份口径） */
+function buildReceiptPayload(){
+  const o=S.orders.find(x=>x.id===currentOrderId); if(!o){ toast('订单不存在'); return null; }
   const guest=S.guests.find(g=>g.name===o.guest)||{};
   const paid=paidOf(o);
   const balance=(+o.quote||0)-paid;
@@ -9234,6 +9536,30 @@ function exportReceiptJson(){
     email:o.email||guest.email||'', service, paid, balance, method, payDate,
     text_zh:textZh, text_en:textEn, orderId:o.id, _fsRecordId:o._fsRecordId||''
   };
+  return payload;
+}
+/* 一键发邮件：Worker /api/send-receipt → SMTP（变量名见 .dev.vars.example） */
+async function emailCurrentReceipt(){
+  const payload=buildReceiptPayload(); if(!payload) return;
+  const base=efApiBase();
+  if(!base){ toast('本地文件模式无法发邮件，请用「导出邮件 JSON」离线发送'); return; }
+  if(!payload.email){ toast('该订单/客人档案没有邮箱，请先补录 email'); return; }
+  toast('正在发送收款确认单到 '+payload.email+'…');
+  try{
+    const r=await fetch(base+'/api/send-receipt',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const d=await r.json().catch(()=>({ok:false}));
+    if(!r.ok||!d.ok) throw new Error(d.error||('HTTP '+r.status));
+    const o=S.orders.find(x=>x.id===currentOrderId);
+    if(o){ o.receiptSent=Date.now(); o._lastModified=Date.now(); saveState(S); renderConfirmList(); }
+    toast('✓ 收款确认单已发送至 '+d.to);
+  }catch(e){ toast('发送失败：'+(e.message||e)+'（可改用「导出邮件 JSON」）'); }
+}
+/* 收据导出 JSON（供 scripts/send_receipt.ps1 邮件外发 PDF，离线备用） */
+function exportReceiptJson(){
+  const payload=buildReceiptPayload(); if(!payload) return;
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);

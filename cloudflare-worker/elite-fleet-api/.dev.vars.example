@@ -1,0 +1,26 @@
+# 本地开发用：复制为 .dev.vars（已 gitignore），填入你自己的值。
+# 线上生产用 `wrangler secret put <NAME>` 逐项写入，切勿提交任何真实密钥。
+#
+# 必填（否则相关端点会返回 401/403 或 503，不会静默放行）
+EF_UPLOAD_KEY=replace-with-a-new-random-upload-key
+EF_AUTH_USER=elite
+EF_AUTH_PASS=replace-with-a-new-strong-password
+EF_INQ_SECRET=replace-with-a-new-shared-inquiry-secret
+EF_WA_VERIFY_TOKEN=replace-with-meta-webhook-verify-token
+EF_TWILIO_TOKEN=replace-with-twilio-webhook-token
+EF_PP_WEBHOOK_TOKEN=replace-with-paypal-webhook-token
+EF_FEISHU_WEBHOOK=https://open.feishu.cn/open-apis/bot/v2/hook/xxxx
+EF_FEISHU_SECRET=replace-with-feishu-bot-sign-secret
+#
+# 可选：WhatsApp 出站回复（Meta Cloud API）
+EF_WA_TOKEN=replace-with-meta-permanent-token
+EF_WA_PHONE_ID=replace-with-phone-number-id
+EF_WA_API_VERSION=v21.0
+#
+# 可选：收款确认单 / 确认邮件 SMTP（TLS 465）
+SMTP_HOST=smtp.example.com
+SMTP_PORT=465
+SMTP_USER=booking@chinawondertours.com
+SMTP_PASS=replace-with-smtp-password
+MAIL_FROM=booking@chinawondertours.com
+MAIL_FROM_NAME=China Wonder Tours

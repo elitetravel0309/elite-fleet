@@ -10,3 +10,10 @@ routes = [
 [[kv_namespaces]]
 binding = "EF_DATA"
 id = "fc3158c616b44ee49ea73ffc8118394e"
+
+# 每日 KV 快照：UTC 18:00 = 北京时间次日 02:00
+[triggers]
+crons = ["0 18 * * *"]
+
+# 安全：所有密钥通过 `wrangler secret put <NAME>` 写入，禁止写进本文件（会进 git）。
+# 变量名清单见同目录 .dev.vars.example。本地开发用 .dev.vars（已在 .gitignore）。

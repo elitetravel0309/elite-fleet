@@ -4,9 +4,19 @@ node_modules/
 .env
 .env.*
 .smtp.env
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 *.log
 .DS_Store
 Thumbs.db
+
+# 工作区记忆（不进版本库）
+.workbuddy/
+
+# 含客人信息的本地产出（不推送公开仓库）
+_reports/
+_backup/
 
 # 临时/构建产物
 dist/

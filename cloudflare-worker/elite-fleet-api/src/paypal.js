@@ -1,12 +1,18 @@
 // paypal.js — PayPal Webhook → 飞书群机器人 收款提醒
-// 路由：POST /api/paypal-webhook?token=pp-ef-2026-9f3a7c2e
+// 路由：POST /api/paypal-webhook?token=<EF_PP_WEBHOOK_TOKEN>
 // 流程：token 校验 → 只处理 PAYMENT.CAPTURE.COMPLETED / PAYMENT.SALE.COMPLETED 且状态已完成
 //       → 按 event id 去重（KV data:pp_seen）→ 组装消息 → 飞书机器人（加签）推送
 //
-// 配置项（如需更换飞书机器人/密钥，修改下面三个常量后重新部署）：
-const FEISHU_WEBHOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/bb7bc6d2-d7f4-4c84-8af4-1299c4937779';
-const FEISHU_SECRET = 'ph3qsuH6TZQ4xR0B1ozWyh';      // 飞书机器人「安全设置-加签」密钥
-const PP_WEBHOOK_TOKEN = 'pp-ef-2026-9f3a7c2e';      // 配置在 PayPal 后台 webhook URL 的 ?token=
+// 配置项（2026-11-15 起全部走 Worker Secret / 环境变量，不再写入源码）：
+//   EF_FEISHU_WEBHOOK / EF_FEISHU_SECRET / EF_PP_WEBHOOK_TOKEN
+// 变量清单见 .dev.vars.example。未配置时相关端点返回 503，不会静默放行。
+function ppCfg(env) {
+  return {
+    webhook: env.EF_FEISHU_WEBHOOK || '',
+    secret: env.EF_FEISHU_SECRET || '',
+    token: env.EF_PP_WEBHOOK_TOKEN || ''
+  };
+}
 
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
@@ -27,11 +33,11 @@ async function feishuSign(timestamp, secret) {
   return btoa(bin);
 }
 
-async function postFeishu(text) {
+async function postFeishu(text, cfg) {
   const timestamp = String(Math.floor(Date.now() / 1000));
-  const sign = await feishuSign(timestamp, FEISHU_SECRET);
+  const sign = await feishuSign(timestamp, cfg.secret);
   const payload = { msg_type: 'text', content: { text }, timestamp, sign };
-  const r = await fetch(FEISHU_WEBHOOK, {
+  const r = await fetch(cfg.webhook, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -89,9 +95,13 @@ export async function handlePayPalWebhook(request, env) {
     return json({ ok: false, error: 'method not allowed' }, 405);
   }
 
+  const cfg = ppCfg(env);
   const url = new URL(request.url);
-  if (url.searchParams.get('token') !== PP_WEBHOOK_TOKEN) {
+  if (!cfg.token || url.searchParams.get('token') !== cfg.token) {
     return json({ ok: false, error: 'Forbidden' }, 403);
+  }
+  if (!cfg.webhook || !cfg.secret) {
+    return json({ ok: false, error: '飞书机器人未配置（EF_FEISHU_WEBHOOK / EF_FEISHU_SECRET）' }, 503);
   }
 
   let event;
@@ -140,7 +150,7 @@ export async function handlePayPalWebhook(request, env) {
 
   let feishu;
   try {
-    feishu = await postFeishu(lines.join('\n'));
+    feishu = await postFeishu(lines.join('\n'), cfg);
   } catch (e) {
     return json({ ok: false, error: 'feishu failed: ' + e.message, event: eventId }, 502);
   }

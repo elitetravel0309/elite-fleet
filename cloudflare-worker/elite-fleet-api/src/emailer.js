@@ -4,17 +4,10 @@
 //   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM, MAIL_FROM_NAME
 
 // ---------- 最小 SMTP over TLS 客户端（Cloudflare Workers sockets） ----------
-async function smtpSend(env, to, subject, html) {
-  const { connect } = require ? {} : {}; // placeholder (不会走到)
-}
-
-// 上面的 import 写法在 Workers 用 ESM import，单独文件由 index.js import：
-export { sendConfirmationEmails, buildConfirmationEmail, smtpClient };
-
-// 实际实现
-const { connect } = await import('cloudflare:sockets'); // 顶层 await 不适用，改函数内
-
+// 注意：cloudflare:sockets 只能在 Worker 运行时动态 import，必须放在 async 函数内部，
+// 顶层 await / CommonJS require 都会让模块加载失败（旧版残留的 placeholder 已移除）。
 async function createSmtp(env) {
+  const { connect } = await import('cloudflare:sockets');
   const socket = connect({
     hostname: env.SMTP_HOST,
     port: Number(env.SMTP_PORT || 465),
@@ -50,10 +43,10 @@ async function createSmtp(env) {
     return expect(code);
   }
 
-  return { reader, writer, cmd, close: () => { try { writer.close(); } catch (e) {} } };
+  return { reader, writer, cmd, expect, close: () => { try { writer.close(); } catch (e) {} } };
 }
 
-async function smtpClient(env, to, subject, html) {
+export async function smtpClient(env, to, subject, html) {
   const s = await createSmtp(env);
   try {
     await s.cmd('EHLO elite-fleet', 250);
@@ -98,7 +91,7 @@ function serviceLabel(o) {
   return 'Private Car & Driver (Full Day)';
 }
 
-function buildConfirmationEmail(o) {
+export function buildConfirmationEmail(o) {
   const date = o.date || '';
   const wd = weekday(date);
   const dateLine = date + (wd ? ' (' + wd + ')' : '');
@@ -159,7 +152,7 @@ function buildConfirmationEmail(o) {
 }
 
 // ---------- 扫描已确认订单并发送 ----------
-async function sendConfirmationEmails(env) {
+export async function sendConfirmationEmails(env) {
   const raw = await env.EF_DATA.get('data:workbench', 'text');
   if (!raw) return { ok: false, error: 'no data' };
   const data = JSON.parse(raw);
@@ -185,4 +178,74 @@ async function sendConfirmationEmails(env) {
     await env.EF_DATA.put('data:workbench', JSON.stringify(data));
   }
   return { ok: true, scanned: orders.length, pending: pending.length, sent: results.filter(r => r.ok).length, failed: results.filter(r => !r.ok).length, results };
+}
+
+// ---------- 收款确认单邮件（中英双语，工作台「一键发邮件」调用） ----------
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+export function buildReceiptEmail(p) {
+  const s = p.service || {};
+  const guest = esc(p.guest || 'Guest');
+  const no = esc(p.receiptNo || '');
+  const paid = Number(p.paid) || 0;
+  const quote = Number(s.quote) || 0;
+  const balance = p.balance == null ? (quote - paid) : (Number(p.balance) || 0);
+  const row = (k, v) =>
+    '<tr><td style="padding:7px 12px;border:1px solid #E2E6EE;background:#F3F4F7;font-weight:600;width:38%;color:#14263F">'
+    + k + '</td><td style="padding:7px 12px;border:1px solid #E2E6EE">' + v + '</td></tr>';
+  const table = (title, rows) =>
+    '<h3 style="margin:22px 0 10px;font-size:15px;color:#14263F">' + title + '</h3>' +
+    '<table style="border-collapse:collapse;width:100%;max-width:620px;font-size:13.5px;color:#273043">' +
+    rows.join('') + '</table>';
+  const details = table('Payment Receipt / 收款确认单', [
+    row('Receipt No. / 收款单号', no),
+    row('Guest / 客人', guest),
+    row('Service Date / 服务日期', esc((s.date || '') + (s.time ? ' ' + s.time : ''))),
+    row('Service / 服务内容', esc((s.type || '') + (s.route ? ' · ' + s.route : ''))),
+    row('Vehicle / 车型', esc(s.vehicle || '—') + (s.pax ? ' · ' + esc(s.pax) + ' pax' : '')),
+    row('Total / 服务费用', quote ? 'RMB ' + quote.toLocaleString() : 'As quoted'),
+    row('Received / 本次实收', 'RMB ' + paid.toLocaleString() + ' — PAID ✓'),
+    row('Balance / 待收余额', balance > 0 ? 'RMB ' + balance.toLocaleString() + '（服务当日支付 / payable on service day）' : 'Fully paid ✓ / 已全额付清'),
+    row('Method / 收款方式', esc(p.method || '—')),
+    row('Payment Date / 收款日期', esc(p.payDate || p.date || '—'))
+  ]);
+  const html =
+    '<div style="font-family:Arial,Helvetica,sans-serif;max-width:680px;margin:0 auto;color:#273043;font-size:14px;line-height:1.6">' +
+    '<div style="background:linear-gradient(135deg,#0C1F3A,#9C2B2B);color:#fff;padding:26px 30px;border-radius:12px 12px 0 0">' +
+    '<div style="font-size:21px;font-weight:700">China Wonder Tours</div>' +
+    '<div style="font-size:12.5px;opacity:.85;letter-spacing:1px;margin-top:4px">PAYMENT RECEIPT · 收款确认单</div></div>' +
+    '<div style="border:1px solid #E2E6EE;border-top:none;padding:28px 30px;border-radius:0 0 12px 12px">' +
+    '<p>Dear ' + esc(String(guest).split(' ')[0]) + ',</p>' +
+    '<p>Thank you for your payment. This receipt confirms the amount received for your booking. ' +
+    '感谢您付款，本确认单用于核对本次收款明细。</p>' +
+    details +
+    '<p style="margin:22px 0 0">如需修改或协助，请联系 WhatsApp +86 15347723823 / booking@chinawondertours.com。</p>' +
+    '<p style="margin:18px 0 0">Thank you for choosing China Wonder Tours!</p>' +
+    '<p style="margin:22px 0 0;border-top:1px solid #E2E6EE;padding-top:16px">Kind regards,<br><b>Alice Li</b><br>China Wonder Cars / China Wonder Tours<br>E-mail: booking@chinawondertours.com<br>WhatsApp: +86 15347723823</p>' +
+    '</div></div>';
+  return {
+    to: p.email || '',
+    subject: 'Payment Receipt ' + (p.receiptNo || '') + ' — China Wonder Tours · 收款确认单',
+    html
+  };
+}
+
+export async function sendReceiptEmail(env, payload) {
+  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS || !env.MAIL_FROM) {
+    return { ok: false, error: '邮件服务未配置（SMTP_HOST / SMTP_USER / SMTP_PASS / MAIL_FROM）', code: 503 };
+  }
+  const mail = buildReceiptEmail(payload || {});
+  if (!mail.to || !/@/.test(mail.to)) {
+    return { ok: false, error: '客人邮箱缺失或格式不正确，请在订单/客人档案补录 email', code: 400 };
+  }
+  try {
+    await smtpClient(env, mail.to, mail.subject, mail.html);
+    return { ok: true, to: mail.to, subject: mail.subject, sentAt: new Date().toISOString() };
+  } catch (e) {
+    return { ok: false, error: 'SMTP 发送失败：' + String(e.message || e).slice(0, 200), code: 502 };
+  }
 }

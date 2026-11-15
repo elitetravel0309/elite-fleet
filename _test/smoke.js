@@ -143,6 +143,21 @@ check('WhatsApp 消息解析出城市/车型', '(()=>{ const i=(S.inquiries||[])
 check('WhatsApp 用消息填充解析框', '(()=>{ waUseMessage("m1"); return $("agentMsg").value.length>0; })()', true);
 check('WhatsApp 渲染列表不报错', 'renderWaInbox({total:1,unread:1}); true', true);
 
+console.log('\n=== 2026-11-15 安全与闭环增强 ===');
+const fns3 = ['webInqSecret','saveWebInqSecret','efApiBase','listCloudBackups','downloadCloudBackup',
+              'takeCloudSnapshot','reloadMergedCloud','openWaReply','closeWaReply','sendWaReply',
+              'buildReceiptPayload','emailCurrentReceipt','diagnosePriceMismatch',
+              'updatePriceMismatchBadge','togglePriceMismatch','renderPriceMismatch','renderFinanceAudit'];
+for(const f of fns3){ check('定义 ' + f, `typeof ${f}`, 'function'); }
+check('询盘密钥不再写死在页面里', '(()=>{ localStorage.removeItem("ef-web-inq"); return webInqSecret()===""; })()', true);
+check('询盘密钥可保存并读回', '(()=>{ saveWebInqSecret("test-secret"); return webInqSecret()==="test-secret"; })()', true);
+check('错配诊断返回两类清单', '(()=>{ const d=diagnosePriceMismatch(); return Array.isArray(d.mismatch)&&Array.isArray(d.unmatched); })()', true);
+check('错配复核面板渲染不报错', 'renderPriceMismatch(); true', true);
+check('错配徽标更新不报错', 'updatePriceMismatchBadge(); true', true);
+check('财务口径自检渲染不报错', 'renderFinanceAudit(); true', true);
+check('WhatsApp 回复目标可开关', '(()=>{ waMessages=[{mid:"m2",name:"客人",wa_id:"8613800000000",text:"Hi",status:"new"}]; openWaReply("m2"); const a=waReplyTarget==="m2"; closeWaReply(); return a&&waReplyTarget===""; })()', true);
+check('收款单 payload 含邮箱/金额字段', '(()=>{ const o=S.orders.find(x=>x.id==="ord_20261102_esther")||S.orders[0]; currentOrderId=o.id; const p=buildReceiptPayload(); return !!p && "email" in p && "paid" in p && "service" in p; })()', true);
+
 console.log('\n=== 结果 ===');
 let pass=0, fail=0;
 for(const c of checks){

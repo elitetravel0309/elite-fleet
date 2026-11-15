@@ -14,20 +14,33 @@
 //   - inquiry-form.html /api/inquiry 公开（客人提交）
 //   - /api/inquiries 接受 Basic Auth 或 x-api-secret（与 cwc-inquiry-proxy 保持一致）
 //   - POST /api/upload 需要 ?key= 上传密钥（前端 cfKey）
-const API_KEY = 'EF-KV-2026-9f3a7c2e';      // 上传密钥（cfKey）
-const AUTH_USER = 'elite';                    // 工作台登录用户名
-const AUTH_PASS = 'EF-Fleet-2026';            // 工作台登录密码（修改后需重新部署）
-const WA_VERIFY_TOKEN = 'ef-wa-verify-2026';  // WhatsApp Webhook 验证令牌（填到 Meta 后台）
-const TWILIO_TOKEN = 'tw-ef-2026-9f3a7c2e';    // Twilio Webhook 校验令牌（配到 Twilio webhook URL ?token=）
-const INQ_SECRET = 'ef-inq-2026';             // 询盘接口密钥（与 cwc-inquiry-proxy 一致）
+//
+// 安全约定（2026-11-15）：所有凭据一律从 Worker 环境变量 / Secret 读取，
+// 源码与 git 仓库内不得再出现任何真实密钥。部署前按 .dev.vars.example 的变量清单执行 wrangler secret put。
+// 本地开发可用 .dev.vars（已加入 .gitignore），参考 .dev.vars.example。
+function cfg(env) {
+  return {
+    API_KEY: env.EF_UPLOAD_KEY || '',
+    AUTH_USER: env.EF_AUTH_USER || 'elite',
+    AUTH_PASS: env.EF_AUTH_PASS || '',
+    INQ_SECRET: env.EF_INQ_SECRET || '',
+    WA_VERIFY_TOKEN: env.EF_WA_VERIFY_TOKEN || '',
+    TWILIO_TOKEN: env.EF_TWILIO_TOKEN || '',
+    WA_TOKEN: env.EF_WA_TOKEN || '',
+    WA_PHONE_ID: env.EF_WA_PHONE_ID || '',
+    WA_API_VERSION: env.EF_WA_API_VERSION || 'v21.0'
+  };
+}
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, x-api-secret, Authorization'
+  'Access-Control-Allow-Headers': 'Content-Type, x-api-secret, Authorization, x-ef-rev',
+  'Access-Control-Expose-Headers': 'X-EF-Rev'
 };
 
 import { handlePayPalWebhook } from './paypal.js';
+import { sendReceiptEmail, sendConfirmationEmails } from './emailer.js';
 
 const json = (obj, status = 200, extra = {}) =>
   new Response(JSON.stringify(obj), {
@@ -35,16 +48,20 @@ const json = (obj, status = 200, extra = {}) =>
     headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors, ...extra }
   });
 
-function checkAuth(request) {
+function checkAuth(request, env) {
+  const c = cfg(env);
+  // 未配置密码时一律拒绝，避免「空密码 = 空 Basic」被绕过
+  if (!c.AUTH_PASS) return false;
   const h = request.headers.get('Authorization') || '';
-  const expect = 'Basic ' + btoa(AUTH_USER + ':' + AUTH_PASS);
+  const expect = 'Basic ' + btoa(c.AUTH_USER + ':' + c.AUTH_PASS);
   return h === expect;
 }
 
 // 询盘类接口：Basic Auth 或 x-api-secret 均可（与 cwc-inquiry-proxy 保持同一套约定）
-function checkInquiryAuth(request) {
-  if (checkAuth(request)) return true;
-  return (request.headers.get('x-api-secret') || '') === INQ_SECRET;
+function checkInquiryAuth(request, env) {
+  if (checkAuth(request, env)) return true;
+  const c = cfg(env);
+  return !!c.INQ_SECRET && (request.headers.get('x-api-secret') || '') === c.INQ_SECRET;
 }
 
 const unauthorized = () =>
@@ -54,6 +71,79 @@ const unauthorized = () =>
   });
 
 const forbidden = () => json({ ok: false, error: 'Forbidden' }, 403);
+
+// ---------- data:workbench 版本号（乐观锁） ----------
+// KV 是 eventually consistent，用独立递增 rev 判断「是否有别的设备写过」。
+// 上传方带上自己最后一次读到的 rev；不一致时服务端做字段级合并，避免整包覆盖丢数据。
+const REV_KEY = 'meta:workbench_rev';
+const BACKUP_INDEX_KEY = 'meta:backups';
+const MERGE_ARRAYS = ['orders','drivers','fleets','prices','vehicles','vehicleGallery',
+  'guests','payments','inquiries','driverRatings','hotels'];
+
+async function readRev(env) {
+  const v = await env.EF_DATA.get(REV_KEY, 'text');
+  return parseInt(v || '0', 10) || 0;
+}
+async function bumpRev(env) {
+  const next = (await readRev(env)) + 1;
+  await env.EF_DATA.put(REV_KEY, String(next));
+  return next;
+}
+
+function dedupById(arr) {
+  const seen = new Set(), out = [];
+  for (const x of arr || []) {
+    if (!x || typeof x !== 'object') continue;
+    const k = x.id ? 'id:' + String(x.id) : 'json:' + JSON.stringify(x);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(x);
+  }
+  return out;
+}
+
+// 以本次上传为基底（保留上传方的最新修改），把云端独有的记录按 id/内容并回来
+function mergeWorkbench(cloud, incoming) {
+  const merged = Object.assign({}, cloud, incoming);
+  for (const key of MERGE_ARRAYS) {
+    merged[key] = dedupById((incoming[key] || []).concat(cloud[key] || []));
+  }
+  merged._lastModified = Date.now();
+  return merged;
+}
+
+// ---------- 每日 KV 快照（Cron Trigger） ----------
+const SNAPSHOT_KEYS = ['data:workbench', 'data:inquiries', 'data:wa_inbox'];
+async function takeSnapshot(env, label) {
+  const day = (label || new Date().toISOString().slice(0, 10));
+  const stamp = { day, at: Date.now(), keys: [] };
+  for (const k of SNAPSHOT_KEYS) {
+    const raw = await env.EF_DATA.get(k, 'text');
+    if (raw == null) continue;
+    const bk = 'backup:' + day + ':' + k;
+    await env.EF_DATA.put(bk, raw);
+    stamp.keys.push(bk);
+  }
+  if (!stamp.keys.length) return { ok: false, error: 'no data to snapshot' };
+  const idxRaw = await env.EF_DATA.get(BACKUP_INDEX_KEY, 'text');
+  let idx = idxRaw ? JSON.parse(idxRaw) : [];
+  idx = idx.filter(x => x.day !== day).concat([stamp]);
+  // 只保留最近 14 天
+  const keep = new Set(idx.slice(-14).flatMap(x => x.keys));
+  const old = idx.slice(0, -14);
+  for (const s of old) for (const k of s.keys) await env.EF_DATA.delete(k);
+  idx = idx.slice(-14);
+  await env.EF_DATA.put(BACKUP_INDEX_KEY, JSON.stringify(idx));
+  return { ok: true, day, keys: stamp.keys, retained: idx.length };
+}
+
+async function appendOutbox(env, entry) {
+  const raw = await env.EF_DATA.get('data:wa_outbox', 'text');
+  let out = raw ? JSON.parse(raw) : [];
+  out.push(entry);
+  if (out.length > 500) out = out.slice(-500);
+  await env.EF_DATA.put('data:wa_outbox', JSON.stringify(out));
+}
 
 // WhatsApp 消息收件箱：追加结构化条目（按 message id 去重，上限 500 条）
 async function appendInbox(env, body) {
@@ -96,6 +186,7 @@ export default {
       return new Response('', { status: 204, headers: cors });
     }
     const path = url.pathname.replace(/\/+$/, '') || '/';
+    const c = cfg(env);
 
     // ---------- WhatsApp Webhook（公开，Meta 调用） ----------
     if (path === '/api/wa-webhook') {
@@ -103,7 +194,7 @@ export default {
         const mode = url.searchParams.get('hub.mode');
         const token = url.searchParams.get('hub.verify_token');
         const challenge = url.searchParams.get('hub.challenge');
-        if (mode === 'subscribe' && token === WA_VERIFY_TOKEN && challenge) {
+        if (mode === 'subscribe' && !!c.WA_VERIFY_TOKEN && token === c.WA_VERIFY_TOKEN && challenge) {
           return new Response(challenge, {
             status: 200,
             headers: { 'Content-Type': 'text/plain', ...cors }
@@ -130,7 +221,7 @@ export default {
       }
       if (request.method === 'POST') {
         const t = url.searchParams.get('token') || '';
-        if (t !== TWILIO_TOKEN) return json({ ok: false, error: 'Forbidden' }, 403);
+        if (!c.TWILIO_TOKEN || t !== c.TWILIO_TOKEN) return json({ ok: false, error: 'Forbidden' }, 403);
         try {
           const ct = request.headers.get('Content-Type') || '';
           let from = '', body = '', sid = '', name = '';
@@ -277,7 +368,7 @@ export default {
     // ---------- 询盘列表（表单/Email/WhatsApp 桥接写入；工作台「同步网站询盘」拉取） ----------
     // 鉴权：Basic Auth 或 x-api-secret（与 cwc-inquiry-proxy 同一套约定）
     if (request.method === 'GET' && path === '/api/inquiries') {
-      if (!checkInquiryAuth(request)) return forbidden();
+      if (!checkInquiryAuth(request, env)) return forbidden();
       const raw = await env.EF_DATA.get('data:inquiries', 'text');
       const inquiries = raw ? JSON.parse(raw) : [];
       const limit = parseInt(url.searchParams.get('limit') || '0', 10);
@@ -287,7 +378,7 @@ export default {
 
     // ---------- 更新单条询盘状态（工作台「推送询价状态」回写） ----------
     if (request.method === 'PUT' && path.startsWith('/api/inquiries/')) {
-      if (!checkInquiryAuth(request)) return forbidden();
+      if (!checkInquiryAuth(request, env)) return forbidden();
       const id = decodeURIComponent(path.split('/')[3] || '');
       if (!id) return json({ ok: false, error: 'missing inquiry id' }, 400);
       let patch = {};
@@ -310,7 +401,7 @@ export default {
 
     // ---------- WhatsApp 收件箱：工作台读取（webhook 写入，此前只写不读） ----------
     if (path === '/api/wa-inbox' || path.startsWith('/api/wa-inbox/')) {
-      if (!checkInquiryAuth(request)) return forbidden();
+      if (!checkInquiryAuth(request, env)) return forbidden();
       if (request.method === 'GET' && path === '/api/wa-inbox') {
         const raw = await env.EF_DATA.get('data:wa_inbox', 'text');
         let inbox = raw ? JSON.parse(raw) : [];
@@ -354,7 +445,7 @@ export default {
     // 这样从 GitHub Pages 等静态站点跨设备上传也能成功（浏览器不会附带 Basic 凭据）
     if (request.method === 'POST' && path === '/api/upload') {
       const key = url.searchParams.get('key') || '';
-      if (key !== API_KEY) return json({ ok: false, error: 'Forbidden' }, 403);
+      if (!c.API_KEY || key !== c.API_KEY) return json({ ok: false, error: 'Forbidden' }, 403);
       try {
         const text = await request.text();
         if (!text) return json({ ok: false, error: 'empty body' }, 400);
@@ -363,16 +454,100 @@ export default {
         if (!data || !Array.isArray(data.orders)) {
           return json({ ok: false, error: '数据格式不对：缺少 orders 数组' }, 400);
         }
-        await env.EF_DATA.put('data:workbench', JSON.stringify(data));
-        const n = data.orders.length;
-        return json({ ok: true, orders: n, savedAt: Date.now() });
+        const currentRev = await readRev(env);
+        const rawBase = payload.baseVersion != null ? payload.baseVersion : request.headers.get('x-ef-rev');
+        const baseVersion = (rawBase === null || rawBase === undefined || rawBase === '') ? NaN : Number(rawBase);
+        const cloudRaw = await env.EF_DATA.get('data:workbench', 'text');
+        let cloud = null;
+        try { cloud = cloudRaw ? JSON.parse(cloudRaw) : null; } catch (e) { cloud = null; }
+        // 客户端带上了 rev 且落后于云端 → 说明期间有别的设备写过：
+        // 服务端按 id/内容合并（上传方修改为基底 + 云端独有记录追加），不再整包覆盖。
+        const conflict = Number.isFinite(baseVersion) && baseVersion >= 0 && baseVersion !== currentRev && !!cloud;
+        const finalData = conflict ? mergeWorkbench(cloud, data) : data;
+        await env.EF_DATA.put('data:workbench', JSON.stringify(finalData));
+        const rev = await bumpRev(env);
+        return json({ ok: true, orders: finalData.orders.length, savedAt: Date.now(), rev, merged: conflict });
       } catch (e) {
         return json({ ok: false, error: 'bad payload: ' + e.message }, 400);
       }
     }
 
+    // ---------- 内部运维端点：Basic Auth 或 x-api-secret 均可（GitHub Pages 跨域场景） ----------
+    // ---------- WhatsApp 出站回复（Meta Cloud API；token / phone id 走 Secret） ----------
+    // 工作台收件箱「回复」按钮调用；发送成功后自动把原消息标记为 replied，并留一条发件审计。
+    if (request.method === 'POST' && path === '/api/wa-send') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      if (!c.WA_TOKEN || !c.WA_PHONE_ID) {
+        return json({ ok: false, error: 'WhatsApp 发送未配置（EF_WA_TOKEN / EF_WA_PHONE_ID）' }, 503);
+      }
+      let body = {};
+      try { body = await request.json(); } catch (e) { return json({ ok: false, error: 'bad payload' }, 400); }
+      const to = String(body.to || '').replace(/[^\d]/g, '');
+      const text = String(body.text || '').trim();
+      if (!to || !text) return json({ ok: false, error: '缺少收件号码或消息内容' }, 400);
+      if (text.length > 4000) return json({ ok: false, error: '消息过长（上限 4000 字）' }, 400);
+      try {
+        const api = 'https://graph.facebook.com/' + c.WA_API_VERSION + '/' + c.WA_PHONE_ID + '/messages';
+        const up = await fetch(api, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + c.WA_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body: text } })
+        });
+        const resp = await up.json().catch(() => ({}));
+        if (!up.ok) return json({ ok: false, error: 'Meta API ' + up.status + ': ' + JSON.stringify(resp).slice(0, 300) }, 502);
+        const mid = String(body.mid || '');
+        if (mid) {
+          const raw = await env.EF_DATA.get('data:wa_inbox', 'text');
+          let inbox = raw ? JSON.parse(raw) : [];
+          inbox = inbox.map(i => i.mid === mid ? { ...i, status: 'replied', repliedAt: Date.now() } : i);
+          await env.EF_DATA.put('data:wa_inbox', JSON.stringify(inbox));
+        }
+        await appendOutbox(env, { at: Date.now(), to, text, mid, name: String(body.name || ''), provider: 'meta', messageId: (resp.messages && resp.messages[0] && resp.messages[0].id) || '' });
+        return json({ ok: true, to, messageId: (resp.messages && resp.messages[0] && resp.messages[0].id) || '', replied: !!mid });
+      } catch (e) {
+        return json({ ok: false, error: '发送失败：' + String(e.message || e).slice(0, 200) }, 502);
+      }
+    }
+
+    // ---------- 收款确认单邮件一键外发（SMTP 配置走 Secret） ----------
+    if (request.method === 'POST' && path === '/api/send-receipt') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      let payload = {};
+      try { payload = await request.json(); } catch (e) { return json({ ok: false, error: 'bad payload' }, 400); }
+      const r = await sendReceiptEmail(env, payload);
+      return json(r.ok ? r : { ok: false, error: r.error }, r.ok ? 200 : (r.code || 502));
+    }
+
+    // ---------- 已确认订单确认邮件批量补发（可选运维端点） ----------
+    if (request.method === 'POST' && path === '/api/send-confirmations') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      const r = await sendConfirmationEmails(env);
+      await bumpRev(env);
+      return json(r);
+    }
+
+    // ---------- 云端每日快照：列表 / 下载 / 手动触发 ----------
+    if (request.method === 'GET' && path === '/api/backups') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      const raw = await env.EF_DATA.get(BACKUP_INDEX_KEY, 'text');
+      return json({ ok: true, backups: raw ? JSON.parse(raw) : [] });
+    }
+    if (request.method === 'GET' && path.startsWith('/api/backups/')) {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      const key = decodeURIComponent(path.slice('/api/backups/'.length));
+      if (!/^backup:\d{4}-\d{2}-\d{2}:data:/.test(key)) return json({ ok: false, error: 'bad backup key' }, 400);
+      const raw = await env.EF_DATA.get(key, 'text');
+      if (raw == null) return json({ ok: false, error: 'backup not found' }, 404);
+      return new Response(raw, { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors } });
+    }
+    if (request.method === 'POST' && path === '/api/snapshot') {
+      if (!checkInquiryAuth(request, env)) return unauthorized();
+      return json(await takeSnapshot(env));
+    }
+
+
     // ---------- 以下全部需要登录 ----------
-    if (!checkAuth(request)) return unauthorized();
+    if (!checkAuth(request, env)) return unauthorized();
 
     // ---------- 工作台主页面 ----------
     if (request.method === 'GET' && (path === '/' || path === '/index.html')) {
@@ -388,9 +563,10 @@ export default {
     if (request.method === 'GET' && path === '/api/data') {
       const raw = await env.EF_DATA.get('data:workbench', 'text');
       if (!raw) return json({ ok: false, error: '云端暂无数据，请先在工作台点击「上云」' }, 404);
+      const rev = await readRev(env);
       return new Response(raw, {
         status: 200,
-        headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors }
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'X-EF-Rev': String(rev), ...cors }
       });
     }
 
@@ -413,5 +589,11 @@ export default {
     }
 
     return json({ ok: false, error: 'Not Found' }, 404);
+  },
+
+  // 每天 UTC 18:00（北京时间次日 02:00）自动把三份业务数据快照到 KV，保留 14 天。
+  async scheduled(event, env, ctx) {
+    const r = await takeSnapshot(env);
+    console.log('[snapshot]', JSON.stringify(r));
   }
 };
