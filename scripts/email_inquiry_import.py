@@ -35,7 +35,17 @@ DEFAULT_REPORT = ROOT / "_reports" / "邮件询盘并入清单.md"
 
 SOURCE_NOTE = "邮件渠道只读抽取：按发件人邮箱合并往返邮件为一条询盘，主题轨迹保留在备注；状态/用车日期/城市/人数为规则推断，导入后需人工核对"
 
-# ---------- 过滤规则：系统通知 / 广告 / 自发简报 / 网站表单通知（网站同步已覆盖） ----------
+# ---------- 过滤规则 ----------
+# 转发邮件（Fw:/Fwd:）承载的是客户原始询盘，发件人虽是自家域名，也不能当自发邮件丢弃。
+# 历史踩坑：曾把「Fw: 广州→香港 次日用车」当成自发邮件排除，导致最紧急的单子漏进系统。
+FW_PAT = re.compile(r"^\s*(fw|fwd|转发)\s*[:：]", re.I)
+# 网站表单通知邮件：线上 data:inquiries 只有少量旧记录，新表单并未被同步，
+# 因此在这里转成 channel=web 的兜底询盘，避免「网站表单」这一渠道整体漏单。
+WEB_FORM_PAT = re.compile(
+    r"(New\s+(?:INTERCITY|BUSINESS|AIRPORT|CITY|GENERAL|MULTIDAY|ROUTE|Travel|Booking)\s+"
+    r"(?:Enquiry|Booking)|New\s+(?:Route\s+)?Booking\s+Inquiry|SPT-\d+)", re.I)
+PAYMENT_PAT = re.compile(r"Payment Received|\bSPT-\d+.*(?:paid|payment received)", re.I)
+
 SELF_ADDRESSES = {
     "elitetravel@qq.com", "elitetravel@foxmail.com", "travel@elitetravel4u.com",
     "booking@chinawondercars.com", "booking@chinawondertours.com",
@@ -83,6 +93,8 @@ CITY_RULES = [
     ("西藏", r"西藏|Tibet|拉萨|Lhasa"),
     ("新疆", r"新疆|Xinjiang|喀什|乌鲁木齐"),
     ("槟城", r"Penang|槟城|George Town|Chew Jetty|Swettenham Pier"),
+    ("哈尔滨", r"哈尔滨|Harbin|延吉|Yanji|rime ice|雾凇|Northeast China"),
+    ("张家界", r"张家界|Zhangjiajie|天门山|Tianmen Mountain|芙蓉镇|Furong"),
 ]
 CITY_CODES = [
     ("上海", r"\bPVG\b|\bSHA\b"), ("北京", r"\bPEK\b|\bPKX\b"),
@@ -108,7 +120,10 @@ PAX_GROUP = re.compile(r"group (?:of|size:?)\s*(\d+)|group a (\d+)|\b(\d+)\s*-\s
 
 WON_PAT = re.compile(
     r"(deposit payment has been completed|final payment|booking confirmation|"
-    r"we would like to proceed with the booking|has been receipted|confirmation .* confirmed)", re.I)
+    r"we would like to proceed with the booking|has been receipted|confirmation .* confirmed|"
+    # 客人明确「已付定金 / 已付款」也算成交：Armando 已付 50% 定金、David 已付尾款
+    r"we have made the .{0,25}deposit payment|made the 50% deposit|"
+    r"i have made the payment|payment received via paypal|booking confirmed)", re.I)
 NEGOTIATE_PAT = re.compile(
     r"(higher than .{0,40}budget|lower overall price|expecting a lower|thinking of something in the range|"
     r"comparing affordable|Could you please|please (?:confirm|tell me|send)|waiting|one moment|待回复|还价)", re.I)
@@ -123,6 +138,8 @@ def is_noise(msg: dict) -> str:
     frm = (msg.get("from") or "").lower().strip()
     subj = clean(msg.get("subject"))
     body = clean(msg.get("snippet"))
+    if FW_PAT.search(subj) and not WEB_FORM_PAT.search(subj):
+        return ""  # 客户询盘转发件，即使发自自家域名也必须纳入
     if frm in SELF_ADDRESSES:
         return "自发邮件/内部草稿"
     if any(d in frm for d in NOISE_DOMAINS) or "10000@exmail.weixin.qq.com" in frm:
@@ -201,13 +218,23 @@ def guess_service_date(text: str, fallback_year: int) -> str:
 def thread_key(msg: dict) -> str:
     # 按发件人邮箱合并：同一客人在窗口期内的往返邮件属于同一条询盘，
     # 主题轨迹完整保留在 note 里，避免 "Inquiry" 与 "Re: Inquiry — ..." 被拆成两条。
-    return (msg.get("from") or "").lower().strip()
+    frm = (msg.get("from") or "").lower().strip()
+    subj = clean(msg.get("subject"))
+    if FW_PAT.search(subj):
+        # 客人自己转发的：按发件邮箱并入原线程，避免同一客人被拆成两条、还撞出相同 id
+        if frm not in SELF_ADDRESSES:
+            return frm
+        # 自家账号代客转发：真实客户邮箱在正文里
+        mm = re.search(r"([\w.+-]+@[\w.-]+\.[A-Za-z]{2,})", clean(msg.get("snippet")))
+        if mm and mm.group(1).lower() not in SELF_ADDRESSES:
+            return mm.group(1).lower()
+        return frm + "|fw:" + norm_subject(subj)
+    return frm
 
 
 def build_record(frm: str, msgs: list, today: datetime) -> dict:
     msgs = sorted(msgs, key=lambda m: m.get("at") or "")
     last = msgs[-1]
-    name = clean(last.get("name")) or clean(frm.split("@")[0])
     subj = norm_subject(last.get("subject") or "", lower=False) or clean(last.get("subject") or "邮件询盘")
     subj_key = subj.lower()
     def strip_quote(s: str) -> str:
@@ -215,9 +242,22 @@ def build_record(frm: str, msgs: list, today: datetime) -> dict:
         s = clean(s)
         return re.split(r"(On .{0,200}?wrote:|-------- Original message --------|From: China Wonder Tou|Sent from my Galaxy)", s, maxsplit=1, flags=re.I)[0]
     all_text = " ".join(clean(m.get("subject")) + " " + strip_quote(m.get("snippet")) for m in msgs)
+    # 转发件：发件人只是自家转发账号，真实客人的邮箱/姓名在正文里，用它做 contact/guestKey/id
+    is_fw = FW_PAT.search(clean(last.get("subject"))) is not None
+    frm_eff = frm.split("|")[0] if "|fw:" in frm else frm
+    fw_name = ""
+    if is_fw:
+        mm = re.search(r"([\w.+-]+@[\w.-]+\.[A-Za-z]{2,})", all_text)
+        if mm and mm.group(1).lower() not in SELF_ADDRESSES:
+            frm_eff = mm.group(1).lower()
+        mg = re.search(r"(?:from|From:)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,2})\s+[\w.+-]+@", all_text)
+        if mg:
+            fw_name = clean(mg.group(1))
+    # 转发件若正文里没提到客户姓名，退回信封显示名，别把客人显示成邮箱前缀
+    name = fw_name or clean(last.get("name")) or clean(frm_eff.split("@")[0])
     date = (last.get("at") or "")[:10] or today.strftime("%Y-%m-%d")
     svc = guess_service_date(subj + " " + all_text, today.year)
-    rid = "eml_" + hashlib.sha1((frm + "|" + subj_key).encode("utf-8")).hexdigest()[:12]
+    rid = "eml_" + hashlib.sha1((frm_eff + "|" + subj_key).encode("utf-8")).hexdigest()[:12]
     unread_last = not bool(last.get("read", True))
     status = "new"
     # 所有未处理的新询价也排次日 09:00 跟进，避免邮件客人被遗忘
@@ -240,11 +280,13 @@ def build_record(frm: str, msgs: list, today: datetime) -> dict:
     return {
         "id": rid,
         "guest": name[:60],
-        "contact": frm,
-        "email": frm,
+        "contact": frm_eff,
+        "email": frm_eff,
         "date": date,
         "serviceDate": svc,
-        "city": guess_city(subj + " " + all_text),
+        # 只用正文优先、主题兜底：主题里的 "China and Hong Kong" 不应盖掉正文里的西安/上海
+        "city": guess_city(
+            " ".join(strip_quote(m.get("snippet")) for m in msgs) + " " + subj),
         "pax": guess_pax(subj + " " + all_text),
         "vehicle": "",
         "status": status,
@@ -258,8 +300,8 @@ def build_record(frm: str, msgs: list, today: datetime) -> dict:
         "source": "email-inbox",
         "channel": "email",
         "subject": clean(subj)[:160],
-        "sourceRef": "邮件主题: " + clean(last.get("subject"))[:120],
-        "guestKey": "e:" + frm.lower(),
+        "sourceRef": ("转发询盘: " if is_fw else "邮件主题: ") + clean(last.get("subject"))[:120],
+        "guestKey": "e:" + frm_eff.lower(),
         "_threadId": rid,
         "_msgCount": len(msgs),
         "_sourceSnippet": snippet[:300],
@@ -268,6 +310,100 @@ def build_record(frm: str, msgs: list, today: datetime) -> dict:
         "_autoImported": True,
         "_lastModified": int(today.timestamp() * 1000),
     }
+
+
+def build_web_record(m: dict, today: datetime, paid_orders: set) -> dict | None:
+    """网站表单通知邮件 → channel=web 兜底询盘。
+
+    线上 data:inquiries 只有少量旧记录，新表单并未被网站同步通道收进来；
+    这封通知邮件就是唯一线索，必须转成实体，否则「网站表单」渠道整体漏单。
+    quote 一律留 0：通知里的 Est. Price 是估算价，不是对外正式报价。
+    """
+    subj = clean(m.get("subject"))
+    body = clean(m.get("snippet"))
+    text = subj + " " + body
+    gm = re.search(r"[-–—]\s*([A-Za-z][^—–\-|]{1,40})\s*$", subj)
+    guest = clean(gm.group(1)) if gm else ""
+    if guest.upper().startswith("SPT-"):
+        guest = ""
+    em = re.search(r"([\w.+-]+@[\w.-]+\.[A-Za-z]{2,})", body)
+    email = em.group(1).lower() if em else ""
+    om = re.search(r"\b(SPT-\d{8}-\d+)\b", text)
+    order_id = om.group(1) if om else ""
+    if not (guest or email or order_id):
+        return None
+    guest = guest or (email.split("@")[0] if email else order_id)
+    key_src = (email or order_id or guest) + "|" + subj
+    rid = "web_" + hashlib.sha1(key_src.encode("utf-8")).hexdigest()[:12]
+    date = (m.get("at") or "")[:10] or today.strftime("%Y-%m-%d")
+    dm = re.search(r"\b(20\d{2}-\d{2}-\d{2})\b", body)
+    svc = dm.group(1) if dm else ""
+    vm = re.search(r"Vehicle\s+([^.]{2,60})", body, re.I)
+    vehicle = clean(vm.group(1)) if vm else ""
+    paid = bool(order_id and order_id in paid_orders)
+    status = "won" if paid else "new"
+    follow_up = "" if paid else (today + timedelta(days=1)).strftime("%Y-%m-%d") + " 09:00"
+    note = (
+        "网站表单通知邮件（兜底建档：线上 data:inquiries 未同步到这批新表单）\n"
+        + "来源主题：" + subj[:160] + "\n原文摘录：" + body[:420]
+        + ("\n同订单已收到付款回执，标记已成交：" + order_id if paid else "")
+    )
+    return {
+        "id": rid,
+        "guest": guest[:60],
+        "contact": email,
+        "email": email,
+        "date": date,
+        "serviceDate": svc,
+        "city": guess_city(body + " " + subj),
+        "pax": guess_pax(text),
+        "vehicle": vehicle,
+        "status": status,
+        "route": body[:180],
+        "quote": 0,
+        "cost": 0,
+        "followUp": follow_up,
+        "followUps": [],
+        "fleetQuotes": [],
+        "note": note,
+        "source": "web-form-notice",
+        "channel": "web",
+        "subject": subj[:160],
+        "sourceRef": "网站表单通知邮件: " + subj[:120],
+        "guestKey": ("e:" + email) if email else ("g:" + re.sub(r"\s+", "", guest).lower()),
+        "_threadId": rid,
+        "_orderId": order_id,
+        "_sourceSnippet": body[:300],
+        "_fromMailbox": clean(m.get("to")),
+        "_serviceDateGuessed": bool(svc),
+        "_autoImported": True,
+        "_lastModified": int(today.timestamp() * 1000),
+    }
+
+
+def build_web_records(notices: list, today: datetime) -> list:
+    """先收集付款回执的订单号，再为每封新表单通知建档；按客人/订单号去重。"""
+    paid_orders = set()
+    for m in notices:
+        s = clean(m.get("subject"))
+        if re.search(r"Payment Received", s, re.I):
+            om = re.search(r"\b(SPT-\d{8}-\d+)\b", s + " " + clean(m.get("snippet")))
+            if om:
+                paid_orders.add(om.group(1))
+    out, seen = [], set()
+    for m in sorted(notices, key=lambda x: x.get("at") or "", reverse=True):
+        s = clean(m.get("subject"))
+        if re.search(r"Payment Received", s, re.I):
+            continue
+        r = build_web_record(m, today, paid_orders)
+        if not r:
+            continue
+        dk = (r["email"] or r.get("_orderId") or r["guest"]).lower()
+        if dk in seen:
+            continue
+        seen.add(dk)
+        out.append(r)
+    return out
 
 
 def load_imap(days: int) -> tuple[list[dict], dict]:
@@ -354,8 +490,12 @@ def main():
         messages = d.get("messages", [])
         meta = {"source": d.get("source", str(raw_path)), "scanned": d.get("scanned", len(messages))}
 
-    kept, excluded = [], defaultdict(int)
+    kept, excluded, web_notices = [], defaultdict(int), []
     for m in messages:
+        subj = clean(m.get("subject"))
+        if WEB_FORM_PAT.search(subj) and not FW_PAT.search(subj):
+            web_notices.append(m)
+            continue
         why = is_noise(m)
         if why:
             excluded[why] += 1
@@ -366,6 +506,8 @@ def main():
     for m in kept:
         threads[thread_key(m)].append(m)
     records = [build_record(k, v, today) for k, v in threads.items()]
+    web_records = build_web_records(web_notices, today)
+    records += web_records
     records.sort(key=lambda r: r["date"], reverse=True)
 
     cutoff = (today - timedelta(days=14)).strftime("%Y-%m-%d")
@@ -375,11 +517,13 @@ def main():
         "ok": True, "type": "elite-fleet/inquiries", "version": 1,
         "generatedAt": today.strftime("%Y-%m-%d %H:%M:%S"),
         "channel": "email",
+        "channels": ["email", "web"],
         "source": meta.get("source", ""),
         "sourceNote": SOURCE_NOTE,
         "stats": {
             "scanned": meta.get("scanned", len(messages)),
             "excluded": sum(excluded.values()),
+            "webForms": len(web_records),
             "threads": len(records),
             "following": sum(1 for r in records if r["status"] == "following"),
             "won": sum(1 for r in records if r["status"] == "won"),
@@ -401,12 +545,14 @@ def main():
         "# 邮件询盘并入清单", "",
         "> " + SOURCE_NOTE, "",
         f"- 扫描邮件：{meta.get('scanned', len(messages))} 封 ｜ 纳入客户邮件：{len(kept)} 封 ｜ 排除：{sum(excluded.values())} 封",
-        f"- 合并为会话：{len(records)} 个询盘 ｜ 优先跟进：{len(priority)} 条",
+        f"- 邮件会话 {len(records) - len(web_records)} 个 + 网站表单兜底 {len(web_records)} 个 = {len(records)} 个询盘 ｜ 优先跟进：{len(priority)} 条",
         "", "## 排除明细", "",
     ]
     lines += [f"- {k}：{v} 封" for k, v in sorted(excluded.items())] or ["- 无"]
     lines += [
-        "", "> 网站表单通知邮件已排除：工作台「同步网站询盘」已有独立通道，避免重复建档。", "",
+        "", f"> 网站表单通知邮件 {len(web_notices)} 封：已转成 channel=web 兜底询盘 {len(web_records)} 条。",
+        "> 原因：线上 data:inquiries 只有 3 条旧记录，11-15 之后的新表单并未被网站同步通道收进来，不并入会漏单。",
+        "> 记录级 channel 为准；若日后网站同步补齐，按同渠道邮箱幂等合并即可，不会重复建档。", "",
         "## 并入方式", "",
         "1. 工作台「数据与同步 → 邮件询盘并入」→ 点「拉取邮件询盘清单」或「拉取全量历史」",
         "2. 也可直接选择 `data/email-inquiries.json` / `data/email-priority.json` 导入",

@@ -203,7 +203,12 @@ check('询价列表渲染不报错（含渠道筛选）', 'renderInquiries(); tr
 const emlFeed = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','email-inquiries.json'),'utf8'));
 const wxFeed = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','wechat-inquiries.json'),'utf8'));
 const kbFeed = JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','wa-kb.json'),'utf8'));
-check('邮件清单 channel 全为 email', String(emlFeed.inquiries.every(r=>r.channel==='email'&&r.id&&r.guest&&r.email)), true);
+check('邮件清单记录级 channel 合法且必填齐全', String(emlFeed.inquiries.every(r=>['email','web'].includes(r.channel)&&r.id&&r.guest&&r.guestKey&&r.sourceRef)), true);
+check('邮件清单顶层声明 email + web 双通道', String(['email','web'].every(c=>(emlFeed.channels||[]).includes(c))), true);
+check('网站表单通知已转成 web 兜底询盘', String(emlFeed.inquiries.some(r=>r.channel==='web'&&r.source==='web-form-notice'&&r.guestKey)), true);
+// 断言不写真实客户邮箱：客户数据文件与用例都不进公开仓库
+check('转发询盘还原客户真实邮箱与姓名', String(emlFeed.inquiries.some(r=>r.sourceRef.indexOf('转发询盘')>=0&&String(r.email||'').indexOf('@')>0&&r.guest&&r.guest.indexOf('China Wonder')<0)), true);
+check('已付定金客人标记成交', String(emlFeed.inquiries.some(r=>r.status==='won'&&/deposit|payment/i.test(r.note||''))), true);
 check('邮件清单 id 唯一', String(new Set(emlFeed.inquiries.map(r=>r.id)).size===emlFeed.inquiries.length), true);
 check('邮件清单含原文摘录与来源线索', String(emlFeed.inquiries.every(r=>r.note&&r.note.length>40&&r.sourceRef)), true);
 check('微信清单结构合法（可为空）', String(Array.isArray(wxFeed.inquiries)&&wxFeed.channel==='wechat'), true);
